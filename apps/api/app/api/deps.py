@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Annotated, Optional
 from fastapi import Depends, Query
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from app.core.exceptions import UnauthorizedError
@@ -9,15 +9,15 @@ from app.schemas.common import FilterParams, PaginationParams
 # Native FastAPI security scheme
 security = HTTPBearer(
     auto_error=False,
-    description="Clerk Bearer JWT token",
+    description="Clerk Bearer JWT session token",
 )
 
 
 async def get_current_user(
-    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
+    credentials: Annotated[Optional[HTTPAuthorizationCredentials], Depends(security)],
 ) -> AuthenticatedUser:
     """
-    FastAPI security dependency that enforces Bearer token authentication and returns verified Clerk user.
+    FastAPI native security dependency enforcing Bearer authentication.
     """
     if not credentials or not credentials.credentials:
         raise UnauthorizedError("Missing Authorization header")
@@ -26,7 +26,7 @@ async def get_current_user(
 
 
 async def get_optional_user(
-    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
+    credentials: Annotated[Optional[HTTPAuthorizationCredentials], Depends(security)],
 ) -> Optional[AuthenticatedUser]:
     """
     FastAPI security dependency for endpoints that allow both guest and authenticated user access.
@@ -41,13 +41,13 @@ async def get_optional_user(
 
 
 def get_pagination_params(
-    page: int = Query(default=1, ge=1, description="Page number (1-based)"),
-    page_size: int = Query(default=10, ge=1, le=100, description="Items per page"),
-    limit: Optional[int] = Query(default=None, ge=1, le=100, description="Limit override"),
-    offset: Optional[int] = Query(default=None, ge=0, description="Offset override"),
+    page: Annotated[int, Query(ge=1, description="Page number (1-based)")] = 1,
+    page_size: Annotated[int, Query(ge=1, le=100, description="Items per page")] = 10,
+    limit: Annotated[Optional[int], Query(ge=1, le=100, description="Limit override")] = None,
+    offset: Annotated[Optional[int], Query(ge=0, description="Offset override")] = None,
 ) -> PaginationParams:
     """
-    Dependency to parse pagination parameters.
+    Dependency to parse pagination parameters with native FastAPI Query validation.
     """
     return PaginationParams(
         page=page,
@@ -58,9 +58,9 @@ def get_pagination_params(
 
 
 def get_filter_params(
-    search: Optional[str] = Query(default=None, description="Text search filter"),
-    sort_by: Optional[str] = Query(default=None, description="Field name to sort results by"),
-    sort_order: str = Query(default="asc", pattern="^(asc|desc)$", description="Sort direction ('asc' or 'desc')"),
+    search: Annotated[Optional[str], Query(description="Text search filter")] = None,
+    sort_by: Annotated[Optional[str], Query(description="Field name to sort results by")] = None,
+    sort_order: Annotated[str, Query(pattern="^(asc|desc)$", description="Sort direction ('asc' or 'desc')")] = "asc",
 ) -> FilterParams:
     """
     Dependency to parse filtering, searching, and sorting parameters.
@@ -68,5 +68,12 @@ def get_filter_params(
     return FilterParams(
         search=search,
         sort_by=sort_by,
-        sort_order=sort_order,
+        sort_order=sort_order,  # type: ignore
     )
+
+
+# Modern Annotated Type Aliases for clean endpoint signatures
+CurrentUser = Annotated[AuthenticatedUser, Depends(get_current_user)]
+OptionalUser = Annotated[Optional[AuthenticatedUser], Depends(get_optional_user)]
+PaginationDep = Annotated[PaginationParams, Depends(get_pagination_params)]
+FilterDep = Annotated[FilterParams, Depends(get_filter_params)]

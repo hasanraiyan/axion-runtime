@@ -1,9 +1,12 @@
 from typing import Any, Dict, List, Optional
-from fastapi import status
+from fastapi import HTTPException, status
 
 
-class AppException(Exception):
-    """Base application exception."""
+class AppException(HTTPException):
+    """
+    Base application exception inheriting from FastAPI's native HTTPException.
+    Ensures seamless interoperability with FastAPI handlers and OpenAPI error specs.
+    """
 
     def __init__(
         self,
@@ -12,10 +15,9 @@ class AppException(Exception):
         status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR,
         details: Optional[List[Dict[str, Any]]] = None,
     ):
-        super().__init__(message)
+        super().__init__(status_code=status_code, detail=message)
         self.message = message
         self.code = code
-        self.status_code = status_code
         self.details = details or []
 
 

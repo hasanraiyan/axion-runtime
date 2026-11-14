@@ -68,6 +68,36 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** ApiErrorPayload */
+        ApiErrorPayload: {
+            /**
+             * Code
+             * @description Machine-readable error code
+             */
+            code: string;
+            /**
+             * Message
+             * @description Human-readable error summary
+             */
+            message: string;
+            /**
+             * Details
+             * @description Detailed validation or sub-errors
+             */
+            details?: components["schemas"]["ErrorDetail"][];
+        };
+        /** ApiErrorResponse */
+        ApiErrorResponse: {
+            /**
+             * Success
+             * @description Always false for error responses
+             * @default false
+             * @constant
+             */
+            success: false;
+            /** @description Error details payload */
+            error: components["schemas"]["ApiErrorPayload"];
+        };
         /** ApiResponse[AuthenticatedUser] */
         ApiResponse_AuthenticatedUser_: {
             /**
@@ -137,6 +167,24 @@ export interface components {
              * @default true
              */
             is_authenticated: boolean;
+        };
+        /** ErrorDetail */
+        ErrorDetail: {
+            /**
+             * Field
+             * @description Field path causing the error
+             */
+            field?: string | null;
+            /**
+             * Message
+             * @description Error message description
+             */
+            message: string;
+            /**
+             * Code
+             * @description Specific error code
+             */
+            code?: string | null;
         };
         /** HealthData */
         HealthData: {
@@ -232,6 +280,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiResponse_AuthenticatedUser_"];
+                };
+            };
+            /** @description Missing, expired, or invalid authorization token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };

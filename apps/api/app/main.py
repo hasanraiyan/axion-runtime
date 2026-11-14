@@ -1,9 +1,7 @@
 from contextlib import asynccontextmanager
-from typing import Any, Dict
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.openapi.utils import get_openapi
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
@@ -18,6 +16,17 @@ from app.middleware.security_headers import SecurityHeadersMiddleware
 from app.schemas.common import ApiResponse
 from app.schemas.health import HealthData
 from app.services.health_service import HealthService
+
+TAGS_METADATA = [
+    {
+        "name": "Health",
+        "description": "System operational status, uptime, and liveness monitoring.",
+    },
+    {
+        "name": "Authentication",
+        "description": "User profile verification and session identity management powered by Clerk.",
+    },
+]
 
 
 @asynccontextmanager
@@ -39,6 +48,7 @@ def create_application() -> FastAPI:
         docs_url="/docs",
         redoc_url="/redoc",
         openapi_url="/openapi.json",
+        openapi_tags=TAGS_METADATA,
         lifespan=lifespan,
     )
 
@@ -139,6 +149,7 @@ def create_application() -> FastAPI:
     @application.get(
         "/health",
         response_model=ApiResponse[HealthData],
+        status_code=status.HTTP_200_OK,
         tags=["Health"],
         summary="Root Service Health",
         description="Top-level health endpoint verifying service liveness.",
@@ -150,23 +161,6 @@ def create_application() -> FastAPI:
 
     # 5. Include API v1 Router
     application.include_router(api_v1_router, prefix=settings.API_V1_PREFIX)
-
-    # 6. OpenAPI Customization
-    def custom_openapi() -> Dict[str, Any]:
-        if application.openapi_schema:
-            return application.openapi_schema
-
-        schema = get_openapi(
-            title=settings.PROJECT_NAME,
-            version=settings.VERSION,
-            description="Official OpenAPI 3.1 specification for the AI Platform.",
-            routes=application.routes,
-        )
-
-        application.openapi_schema = schema
-        return schema
-
-    application.openapi = custom_openapi
 
     return application
 
