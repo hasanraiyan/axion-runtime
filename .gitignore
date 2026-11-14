@@ -57,3 +57,5 @@ Thumbs.db
 
 # OpenAPI artifacts cache
 .openapi-cache/
+
+.ruff_cache/
