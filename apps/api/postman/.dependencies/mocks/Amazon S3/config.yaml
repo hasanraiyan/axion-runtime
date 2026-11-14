@@ -1,0 +1,13 @@
+id: e897e0aa-64be-43b5-a845-1d6fc738e953
+version: 1
+name: Amazon S3
+port: 4500
+protocol: http
+slug: aws-s3
+origin:
+  - s3.amazonaws.com
+  - s3.us-east-1.amazonaws.com
+scenarios:
+  - name: default
+    path: ./default.js
+    default: true

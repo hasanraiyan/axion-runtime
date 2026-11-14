@@ -30,6 +30,10 @@ from app.models.project import (
     ProjectSettings,
     ProjectStatus,
 )
+from app.repositories.credential_repository import (
+    ProjectCredentialRepository,
+    get_credential_repository,
+)
 from app.repositories.project_audit_repository import (
     ProjectAuditRepository,
     get_project_audit_repository,
@@ -67,12 +71,14 @@ class ProjectService:
         member_repo: Optional[ProjectMemberRepository] = None,
         audit_repo: Optional[ProjectAuditRepository] = None,
         secret_repo: Optional[ProjectSecretRepository] = None,
+        credential_repo: Optional[ProjectCredentialRepository] = None,
         mongo_client: Optional[AsyncMongoClient] = None,
     ) -> None:
         self.project_repo = project_repo if project_repo is not None else get_project_repository()
         self.member_repo = member_repo if member_repo is not None else get_project_member_repository()
         self.audit_repo = audit_repo if audit_repo is not None else get_project_audit_repository()
         self.secret_repo = secret_repo
+        self.credential_repo = credential_repo
         self.mongo_client = mongo_client
 
     def _get_client(self) -> Optional[AsyncMongoClient]:
@@ -746,10 +752,22 @@ class ProjectService:
             additional_updates={"deleted_at": now},
         )
 
-        # 2. Cascade delete project_members and child secrets
+        # 2. Cascade delete project_members, child secrets, and credentials
         deleted_members = await self.member_repo.delete_by_project_id(project.id)
         if self.secret_repo is not None:
             await self.secret_repo.purge_by_project(project.id)
+        if self.credential_repo is not None:
+            deleted_credentials = await self.credential_repo.purge_by_project(project.id)
+            if deleted_credentials > 0:
+                await self.audit_repo.log_event(
+                    project_id=project.id,
+                    actor_id=user_id,
+                    action=ProjectAuditAction.CREDENTIAL_PURGED,
+                    payload={
+                        "purged_at": now.isoformat(),
+                        "deleted_credentials_count": deleted_credentials,
+                    },
+                )
 
         # 3. Emit PROJECT_PURGED audit log
         await self.audit_repo.log_event(
@@ -775,6 +793,7 @@ def get_project_service(
     member_repo: ProjectMemberRepository = Depends(get_project_member_repository),
     audit_repo: ProjectAuditRepository = Depends(get_project_audit_repository),
     secret_repo: ProjectSecretRepository = Depends(get_secret_repository),
+    credential_repo: ProjectCredentialRepository = Depends(get_credential_repository),
 ) -> ProjectService:
     """Dependency injection provider for ProjectService."""
     return ProjectService(
@@ -782,4 +801,5 @@ def get_project_service(
         member_repo=member_repo,
         audit_repo=audit_repo,
         secret_repo=secret_repo,
+        credential_repo=credential_repo,
     )

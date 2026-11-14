@@ -1,7 +1,20 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Literal, Optional
 from pydantic import BaseModel, Field
 from app.models.user import UserRole
+
+
+class AuthenticatedActor(BaseModel):
+    """
+    Unified security actor context injected into request.state.actor.
+    Unifies human Clerk sessions and machine API credentials.
+    """
+    actor_type: Literal["user", "credential"]
+    identity_id: str                      # Clerk user ID or Credential Document ID
+    project_id: Optional[str] = None      # Bound project ID (mandatory for machine credentials)
+    scopes: List[str] = []                # Granted capability scopes
+    email: Optional[str] = None           # Present only for human users
+    is_authenticated: bool = True
 
 
 class AuthenticatedUser(BaseModel):

@@ -181,3 +181,65 @@ class ProjectPurgedError(NotFoundError):
             details=details,
         )
 
+
+# ==============================================================================
+# Credential Domain Exceptions (SRS-03 Section 8)
+# ==============================================================================
+
+
+class InvalidCredentialError(UnauthorizedError):
+    def __init__(self, message: str = "Invalid API key", details: Optional[List[Dict[str, Any]]] = None):
+        super().__init__(message=message, details=details)
+        self.code = "INVALID_CREDENTIAL"
+
+
+class CredentialRevokedError(UnauthorizedError):
+    def __init__(self, message: str = "API key has been revoked", details: Optional[List[Dict[str, Any]]] = None):
+        super().__init__(message=message, details=details)
+        self.code = "CREDENTIAL_REVOKED"
+
+
+class CredentialExpiredError(UnauthorizedError):
+    def __init__(self, message: str = "API key has expired", details: Optional[List[Dict[str, Any]]] = None):
+        super().__init__(message=message, details=details)
+        self.code = "CREDENTIAL_EXPIRED"
+
+
+class ProjectAccessDeniedError(ForbiddenError):
+    def __init__(
+        self,
+        message: str = "Access denied: API key is not authorized for this project",
+        details: Optional[List[Dict[str, Any]]] = None,
+    ):
+        super().__init__(message=message, details=details)
+        self.code = "PROJECT_ACCESS_DENIED"
+
+
+class InsufficientScopeError(ForbiddenError):
+    def __init__(self, required_scope: str, details: Optional[List[Dict[str, Any]]] = None):
+        super().__init__(
+            message=f"API key lacks required capability scope: '{required_scope}'",
+            details=details,
+        )
+        self.code = "INSUFFICIENT_SCOPE"
+
+
+class DuplicateCredentialNameError(ConflictError):
+    def __init__(self, name: str, details: Optional[List[Dict[str, Any]]] = None):
+        super().__init__(
+            message=f"Credential with name '{name}' already exists in this project",
+            details=details,
+        )
+        self.code = "CREDENTIAL_NAME_EXISTS"
+
+
+class CredentialRevisionConflictError(ConflictError):
+    def __init__(
+        self,
+        message: str = "Credential update conflict: concurrent modification detected",
+        details: Optional[List[Dict[str, Any]]] = None,
+    ):
+        super().__init__(message=message, details=details)
+        self.code = "CREDENTIAL_REVISION_CONFLICT"
+
+

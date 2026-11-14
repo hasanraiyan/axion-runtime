@@ -14,6 +14,10 @@ from app.models.secret import (
     ProjectSecret,
     EncryptedEnvelope,
 )
+from app.models.credential import (
+    ProjectCredential,
+    CredentialStatus,
+)
 
 # Registry of all Beanie document models for initialization.
 DOCUMENT_MODELS: List[Type[Document]] = [
@@ -22,6 +26,7 @@ DOCUMENT_MODELS: List[Type[Document]] = [
     ProjectMember,
     ProjectAuditLog,
     ProjectSecret,
+    ProjectCredential,
 ]
 
 __all__ = [
@@ -36,5 +41,7 @@ __all__ = [
     "ProjectSettings",
     "ProjectSecret",
     "EncryptedEnvelope",
+    "ProjectCredential",
+    "CredentialStatus",
     "DOCUMENT_MODELS",
 ]

@@ -2,7 +2,7 @@
 Project Management API Endpoints (MOD-01) implementing SRS-01 Section 7.2.
 Provides project workspace lifecycle, RBAC membership governance, OCC, and audit log queries.
 """
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 from fastapi import APIRouter, Depends, Path, Query, status
 
 from app.api.deps import (

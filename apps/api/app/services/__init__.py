@@ -1,3 +1,7 @@
+from app.services.credential_service import (
+    ProjectCredentialService,
+    get_credential_service,
+)
 from app.services.health_service import HealthService
 from app.services.project_audit_service import (
     ProjectAuditService,
@@ -33,6 +37,8 @@ __all__ = [
     "get_project_audit_service",
     "ProjectSecretService",
     "get_secret_service",
+    "ProjectCredentialService",
+    "get_credential_service",
     "RuntimeSecretResolver",
     "get_runtime_secret_resolver",
 ]

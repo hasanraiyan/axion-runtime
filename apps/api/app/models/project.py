@@ -41,6 +41,11 @@ class ProjectAuditAction(str, Enum):
     SECRET_ACCESSED = "secret.accessed"
     SECRET_REVEALED = "secret.revealed"
     SECRET_PURGED = "secret.purged"
+    CREDENTIAL_CREATED = "credential.created"
+    CREDENTIAL_UPDATED = "credential.updated"
+    CREDENTIAL_REVOKED = "credential.revoked"
+    CREDENTIAL_DELETED = "credential.deleted"
+    CREDENTIAL_PURGED = "credential.purged"
 
 
 class ProjectSettings(BaseModel):

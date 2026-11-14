@@ -1,4 +1,9 @@
 from app.repositories.base import BaseRepository
+from app.repositories.credential_repository import (
+    InMemoryProjectCredentialRepository,
+    ProjectCredentialRepository,
+    get_credential_repository,
+)
 from app.repositories.project_audit_repository import (
     ProjectAuditRepository,
     get_project_audit_repository,
@@ -29,4 +34,7 @@ __all__ = [
     "get_project_audit_repository",
     "ProjectSecretRepository",
     "get_secret_repository",
+    "ProjectCredentialRepository",
+    "InMemoryProjectCredentialRepository",
+    "get_credential_repository",
 ]
