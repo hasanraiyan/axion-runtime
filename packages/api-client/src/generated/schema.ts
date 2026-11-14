@@ -214,6 +214,11 @@ export interface components {
        * @description Current ISO timestamp
        */
       timestamp: string;
+      /**
+       * Database
+       * @description Database connection status
+       */
+      database?: string | null;
     };
   };
   responses: never;

@@ -9,6 +9,7 @@ from app.api.v1.router import api_v1_router
 from app.core.config import settings
 from app.core.exceptions import AppException
 from app.core.logging import logger, setup_logging
+from app.db.client import close_db, init_db
 from app.middleware.logging import RequestLoggingMiddleware
 from app.middleware.rate_limit import InMemoryRateLimiterMiddleware
 from app.middleware.request_id import RequestIdMiddleware
@@ -36,8 +37,10 @@ async def lifespan(app: FastAPI):
     """
     setup_logging(debug=settings.DEBUG)
     logger.info(f"Starting {settings.PROJECT_NAME} v{settings.VERSION} [{settings.ENVIRONMENT}]")
+    await init_db(app)
     yield
     logger.info(f"Shutting down {settings.PROJECT_NAME} gracefully...")
+    await close_db(app)
 
 
 def create_application() -> FastAPI:
@@ -156,7 +159,7 @@ def create_application() -> FastAPI:
         operation_id="get_root_health",
     )
     async def root_health() -> ApiResponse[HealthData]:
-        data = HealthService.get_health()
+        data = await HealthService.get_health()
         return ApiResponse(data=data, message="Service is healthy")
 
     # 5. Include API v1 Router

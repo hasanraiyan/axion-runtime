@@ -49,6 +49,18 @@ class Settings(BaseSettings):
     CLERK_JWT_KEY: Optional[str] = Field(default=None, description="Optional offline JWT public key")
     CLERK_FRONTEND_API: Optional[str] = Field(default=None, description="Optional Clerk frontend API domain")
 
+    # MongoDB Database
+    MONGODB_URL: str = Field(
+        default="mongodb://root:example@localhost:27017/axion?authSource=admin",
+        description="MongoDB connection URI",
+    )
+    MONGODB_DB_NAME: str = Field(default="axion", description="Database name")
+    MONGODB_MIN_POOL_SIZE: int = Field(default=10, description="Minimum connection pool size")
+    MONGODB_MAX_POOL_SIZE: int = Field(default=50, description="Maximum connection pool size")
+    MONGODB_SERVER_SELECTION_TIMEOUT_MS: int = Field(
+        default=5000, description="MongoDB server selection timeout in milliseconds"
+    )
+
     # Rate Limiting
     RATE_LIMIT_PER_MINUTE: int = Field(default=100, description="Max requests per minute per IP")
 

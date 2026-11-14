@@ -89,3 +89,13 @@ class RateLimitExceededError(AppException):
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             details=details,
         )
+
+
+class ServiceUnavailableError(AppException):
+    def __init__(self, message: str = "Service unavailable", details: Optional[List[Dict[str, Any]]] = None):
+        super().__init__(
+            message=message,
+            code="SERVICE_UNAVAILABLE",
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            details=details,
+        )

@@ -1,3 +1,4 @@
+from typing import Optional
 from pydantic import BaseModel, Field
 
 
@@ -7,3 +8,4 @@ class HealthData(BaseModel):
     environment: str = Field(..., description="Running environment")
     uptime_seconds: float = Field(..., description="Service uptime in seconds")
     timestamp: str = Field(..., description="Current ISO timestamp")
+    database: Optional[str] = Field(default=None, description="Database connection status")

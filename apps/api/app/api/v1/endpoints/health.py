@@ -15,5 +15,5 @@ router = APIRouter(prefix="/health", tags=["Health"])
     operation_id="get_health_status",
 )
 async def get_health() -> ApiResponse[HealthData]:
-    data = HealthService.get_health()
+    data = await HealthService.get_health()
     return ApiResponse(data=data, message="Service is healthy")

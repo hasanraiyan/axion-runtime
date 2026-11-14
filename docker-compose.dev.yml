@@ -1,4 +1,25 @@
 services:
+  mongodb:
+    image: mongo:7.0
+    container_name: platform-mongodb-dev
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-root}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-example}
+      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE:-axion}
+    volumes:
+      - mongodb_dev_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    networks:
+      - platform-network
+
   api:
     build:
       context: .
@@ -10,7 +31,12 @@ services:
       - ./apps/api/app:/app/app:ro
     env_file:
       - apps/api/.env
+    environment:
+      MONGODB_URL: mongodb://${MONGO_INITDB_ROOT_USERNAME:-root}:${MONGO_INITDB_ROOT_PASSWORD:-example}@mongodb:27017/${MONGO_INITDB_DATABASE:-axion}?authSource=admin
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    depends_on:
+      mongodb:
+        condition: service_healthy
     networks:
       - platform-network
 
@@ -31,3 +57,7 @@ services:
 networks:
   platform-network:
     driver: bridge
+
+volumes:
+  mongodb_dev_data:
+    driver: local

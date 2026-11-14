@@ -300,6 +300,18 @@
             "type": "string",
             "title": "Timestamp",
             "description": "Current ISO timestamp"
+          },
+          "database": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Database",
+            "description": "Database connection status"
           }
         },
         "type": "object",

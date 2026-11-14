@@ -1,8 +1,11 @@
 from typing import Annotated, Optional
-from fastapi import Depends, Query
+from fastapi import Depends, Query, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from app.core.exceptions import UnauthorizedError
+from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
+
+from app.core.exceptions import ServiceUnavailableError, UnauthorizedError
 from app.core.security import verify_clerk_token
+from app.db.client import get_global_client, get_global_database
 from app.schemas.auth import AuthenticatedUser
 from app.schemas.common import FilterParams, PaginationParams
 
@@ -72,8 +75,30 @@ def get_filter_params(
     )
 
 
+def get_mongo_client(request: Request) -> AsyncIOMotorClient:
+    """
+    Dependency to retrieve the active MongoDB AsyncIOMotorClient.
+    """
+    client = getattr(request.app.state, "mongo_client", None) or get_global_client()
+    if client is None:
+        raise ServiceUnavailableError("MongoDB client is not initialized or unavailable")
+    return client
+
+
+def get_database(request: Request) -> AsyncIOMotorDatabase:
+    """
+    Dependency to retrieve the active MongoDB AsyncIOMotorDatabase.
+    """
+    db = getattr(request.app.state, "mongo_db", None) or get_global_database()
+    if db is None:
+        raise ServiceUnavailableError("MongoDB database is not initialized or unavailable")
+    return db
+
+
 # Modern Annotated Type Aliases for clean endpoint signatures
 CurrentUser = Annotated[AuthenticatedUser, Depends(get_current_user)]
 OptionalUser = Annotated[Optional[AuthenticatedUser], Depends(get_optional_user)]
 PaginationDep = Annotated[PaginationParams, Depends(get_pagination_params)]
 FilterDep = Annotated[FilterParams, Depends(get_filter_params)]
+MongoClientDep = Annotated[AsyncIOMotorClient, Depends(get_mongo_client)]
+DatabaseDep = Annotated[AsyncIOMotorDatabase, Depends(get_database)]
