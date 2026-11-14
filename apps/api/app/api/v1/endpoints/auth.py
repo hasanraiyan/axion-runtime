@@ -1,9 +1,9 @@
-from fastapi import APIRouter, Path, status
+from fastapi import APIRouter, Depends, Path, status
 from app.api.deps import CurrentAdmin, CurrentUser
 from app.core.exceptions import NotFoundError
 from app.schemas.auth import AuthenticatedUser, UpdateUserRoleRequest
 from app.schemas.common import ApiErrorResponse, ApiResponse
-from app.services.user_service import UserService
+from app.services.user_service import UserService, get_user_service
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -54,9 +54,10 @@ async def get_me(current_user: CurrentUser) -> ApiResponse[AuthenticatedUser]:
 async def update_user_role(
     body: UpdateUserRoleRequest,
     clerk_id: str = Path(..., description="Target Clerk User ID"),
+    user_service: UserService = Depends(get_user_service),
     _admin: CurrentAdmin = None,  # type: ignore[assignment]
 ) -> ApiResponse[AuthenticatedUser]:
-    updated_user = await UserService.update_role(clerk_id, body.role)
+    updated_user = await user_service.update_role(clerk_id, body.role)
     if not updated_user:
         raise NotFoundError(f"User with Clerk ID '{clerk_id}' not found")
 

@@ -10,7 +10,7 @@ from app.db.client import get_global_client, get_global_database
 from app.models.user import UserRole
 from app.schemas.auth import AuthenticatedUser
 from app.schemas.common import FilterParams, PaginationParams
-from app.services.user_service import UserService
+from app.services.user_service import UserService, get_user_service
 
 # Native FastAPI security scheme
 security = HTTPBearer(
@@ -21,6 +21,7 @@ security = HTTPBearer(
 
 async def get_current_user(
     credentials: Annotated[Optional[HTTPAuthorizationCredentials], Depends(security)],
+    user_service: Annotated[UserService, Depends(get_user_service)],
 ) -> AuthenticatedUser:
     """
     FastAPI native security dependency enforcing Bearer authentication.
@@ -32,7 +33,7 @@ async def get_current_user(
     clerk_user = await verify_clerk_token(credentials.credentials)
 
     try:
-        db_user = await UserService.sync_clerk_user(
+        db_user = await user_service.sync_clerk_user(
             clerk_id=clerk_user.clerk_id,
             email=clerk_user.email,
             first_name=clerk_user.first_name,

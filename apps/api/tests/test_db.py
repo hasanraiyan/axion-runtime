@@ -83,9 +83,12 @@ def test_user_model_definition():
 
 async def test_user_service_sync_first_user(init_mock_beanie):
     from app.models.user import UserRole
+    from app.repositories.user_repository import UserRepository
     from app.services.user_service import UserService
 
-    user = await UserService.sync_clerk_user(
+    user_repo = UserRepository()
+    service = UserService(user_repo=user_repo)
+    user = await service.sync_clerk_user(
         clerk_id="user_admin_first",
         email="admin@example.com",
         first_name="Super",
@@ -94,3 +97,25 @@ async def test_user_service_sync_first_user(init_mock_beanie):
     assert user is not None
     assert user.clerk_id == "user_admin_first"
     assert user.role == UserRole.ADMIN
+
+
+async def test_user_repository_and_service_with_mock():
+    from app.models.user import User, UserRole
+    from app.repositories.user_repository import UserRepository
+    from app.services.user_service import UserService
+
+    mock_repo = AsyncMock(spec=UserRepository)
+    existing_user = User(
+        clerk_id="user_mocked",
+        email="mock@example.com",
+        role=UserRole.USER,
+    )
+    mock_repo.get_by_clerk_id.return_value = existing_user
+    mock_repo.is_db_ready.return_value = True
+
+    service = UserService(user_repo=mock_repo)
+    updated = await service.update_role("user_mocked", UserRole.ADMIN)
+
+    assert updated is not None
+    assert updated.role == UserRole.ADMIN
+    mock_repo.update.assert_awaited_once_with(existing_user)

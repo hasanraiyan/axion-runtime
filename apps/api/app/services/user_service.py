@@ -1,19 +1,26 @@
 from typing import Optional
+from fastapi import Depends
+
 from app.core.logging import logger
 from app.models.user import User, UserRole
+from app.repositories.user_repository import UserRepository, get_user_repository
 
 
 class UserService:
-    @classmethod
-    def is_db_ready(cls) -> bool:
-        try:
-            return User.get_settings().pymongo_collection is not None
-        except Exception:
-            return False
+    """
+    Domain service orchestrating user profile synchronization, roles, and identity.
+    Decoupled from HTTP transports and directly injected with UserRepository.
+    """
 
-    @classmethod
+    def __init__(self, user_repo: Optional[UserRepository] = None) -> None:
+        self.user_repo = user_repo if user_repo is not None else get_user_repository()
+
+    def is_db_ready(self) -> bool:
+        """Check whether user repository and database connection are ready."""
+        return self.user_repo.is_db_ready()
+
     async def sync_clerk_user(
-        cls,
+        self,
         clerk_id: str,
         email: Optional[str] = None,
         first_name: Optional[str] = None,
@@ -27,10 +34,10 @@ class UserService:
         - If user is new: creates a User document. The first user in an empty DB
           automatically receives ADMIN role, otherwise USER role.
         """
-        if not cls.is_db_ready():
+        if not self.is_db_ready():
             return None
 
-        existing_user = await User.find_one({"clerk_id": clerk_id})
+        existing_user = await self.user_repo.get_by_clerk_id(clerk_id)
 
         if existing_user is not None:
             # Check for profile updates
@@ -49,13 +56,13 @@ class UserService:
                 has_changes = True
 
             if has_changes:
-                await existing_user.save()
+                await self.user_repo.update(existing_user)
                 logger.info(f"Updated profile for user '{clerk_id}' in MongoDB.")
 
             return existing_user
 
         # First user bootstrap: automatically make the first registered user an ADMIN
-        user_count = await User.count()
+        user_count = await self.user_repo.count_all()
         role = UserRole.ADMIN if user_count == 0 else UserRole.USER
 
         new_user = User(
@@ -67,34 +74,30 @@ class UserService:
             role=role,
             is_active=True,
         )
-        await new_user.insert()
+        created_user = await self.user_repo.create(new_user)
         logger.info(f"Created new synced user '{clerk_id}' with role '{role.value}' in MongoDB.")
-        return new_user
+        return created_user
 
-    @classmethod
-    async def get_by_clerk_id(cls, clerk_id: str) -> Optional[User]:
-        if not cls.is_db_ready():
-            return None
-        return await User.find_one({"clerk_id": clerk_id})
+    async def get_by_clerk_id(self, clerk_id: str) -> Optional[User]:
+        """Fetch user by Clerk ID."""
+        return await self.user_repo.get_by_clerk_id(clerk_id)
 
-    @classmethod
-    async def get_by_id(cls, user_id: str) -> Optional[User]:
-        if not cls.is_db_ready():
-            return None
-        from bson import ObjectId
+    async def get_by_id(self, user_id: str) -> Optional[User]:
+        """Fetch user by MongoDB ID."""
+        return await self.user_repo.get_by_id(user_id)
 
-        try:
-            return await User.get(ObjectId(user_id))
-        except Exception:
-            return None
-
-    @classmethod
-    async def update_role(cls, clerk_id: str, new_role: UserRole) -> Optional[User]:
-        if not cls.is_db_ready():
-            return None
-        user = await User.find_one({"clerk_id": clerk_id})
-        if user:
+    async def update_role(self, clerk_id: str, new_role: UserRole) -> Optional[User]:
+        """Update user role for a given Clerk user."""
+        user = await self.user_repo.get_by_clerk_id(clerk_id)
+        if user is not None:
             user.role = new_role
-            await user.save()
+            await self.user_repo.update(user)
             logger.info(f"Updated role for user '{clerk_id}' to '{new_role.value}'.")
         return user
+
+
+def get_user_service(
+    user_repo: UserRepository = Depends(get_user_repository),
+) -> UserService:
+    """FastAPI dependency provider for UserService."""
+    return UserService(user_repo=user_repo)
