@@ -9,7 +9,7 @@ app_dir = current_dir.parent.parent
 if str(app_dir) not in sys.path:
     sys.path.insert(0, str(app_dir))
 
-from app.main import app
+from app.main import app  # noqa: E402
 
 
 def export_openapi(output_path: str = "openapi.json"):

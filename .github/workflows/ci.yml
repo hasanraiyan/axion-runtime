@@ -14,6 +14,9 @@ jobs:
   backend:
     name: Backend CI (FastAPI & Python)
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/api
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -28,17 +31,17 @@ jobs:
         run: uv python install 3.13
 
       - name: Install backend dependencies
-        run: uv sync --project apps/api --extra dev
+        run: uv sync --extra dev
 
       - name: Run Ruff Lint
-        run: uv run --project apps/api ruff check app tests
+        run: uv run ruff check app tests
 
       - name: Run Pytest Test Suite
         env:
           CLERK_SECRET_KEY: sk_test_ci_dummy_secret_key
           CLERK_PUBLISHABLE_KEY: pk_test_ci_dummy_publishable_key
           ENVIRONMENT: test
-        run: uv run --project apps/api pytest apps/api/tests
+        run: uv run pytest tests
 
   frontend:
     name: Frontend & Packages CI (TypeScript & Next.js)
@@ -49,8 +52,6 @@ jobs:
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 10
 
       - name: Set up Node.js
         uses: actions/setup-node@v4

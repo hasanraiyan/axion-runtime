@@ -4,7 +4,6 @@ from typing import Dict, List
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.requests import Request
 from starlette.responses import JSONResponse
-from app.core.config import settings
 
 
 class InMemoryRateLimiterMiddleware(BaseHTTPMiddleware):

@@ -1,5 +1,4 @@
-from typing import Any, Callable, Dict, List, Optional, Sequence, TypeVar
-from app.schemas.common import FilterParams
+from typing import Any, Dict, List, Optional, Sequence, TypeVar
 
 T = TypeVar("T")
 
