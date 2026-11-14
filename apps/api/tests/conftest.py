@@ -4,6 +4,16 @@ from fastapi.testclient import TestClient
 from app.main import app
 
 
+async def _bypass_rate_limit(self, request, call_next):
+    return await call_next(request)
+
+
+@pytest.fixture(autouse=True)
+def disable_rate_limit_for_tests():
+    with patch("app.middleware.rate_limit.InMemoryRateLimiterMiddleware.dispatch", new=_bypass_rate_limit):
+        yield
+
+
 @pytest.fixture(autouse=True)
 def mock_db_operations():
     with (

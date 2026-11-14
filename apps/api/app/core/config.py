@@ -1,12 +1,21 @@
+import base64
+import json
+from pathlib import Path
 from typing import List, Optional, Union
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
-import json
+
+from app.core.exceptions import ConfigurationError
+
+_ENV_PATHS = (
+    str(Path(__file__).resolve().parents[2] / ".env"),
+    ".env",
+)
 
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=_ENV_PATHS,
         env_file_encoding="utf-8",
         case_sensitive=False,
         extra="ignore",
@@ -63,6 +72,34 @@ class Settings(BaseSettings):
 
     # Rate Limiting
     RATE_LIMIT_PER_MINUTE: int = Field(default=100, description="Max requests per minute per IP")
+
+    # Cryptographic Envelope Encryption (MOD-02)
+    AXION_MASTER_ENCRYPTION_KEY: str = Field(
+        default="",
+        description="Base64-encoded 32-byte master encryption key (KEK) for envelope encryption",
+    )
+
+    @field_validator("AXION_MASTER_ENCRYPTION_KEY", mode="before")
+    @classmethod
+    def validate_master_encryption_key(cls, v: Optional[str]) -> str:
+        if not v or not isinstance(v, str) or not v.strip():
+            raise ConfigurationError(
+                "AXION_MASTER_ENCRYPTION_KEY is required and cannot be empty. "
+                "A 256-bit (32-byte) base64-encoded key is required."
+            )
+        clean_key = v.strip()
+        try:
+            decoded = base64.b64decode(clean_key, validate=True)
+        except Exception as exc:
+            raise ConfigurationError(
+                f"AXION_MASTER_ENCRYPTION_KEY is not a valid base64-encoded string: {exc}"
+            ) from exc
+
+        if len(decoded) != 32:
+            raise ConfigurationError(
+                f"AXION_MASTER_ENCRYPTION_KEY must decode to exactly 32 bytes (256 bits), got {len(decoded)} bytes"
+            )
+        return clean_key
 
 
 settings = Settings()

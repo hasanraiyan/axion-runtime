@@ -236,7 +236,7 @@ sequenceDiagram
 - **Business Rules**:
   - Supports query filters: `environment`, `search` (case-insensitive substring match on name/description), `tags`.
   - Supports pagination (`page`, `page_size`, `limit`, `offset`) and sorting (`name`, `created_at`, `updated_at`).
-  - Response DTO `SecretSummaryResponse` contains: `id`, `name`, `environment`, `description`, `secret_type`, `tags`, `is_system`, `revision`, `created_at`, `updated_at`, `last_rotated_at`, `expires_at`.
+  - Response DTO `SecretSummaryResponse` contains: `id`, `name`, `environment`, `description`, `tags`, `is_system`, `revision`, `created_at`, `updated_at`, `last_rotated_at`, `expires_at`.
   - **Inviolable Invariant**: Under no circumstances does the listing response contain `ciphertext`, `encrypted_dek`, `nonce`, `auth_tag`, or plaintext `value`.
 
 ### FR-03: Secret Detail Inspection (Metadata)
@@ -475,15 +475,6 @@ All models reside in `app/models/secret.py` and extend `BaseDocument` (`app/db/b
 
 ```python
 # Specification for app/models/secret.py
-class SecretType(str, Enum):
-    GENERIC = "generic"
-    API_KEY = "api_key"
-    DATABASE_CREDENTIAL = "database_credential"
-    OAUTH_TOKEN = "oauth_token"
-    CERTIFICATE = "certificate"
-    PRIVATE_KEY = "private_key"
-
-
 class EncryptedEnvelope(BaseModel):
     """Cryptographic payload stored in database - ZERO PLAINTEXT."""
     algorithm: str = Field(default="AES-256-GCM", description="Cipher algorithm")
@@ -499,7 +490,6 @@ class ProjectSecret(BaseDocument):
     name: str = Field(..., min_length=1, max_length=128, description="Identifier name (e.g. OPENAI_API_KEY)")
     environment: str = Field(default="production", min_length=1, max_length=50, description="Execution environment")
     description: Optional[str] = Field(default=None, max_length=1000, description="Human-readable description")
-    secret_type: SecretType = Field(default=SecretType.GENERIC, description="Classification of secret")
     tags: List[str] = Field(default_factory=list, description="Categorization tags")
     is_system: bool = Field(default=False, description="System-managed flag")
     
@@ -568,14 +558,12 @@ All endpoints are registered under `/api/v1/projects/{project_id}/secrets`. All 
 from datetime import datetime
 from typing import Dict, List, Optional
 from pydantic import BaseModel, Field, SecretStr
-from app.models.secret import SecretType
 
 class SecretCreateRequest(BaseModel):
     name: str = Field(..., pattern=r"^[A-Z0-9_]{1,128}$", description="Uppercase identifier (e.g. OPENAI_API_KEY)")
     value: SecretStr = Field(..., min_length=1, max_length=65536, description="Plaintext secret value")
     environment: str = Field(default="production", min_length=1, max_length=50, description="Target environment")
     description: Optional[str] = Field(default=None, max_length=1000, description="Description")
-    secret_type: SecretType = Field(default=SecretType.GENERIC, description="Type classification")
     tags: List[str] = Field(default_factory=list, description="Categorization tags")
     expires_at: Optional[datetime] = Field(default=None, description="Optional expiration date")
 
@@ -583,7 +571,6 @@ class SecretCreateRequest(BaseModel):
 class SecretUpdateRequest(BaseModel):
     value: Optional[SecretStr] = Field(default=None, min_length=1, max_length=65536, description="New secret value if replacing")
     description: Optional[str] = Field(default=None, max_length=1000, description="Updated description")
-    secret_type: Optional[SecretType] = Field(default=None, description="Updated classification")
     tags: Optional[List[str]] = Field(default=None, description="Updated tags")
     expires_at: Optional[datetime] = Field(default=None, description="Updated expiration date")
     revision: int = Field(..., description="Current OCC revision counter for concurrency check")
@@ -605,7 +592,6 @@ class SecretSummaryResponse(BaseModel):
     name: str
     environment: str
     description: Optional[str]
-    secret_type: SecretType
     tags: List[str]
     is_system: bool
     revision: int = Field(..., description="OCC revision counter")

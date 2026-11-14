@@ -101,6 +101,34 @@ class ServiceUnavailableError(AppException):
         )
 
 
+class ConfigurationError(AppException):
+    """Raised when environment or startup configuration is invalid or missing."""
+
+    def __init__(self, message: str = "Configuration error", details: Optional[List[Dict[str, Any]]] = None):
+        super().__init__(
+            message=message,
+            code="CONFIGURATION_ERROR",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            details=details,
+        )
+
+
+class CryptographicIntegrityError(AppException):
+    """Raised when cryptographic decryption, authentication tag, or AAD validation fails."""
+
+    def __init__(
+        self,
+        message: str = "Cryptographic integrity check failed",
+        details: Optional[List[Dict[str, Any]]] = None,
+    ):
+        super().__init__(
+            message=message,
+            code="CRYPTOGRAPHIC_INTEGRITY_ERROR",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            details=details,
+        )
+
+
 # ==============================================================================
 # Project FSM & Lifecycle Domain Exceptions (SRS-01 Section 4.5)
 # ==============================================================================

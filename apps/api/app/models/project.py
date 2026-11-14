@@ -34,6 +34,13 @@ class ProjectAuditAction(str, Enum):
     MEMBER_ROLE_UPDATED = "member.role_updated"
     MEMBER_REMOVED = "member.removed"
     OWNERSHIP_TRANSFERRED = "ownership.transferred"
+    SECRET_CREATED = "secret.created"
+    SECRET_UPDATED = "secret.updated"
+    SECRET_DELETED = "secret.deleted"
+    SECRET_ROTATED = "secret.rotated"
+    SECRET_ACCESSED = "secret.accessed"
+    SECRET_REVEALED = "secret.revealed"
+    SECRET_PURGED = "secret.purged"
 
 
 class ProjectSettings(BaseModel):

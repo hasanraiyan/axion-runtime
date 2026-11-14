@@ -11,6 +11,10 @@ from app.repositories.project_repository import (
     ProjectRepository,
     get_project_repository,
 )
+from app.repositories.secret_repository import (
+    ProjectSecretRepository,
+    get_secret_repository,
+)
 from app.repositories.user_repository import UserRepository, get_user_repository
 
 __all__ = [
@@ -23,4 +27,6 @@ __all__ = [
     "get_project_member_repository",
     "ProjectAuditRepository",
     "get_project_audit_repository",
+    "ProjectSecretRepository",
+    "get_secret_repository",
 ]

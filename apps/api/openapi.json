@@ -1738,6 +1738,920 @@
           }
         }
       }
+    },
+    "/api/v1/projects/{project_id}/secrets": {
+      "get": {
+        "tags": [
+          "Secrets"
+        ],
+        "summary": "List Secret Metadata",
+        "description": "Retrieve a paginated list of secret metadata for a project. Zero plaintext or ciphertext is returned.",
+        "operationId": "list_secrets",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Project 24-char ObjectId hex or URL-safe slug",
+              "title": "Project Id"
+            },
+            "description": "Project 24-char ObjectId hex or URL-safe slug"
+          },
+          {
+            "name": "environment",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter secrets by execution environment",
+              "title": "Environment"
+            },
+            "description": "Filter secrets by execution environment"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Search secret name or description",
+              "title": "Search"
+            },
+            "description": "Search secret name or description"
+          },
+          {
+            "name": "tags",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by categorization tags",
+              "title": "Tags"
+            },
+            "description": "Filter by categorization tags"
+          },
+          {
+            "name": "sort_by",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Field to sort by",
+              "default": "updated_at",
+              "title": "Sort By"
+            },
+            "description": "Field to sort by"
+          },
+          {
+            "name": "sort_order",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^(asc|desc)$",
+              "description": "Sort order direction",
+              "default": "desc",
+              "title": "Sort Order"
+            },
+            "description": "Sort order direction"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Page number (1-based)",
+              "default": 1,
+              "title": "Page"
+            },
+            "description": "Page number (1-based)"
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "description": "Items per page",
+              "default": 20,
+              "title": "Page Size"
+            },
+            "description": "Items per page"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "maximum": 100,
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Limit override",
+              "title": "Limit"
+            },
+            "description": "Limit override"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Offset override",
+              "title": "Offset"
+            },
+            "description": "Offset override"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Secrets retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponse_SecretSummaryResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project not found or caller not a member",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Secrets"
+        ],
+        "summary": "Create Secret",
+        "description": "Create and envelope-encrypt a new project secret. Returns metadata only; zero plaintext is returned.",
+        "operationId": "create_secret",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Project ID or slug",
+              "title": "Project Id"
+            },
+            "description": "Project ID or slug"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SecretCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Secret created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_SecretResponse_"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error or invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Secret with name already exists in environment, or project is archived",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/secrets/resolve": {
+      "post": {
+        "tags": [
+          "Secrets"
+        ],
+        "summary": "Batch Resolve Runtime Secrets",
+        "description": "Batch resolve decrypted plaintext secrets for runtime sandboxes and workflow execution nodes.",
+        "operationId": "batch_resolve_secrets",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Project ID or slug",
+              "title": "Project Id"
+            },
+            "description": "Project ID or slug"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SecretBatchResolveRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Secrets resolved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_SecretBatchResolveResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permissions (requires MEMBER+)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Project is archived or inactive",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/secrets/{secret_id}": {
+      "get": {
+        "tags": [
+          "Secrets"
+        ],
+        "summary": "Get Secret Metadata",
+        "description": "Retrieve metadata for a single project secret. Zero plaintext or ciphertext is returned.",
+        "operationId": "get_secret_metadata",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Project ID or slug",
+              "title": "Project Id"
+            },
+            "description": "Project ID or slug"
+          },
+          {
+            "name": "secret_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Secret document ID",
+              "title": "Secret Id"
+            },
+            "description": "Secret document ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Secret metadata retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_SecretResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Secret or project not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Secrets"
+        ],
+        "summary": "Update Secret with OCC",
+        "description": "In-place update of secret metadata or value with Optimistic Concurrency Control revision verification.",
+        "operationId": "update_secret",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Project ID or slug",
+              "title": "Project Id"
+            },
+            "description": "Project ID or slug"
+          },
+          {
+            "name": "secret_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Secret document ID",
+              "title": "Secret Id"
+            },
+            "description": "Secret document ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SecretUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Secret updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_SecretResponse_"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error or invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Secret or project not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "OCC revision mismatch or project archived",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Secrets"
+        ],
+        "summary": "Soft-Delete Secret",
+        "description": "Soft delete a secret. Immediately excludes it from listings and runtime resolution.",
+        "operationId": "delete_secret",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Project ID or slug",
+              "title": "Project Id"
+            },
+            "description": "Project ID or slug"
+          },
+          {
+            "name": "secret_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Secret document ID",
+              "title": "Secret Id"
+            },
+            "description": "Secret document ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Secret soft-deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_NoneType_"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Secret or project not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Project archived",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/secrets/{secret_id}/reveal": {
+      "post": {
+        "tags": [
+          "Secrets"
+        ],
+        "summary": "Privileged Reveal Secret Value",
+        "description": "Privileged plaintext reveal for project administrators (OWNER, ADMIN). Decrypts in-memory, emits immutable audit log, and sets non-cacheable headers.",
+        "operationId": "reveal_secret_value",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Project ID or slug",
+              "title": "Project Id"
+            },
+            "description": "Project ID or slug"
+          },
+          {
+            "name": "secret_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Secret document ID",
+              "title": "Secret Id"
+            },
+            "description": "Secret document ID"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/SecretRevealRequest"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Secret revealed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_SecretValueResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden (VIEWER and MEMBER cannot reveal secret plaintext)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Secret or project not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/secrets/{secret_id}/rotate": {
+      "post": {
+        "tags": [
+          "Secrets"
+        ],
+        "summary": "Rotate Secret Value",
+        "description": "In-place rotation of secret value with fresh DEK/nonce generation and OCC revision check.",
+        "operationId": "rotate_secret",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Project ID or slug",
+              "title": "Project Id"
+            },
+            "description": "Project ID or slug"
+          },
+          {
+            "name": "secret_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Secret document ID",
+              "title": "Secret Id"
+            },
+            "description": "Secret document ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SecretRotateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Secret rotated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_SecretResponse_"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error or invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Secret or project not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "OCC revision mismatch or project archived",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1923,6 +2837,33 @@
         ],
         "title": "ApiResponse[MemberResponse]"
       },
+      "ApiResponse_NoneType_": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "const": true,
+            "title": "Success",
+            "description": "Always true for successful responses",
+            "default": true
+          },
+          "data": {
+            "type": "null",
+            "title": "Data",
+            "description": "Response payload"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Status message",
+            "default": "Operation completed successfully"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "ApiResponse[NoneType]"
+      },
       "ApiResponse_ProjectResponse_": {
         "properties": {
           "success": {
@@ -1948,6 +2889,84 @@
           "data"
         ],
         "title": "ApiResponse[ProjectResponse]"
+      },
+      "ApiResponse_SecretBatchResolveResponse_": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "const": true,
+            "title": "Success",
+            "description": "Always true for successful responses",
+            "default": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/SecretBatchResolveResponse",
+            "description": "Response payload"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Status message",
+            "default": "Operation completed successfully"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "ApiResponse[SecretBatchResolveResponse]"
+      },
+      "ApiResponse_SecretResponse_": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "const": true,
+            "title": "Success",
+            "description": "Always true for successful responses",
+            "default": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/SecretResponse",
+            "description": "Response payload"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Status message",
+            "default": "Operation completed successfully"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "ApiResponse[SecretResponse]"
+      },
+      "ApiResponse_SecretValueResponse_": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "const": true,
+            "title": "Success",
+            "description": "Always true for successful responses",
+            "default": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/SecretValueResponse",
+            "description": "Response payload"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Status message",
+            "default": "Operation completed successfully"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "ApiResponse[SecretValueResponse]"
       },
       "AuditLogResponse": {
         "properties": {
@@ -2362,6 +3381,28 @@
         ],
         "title": "PaginatedData[ProjectSummaryResponse]"
       },
+      "PaginatedData_SecretSummaryResponse_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SecretSummaryResponse"
+            },
+            "type": "array",
+            "title": "Items",
+            "description": "List of items for current page"
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/PaginationMeta",
+            "description": "Pagination metadata"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "pagination"
+        ],
+        "title": "PaginatedData[SecretSummaryResponse]"
+      },
       "PaginatedResponse_AuditLogResponse_": {
         "properties": {
           "success": {
@@ -2439,6 +3480,32 @@
           "data"
         ],
         "title": "PaginatedResponse[ProjectSummaryResponse]"
+      },
+      "PaginatedResponse_SecretSummaryResponse_": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "const": true,
+            "title": "Success",
+            "description": "Always true for successful responses",
+            "default": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/PaginatedData_SecretSummaryResponse_",
+            "description": "Response payload"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Status message",
+            "default": "Operation completed successfully"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "PaginatedResponse[SecretSummaryResponse]"
       },
       "PaginationMeta": {
         "properties": {
@@ -2889,6 +3956,500 @@
         ],
         "title": "ProjectUpdateRequest"
       },
+      "SecretBatchResolveRequest": {
+        "properties": {
+          "names": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 100,
+            "minItems": 1,
+            "title": "Names",
+            "description": "List of secret keys to resolve"
+          },
+          "environment": {
+            "type": "string",
+            "title": "Environment",
+            "description": "Execution environment",
+            "default": "production"
+          },
+          "execution_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Execution Id",
+            "description": "Associated execution run ID for audit"
+          }
+        },
+        "type": "object",
+        "required": [
+          "names"
+        ],
+        "title": "SecretBatchResolveRequest"
+      },
+      "SecretBatchResolveResponse": {
+        "properties": {
+          "resolved": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Resolved",
+            "description": "Map of secret names to decrypted plaintext values"
+          },
+          "missing": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Missing",
+            "description": "Requested keys not found or inactive"
+          }
+        },
+        "type": "object",
+        "required": [
+          "resolved"
+        ],
+        "title": "SecretBatchResolveResponse"
+      },
+      "SecretCreateRequest": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[A-Z0-9_]{1,128}$",
+            "title": "Name",
+            "description": "Uppercase identifier (e.g. OPENAI_API_KEY)"
+          },
+          "value": {
+            "type": "string",
+            "maxLength": 65536,
+            "minLength": 1,
+            "format": "password",
+            "title": "Value",
+            "description": "Plaintext secret value",
+            "writeOnly": true
+          },
+          "environment": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 1,
+            "title": "Environment",
+            "description": "Target environment",
+            "default": "production"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "Description"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tags",
+            "description": "Categorization tags"
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At",
+            "description": "Optional expiration date"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "value"
+        ],
+        "title": "SecretCreateRequest"
+      },
+      "SecretResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "environment": {
+            "type": "string",
+            "title": "Environment"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tags"
+          },
+          "is_system": {
+            "type": "boolean",
+            "title": "Is System",
+            "default": false
+          },
+          "revision": {
+            "type": "integer",
+            "title": "Revision",
+            "description": "OCC revision counter"
+          },
+          "last_rotated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Rotated At"
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "algorithm": {
+            "type": "string",
+            "title": "Algorithm"
+          },
+          "kek_id": {
+            "type": "string",
+            "title": "Kek Id"
+          },
+          "created_by": {
+            "type": "string",
+            "title": "Created By"
+          },
+          "updated_by": {
+            "type": "string",
+            "title": "Updated By"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "project_id",
+          "name",
+          "environment",
+          "revision",
+          "created_at",
+          "updated_at",
+          "algorithm",
+          "kek_id",
+          "created_by",
+          "updated_by"
+        ],
+        "title": "SecretResponse",
+        "description": "Detailed metadata response - ZERO PLAINTEXT."
+      },
+      "SecretRevealRequest": {
+        "properties": {
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason",
+            "description": "Operator justification for revealing secret"
+          }
+        },
+        "type": "object",
+        "title": "SecretRevealRequest"
+      },
+      "SecretRotateRequest": {
+        "properties": {
+          "new_value": {
+            "type": "string",
+            "maxLength": 65536,
+            "minLength": 1,
+            "format": "password",
+            "title": "New Value",
+            "description": "Rotated plaintext value",
+            "writeOnly": true
+          },
+          "revision": {
+            "type": "integer",
+            "title": "Revision",
+            "description": "Current OCC revision counter for concurrency check"
+          }
+        },
+        "type": "object",
+        "required": [
+          "new_value",
+          "revision"
+        ],
+        "title": "SecretRotateRequest"
+      },
+      "SecretSummaryResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "environment": {
+            "type": "string",
+            "title": "Environment"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tags"
+          },
+          "is_system": {
+            "type": "boolean",
+            "title": "Is System",
+            "default": false
+          },
+          "revision": {
+            "type": "integer",
+            "title": "Revision",
+            "description": "OCC revision counter"
+          },
+          "last_rotated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Rotated At"
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "project_id",
+          "name",
+          "environment",
+          "revision",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "SecretSummaryResponse",
+        "description": "Metadata summary response for listings - ZERO PLAINTEXT."
+      },
+      "SecretUpdateRequest": {
+        "properties": {
+          "value": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 65536,
+                "minLength": 1,
+                "format": "password",
+                "writeOnly": true
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value",
+            "description": "New secret value if replacing"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "Updated description"
+          },
+          "tags": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tags",
+            "description": "Updated tags"
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At",
+            "description": "Updated expiration date"
+          },
+          "revision": {
+            "type": "integer",
+            "title": "Revision",
+            "description": "Current OCC revision counter for concurrency check"
+          }
+        },
+        "type": "object",
+        "required": [
+          "revision"
+        ],
+        "title": "SecretUpdateRequest"
+      },
+      "SecretValueResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "environment": {
+            "type": "string",
+            "title": "Environment"
+          },
+          "value": {
+            "type": "string",
+            "title": "Value",
+            "description": "Decrypted plaintext value"
+          },
+          "revealed_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Revealed At",
+            "description": "UTC timestamp of reveal"
+          },
+          "audit_logged": {
+            "type": "boolean",
+            "title": "Audit Logged",
+            "description": "Confirmation of audit logging",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "environment",
+          "value",
+          "revealed_at"
+        ],
+        "title": "SecretValueResponse",
+        "description": "Privileged plaintext reveal response."
+      },
       "TransferOwnershipRequest": {
         "properties": {
           "new_owner_user_id": {
@@ -3009,6 +4570,10 @@
     {
       "name": "Projects",
       "description": "Project workspace lifecycle, RBAC membership governance, OCC, and audit logging."
+    },
+    {
+      "name": "Secrets",
+      "description": "Project secrets management, envelope encryption, OCC revision control, privileged reveal, and runtime resolution."
     }
   ]
 }

@@ -31,6 +31,10 @@ TAGS_METADATA = [
         "name": "Projects",
         "description": "Project workspace lifecycle, RBAC membership governance, OCC, and audit logging.",
     },
+    {
+        "name": "Secrets",
+        "description": "Project secrets management, envelope encryption, OCC revision control, privileged reveal, and runtime resolution.",
+    },
 ]
 
 

@@ -38,6 +38,14 @@ from app.services.project_service import (
     ProjectService,
     get_project_service,
 )
+from app.services.runtime_secret_resolver import (
+    RuntimeSecretResolver,
+    get_runtime_secret_resolver,
+)
+from app.services.secret_service import (
+    ProjectSecretService,
+    get_secret_service,
+)
 from app.services.user_service import UserService, get_user_service
 
 # Native FastAPI security scheme
@@ -267,3 +275,5 @@ DatabaseDep = Annotated[AsyncDatabase, Depends(get_database)]
 ProjectServiceDep = Annotated[ProjectService, Depends(get_project_service)]
 ProjectMemberServiceDep = Annotated[ProjectMemberService, Depends(get_project_member_service)]
 ProjectAuditServiceDep = Annotated[ProjectAuditService, Depends(get_project_audit_service)]
+SecretServiceDep = Annotated[ProjectSecretService, Depends(get_secret_service)]
+SecretResolverDep = Annotated[RuntimeSecretResolver, Depends(get_runtime_secret_resolver)]
