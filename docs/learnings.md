@@ -121,6 +121,43 @@ which returns `Cache-Control: no-store` and emits a `SECRET_REVEALED` audit even
 bodies are redacted by the logging middleware. Nested `EncryptedEnvelope` values must stay
 opaque in logs.
 
+### 11. Uvicorn's `--reload` silently does nothing on Windows (and can strand the API)
+
+**Symptom.** `pnpm dev` prints `WatchFiles detected changes in '...'. Reloading...` and then
+the code change never takes effect — the same worker PID (and its start time) keeps serving.
+Sometimes the log instead shows `Shutting down` → `Finished server process [N]` with **no**
+following `Started server process`, and the API stops answering while the process tree is
+still alive.
+
+**Root cause.** In `uvicorn/supervisors/basereload.py::restart` the Windows branch does:
+
+```python
+if sys.platform == "win32":
+    os.kill(self.process.pid, signal.CTRL_C_EVENT)   # cannot target a process group
+self.process.join()                                  # unbounded wait
+```
+
+Windows only allows `CTRL_C_EVENT` to be broadcast to the whole console, not to a specific
+process group, so the worker frequently never receives it and `join()` blocks. The old
+worker keeps serving stale code; if the worker does exit while the supervisor is idle, the
+supervisor never notices and never spawns a replacement, leaving the listening socket bound
+but unserved ("the server is up but dead").
+
+Not a crash: the shutdown handler runs normally (`Closing MongoDB client connections...`,
+`MongoDB connections closed.`) and there is no traceback. Nothing in app code exits.
+
+**Fix.** `apps/api/dev.py` replaces only the supervisor: it runs uvicorn as a plain child
+(no `--reload`), watches `apps/api/app` with `watchfiles`, and restarts the child with
+`terminate()` (`TerminateProcess`), which always works on Windows. `apps/api/package.json`
+now runs `uv run python dev.py`. `tests/`, `.venv/`, caches and `openapi.json` are outside
+the watch root, so tooling no longer triggers churn.
+
+**Verified** three ways: (a) the stock reloader, asked to reload a scratch app, logged
+`Reloading...` and kept the same worker PID serving stale code; (b) killing a worker under
+the stock supervisor showed it cannot recover reliably; (c) `dev.py` on port 8001 restarted
+the real app on a file touch, logged a new `Started server process [N]`, reused the port
+with no `WinError 10048`, and `/api/v1/health` stayed `200`.
+
 ---
 
 ## Bugs found and fixed (commit `5ea80d9`)
@@ -141,6 +178,14 @@ opaque in logs.
 | DB outage reported as 404                   | `get_by_id` only swallows `ValueError`                                                                                                  |
 
 Test suite at time of writing: **137 passed** (`pytest -q` in `apps/api`).
+
+Development tooling fixed separately:
+
+| Area                            | Fix                                                                                    |
+| ------------------------------- | -------------------------------------------------------------------------------------- |
+| Dev reload broken on Windows    | `apps/api/dev.py` supervises uvicorn with `watchfiles` + `terminate()` (see lesson 11) |
+| Reload churn from non-app files | watch root reduced from all of `apps/api` to `apps/api/app`                            |
+| Duplicate `e2e_secrets_test.py` | single canonical copy at `apps/api/tests/e2e_secrets_test.py` (outside the watch root) |
 
 ---
 
@@ -176,8 +221,6 @@ Ordered by risk. These are candidates for the next hardening pass.
 9. **Stale `BaseDocument` collection in the local dev database.** It still contains one
    duplicate `User` document written before the `is_root` fix. The same `clerk_id` exists
    in `users`, so the collection can be dropped after confirming nothing else is needed.
-10. **Debug scripts left untracked**: `e2e_secrets_test.py` exists at the repo root,
-    `apps/api/`, and `apps/api/tests/` (identical copies). Keep one canonical copy.
 
 ---
 
@@ -188,8 +231,9 @@ Ordered by risk. These are candidates for the next hardening pass.
 cd apps/api
 .\.venv\Scripts\python.exe -m pytest -q
 
-# Run the API locally
-.\.venv\Scripts\python.exe -m uvicorn app.main:app --port 8000 --reload
+# Run the API locally (Windows-safe reload, watches app/ only)
+cd apps/api
+.\.venv\Scripts\python.exe dev.py --port 8000
 
 # End-to-end secrets lifecycle (needs a running server + dev token)
 .\.venv\Scripts\python.exe tests\e2e_secrets_test.py `

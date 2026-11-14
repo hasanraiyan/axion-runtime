@@ -22,13 +22,18 @@ pnpm generate:api        # regenerate OpenAPI types after API contract changes
 
 # Backend (run from apps/api)
 uv sync --extra dev                       # or: .\.venv\Scripts\python.exe -m pip list
-.\.venv\Scripts\python.exe -m uvicorn app.main:app --port 8000 --reload
+.\.venv\Scripts\python.exe dev.py         # Windows-safe reload; watches app/ only
 .\.venv\Scripts\python.exe -m pytest -q   # full suite, no live DB required
 .\.venv\Scripts\python.exe -m ruff check app tests
 ```
 
 The test suite mocks MongoDB, so it must pass without a running database. Never make a test
 depend on a live Mongo instance or on network access to Clerk.
+
+**Never add `--reload` back to the API dev script.** Uvicorn's Windows restart path uses
+`CTRL_C_EVENT` + an unbounded `process.join()`, so reloads silently do not take effect or
+leave the API dead behind a bound port. `apps/api/dev.py` supervises uvicorn instead — see
+`docs/learnings.md` lesson 11.
 
 ## Backend architecture (do not bypass layers)
 

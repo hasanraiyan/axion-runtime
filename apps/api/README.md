@@ -17,8 +17,8 @@ FastAPI backend service powering the AI Platform foundation.
 # Sync dependencies
 uv sync
 
-# Run development server
-uv run uvicorn app.main:app --reload --port 8000
+# Run development server (Windows-safe reload, watches app/ only)
+uv run python dev.py --port 8000
 
 # Run test suite
 uv run pytest

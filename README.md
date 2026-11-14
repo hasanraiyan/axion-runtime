@@ -87,8 +87,11 @@ uv sync --project apps/api --extra dev
 #### Run Backend API (FastAPI)
 
 ```bash
-uv run --project apps/api uvicorn app.main:app --reload --port 8000
+uv run --project apps/api python apps/api/dev.py --port 8000
 ```
+
+Reload is handled by `apps/api/dev.py` rather than `uvicorn --reload`, which is broken on
+Windows (see `docs/learnings.md`, lesson 11).
 
 - **Swagger UI**: [http://localhost:8000/docs](http://localhost:8000/docs)
 - **ReDoc**: [http://localhost:8000/redoc](http://localhost:8000/redoc)
