@@ -27,13 +27,8 @@ class BaseRepository(Generic[T]):
             return False
 
     def get_collection(self) -> Any:
-        """Return the underlying Motor/PyMongo collection."""
-        if hasattr(self.model_class, "get_motor_collection"):
-            return self.model_class.get_motor_collection()
-        if hasattr(self.model_class, "get_pymongo_collection"):
-            return self.model_class.get_pymongo_collection()
-        settings = self.model_class.get_settings()
-        return settings.pymongo_collection
+        """Return the underlying PyMongo async collection."""
+        return self.model_class.get_pymongo_collection()
 
     def _to_object_id(self, id_val: str | PydanticObjectId | ObjectId) -> ObjectId:
         """Safely convert string or PydanticObjectId to BSON ObjectId."""

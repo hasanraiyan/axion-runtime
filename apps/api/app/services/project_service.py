@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 from beanie import PydanticObjectId
 from bson import ObjectId
 from fastapi import Depends
-from motor.motor_asyncio import AsyncIOMotorClient
+from pymongo import AsyncMongoClient
 
 from app.core.exceptions import (
     BadRequestError,
@@ -62,14 +62,14 @@ class ProjectService:
         project_repo: Optional[ProjectRepository] = None,
         member_repo: Optional[ProjectMemberRepository] = None,
         audit_repo: Optional[ProjectAuditRepository] = None,
-        mongo_client: Optional[AsyncIOMotorClient] = None,
+        mongo_client: Optional[AsyncMongoClient] = None,
     ) -> None:
         self.project_repo = project_repo if project_repo is not None else get_project_repository()
         self.member_repo = member_repo if member_repo is not None else get_project_member_repository()
         self.audit_repo = audit_repo if audit_repo is not None else get_project_audit_repository()
         self.mongo_client = mongo_client
 
-    def _get_client(self) -> Optional[AsyncIOMotorClient]:
+    def _get_client(self) -> Optional[AsyncMongoClient]:
         """Obtain MongoDB client for transaction session management."""
         return self.mongo_client or get_global_client()
 

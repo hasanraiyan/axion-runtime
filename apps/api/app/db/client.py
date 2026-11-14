@@ -2,21 +2,22 @@ import time
 from typing import Any, Dict, Optional
 from beanie import init_beanie
 from fastapi import FastAPI
-from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
+from pymongo import AsyncMongoClient
+from pymongo.asynchronous.database import AsyncDatabase
 
 from app.core.config import settings
 from app.core.logging import logger
 
 # Module-level client reference
-_client: Optional[AsyncIOMotorClient] = None
-_database: Optional[AsyncIOMotorDatabase] = None
+_client: Optional[AsyncMongoClient] = None
+_database: Optional[AsyncDatabase] = None
 
 
-def get_global_client() -> Optional[AsyncIOMotorClient]:
+def get_global_client() -> Optional[AsyncMongoClient]:
     return _client
 
 
-def get_global_database() -> Optional[AsyncIOMotorDatabase]:
+def get_global_database() -> Optional[AsyncDatabase]:
     return _database
 
 
@@ -28,7 +29,7 @@ async def init_db(app: Optional[FastAPI] = None) -> None:
 
     try:
         logger.info(f"Connecting to MongoDB database '{settings.MONGODB_DB_NAME}'...")
-        _client = AsyncIOMotorClient(
+        _client = AsyncMongoClient(
             settings.MONGODB_URL,
             minPoolSize=settings.MONGODB_MIN_POOL_SIZE,
             maxPoolSize=settings.MONGODB_MAX_POOL_SIZE,
@@ -71,7 +72,7 @@ async def close_db(app: Optional[FastAPI] = None) -> None:
     global _client, _database
     if _client is not None:
         logger.info("Closing MongoDB client connections...")
-        _client.close()
+        await _client.close()
         _client = None
         _database = None
         if app is not None and hasattr(app.state, "mongo_client"):
@@ -80,7 +81,7 @@ async def close_db(app: Optional[FastAPI] = None) -> None:
         logger.info("MongoDB connections closed.")
 
 
-async def check_db_health(client: Optional[AsyncIOMotorClient] = None) -> Dict[str, Any]:
+async def check_db_health(client: Optional[AsyncMongoClient] = None) -> Dict[str, Any]:
     """
     Ping MongoDB to verify active connectivity and measure round-trip latency.
     """

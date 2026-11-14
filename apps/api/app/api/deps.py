@@ -1,7 +1,8 @@
 from typing import Annotated, Optional
 from fastapi import Depends, Query, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
+from pymongo import AsyncMongoClient
+from pymongo.asynchronous.database import AsyncDatabase
 
 from app.core.exceptions import (
     ForbiddenError,
@@ -135,9 +136,9 @@ def get_filter_params(
     )
 
 
-def get_mongo_client(request: Request) -> AsyncIOMotorClient:
+def get_mongo_client(request: Request) -> AsyncMongoClient:
     """
-    Dependency to retrieve the active MongoDB AsyncIOMotorClient.
+    Dependency to retrieve the active MongoDB AsyncMongoClient.
     """
     client = getattr(request.app.state, "mongo_client", None) or get_global_client()
     if client is None:
@@ -145,9 +146,9 @@ def get_mongo_client(request: Request) -> AsyncIOMotorClient:
     return client
 
 
-def get_database(request: Request) -> AsyncIOMotorDatabase:
+def get_database(request: Request) -> AsyncDatabase:
     """
-    Dependency to retrieve the active MongoDB AsyncIOMotorDatabase.
+    Dependency to retrieve the active MongoDB AsyncDatabase.
     """
     db = getattr(request.app.state, "mongo_db", None) or get_global_database()
     if db is None:
@@ -261,8 +262,8 @@ OptionalUser = Annotated[Optional[AuthenticatedUser], Depends(get_optional_user)
 CurrentAdmin = Annotated[AuthenticatedUser, Depends(require_role(UserRole.ADMIN))]
 PaginationDep = Annotated[PaginationParams, Depends(get_pagination_params)]
 FilterDep = Annotated[FilterParams, Depends(get_filter_params)]
-MongoClientDep = Annotated[AsyncIOMotorClient, Depends(get_mongo_client)]
-DatabaseDep = Annotated[AsyncIOMotorDatabase, Depends(get_database)]
+MongoClientDep = Annotated[AsyncMongoClient, Depends(get_mongo_client)]
+DatabaseDep = Annotated[AsyncDatabase, Depends(get_database)]
 ProjectServiceDep = Annotated[ProjectService, Depends(get_project_service)]
 ProjectMemberServiceDep = Annotated[ProjectMemberService, Depends(get_project_member_service)]
 ProjectAuditServiceDep = Annotated[ProjectAuditService, Depends(get_project_audit_service)]
