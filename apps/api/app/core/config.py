@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List, Optional, Union
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 import json
@@ -46,8 +46,8 @@ class Settings(BaseSettings):
     # Clerk Authentication
     CLERK_SECRET_KEY: str = Field(default="", description="Clerk secret key")
     CLERK_PUBLISHABLE_KEY: str = Field(default="", description="Clerk publishable key")
-    CLERK_JWT_KEY: str = Field(default="", description="Clerk JWT public key (PEM or base64)")
-    CLERK_FRONTEND_API: str = Field(default="", description="Clerk frontend API domain")
+    CLERK_JWT_KEY: Optional[str] = Field(default=None, description="Optional offline JWT public key")
+    CLERK_FRONTEND_API: Optional[str] = Field(default=None, description="Optional Clerk frontend API domain")
 
     # Rate Limiting
     RATE_LIMIT_PER_MINUTE: int = Field(default=100, description="Max requests per minute per IP")

@@ -1,43 +1,41 @@
 from typing import Optional
-from fastapi import Depends, Header, Query
+from fastapi import Depends, Query
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from app.core.exceptions import UnauthorizedError
 from app.core.security import verify_clerk_token
 from app.schemas.auth import AuthenticatedUser
 from app.schemas.common import FilterParams, PaginationParams
 
+# Native FastAPI security scheme
+security = HTTPBearer(
+    auto_error=False,
+    description="Clerk Bearer JWT token",
+)
+
 
 async def get_current_user(
-    authorization: Optional[str] = Header(None, description="Bearer token issued by Clerk"),
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
 ) -> AuthenticatedUser:
     """
-    FastAPI dependency that enforces authentication and returns the current verified Clerk user.
+    FastAPI security dependency that enforces Bearer token authentication and returns verified Clerk user.
     """
-    if not authorization:
+    if not credentials or not credentials.credentials:
         raise UnauthorizedError("Missing Authorization header")
 
-    parts = authorization.split(" ")
-    if len(parts) != 2 or parts[0].lower() != "bearer":
-        raise UnauthorizedError("Invalid Authorization format. Expected: 'Bearer <token>'")
-
-    token = parts[1]
-    return await verify_clerk_token(token)
+    return await verify_clerk_token(credentials.credentials)
 
 
 async def get_optional_user(
-    authorization: Optional[str] = Header(None, description="Optional Bearer token issued by Clerk"),
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
 ) -> Optional[AuthenticatedUser]:
     """
-    FastAPI dependency for endpoints that allow both guest and authenticated user access.
+    FastAPI security dependency for endpoints that allow both guest and authenticated user access.
     """
-    if not authorization:
-        return None
-
-    parts = authorization.split(" ")
-    if len(parts) != 2 or parts[0].lower() != "bearer":
+    if not credentials or not credentials.credentials:
         return None
 
     try:
-        return await verify_clerk_token(parts[1])
+        return await verify_clerk_token(credentials.credentials)
     except Exception:
         return None
 

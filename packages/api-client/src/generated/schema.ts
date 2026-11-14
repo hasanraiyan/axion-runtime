@@ -138,11 +138,6 @@ export interface components {
              */
             is_authenticated: boolean;
         };
-        /** HTTPValidationError */
-        HTTPValidationError: {
-            /** Detail */
-            detail?: components["schemas"]["ValidationError"][];
-        };
         /** HealthData */
         HealthData: {
             /**
@@ -171,19 +166,6 @@ export interface components {
              * @description Current ISO timestamp
              */
             timestamp: string;
-        };
-        /** ValidationError */
-        ValidationError: {
-            /** Location */
-            loc: (string | number)[];
-            /** Message */
-            msg: string;
-            /** Error Type */
-            type: string;
-            /** Input */
-            input?: unknown;
-            /** Context */
-            ctx?: Record<string, never>;
         };
     };
     responses: never;
@@ -237,10 +219,7 @@ export interface operations {
     get_current_authenticated_user: {
         parameters: {
             query?: never;
-            header?: {
-                /** @description Bearer token issued by Clerk */
-                authorization?: string | null;
-            };
+            header?: never;
             path?: never;
             cookie?: never;
         };
@@ -253,15 +232,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiResponse_AuthenticatedUser_"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

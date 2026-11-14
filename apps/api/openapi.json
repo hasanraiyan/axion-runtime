@@ -58,26 +58,6 @@
         "summary": "Get Authenticated User",
         "description": "Retrieve the current verified Clerk user profile and session identity.",
         "operationId": "get_current_authenticated_user",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Bearer token issued by Clerk",
-              "title": "Authorization"
-            },
-            "description": "Bearer token issued by Clerk"
-          }
-        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -88,18 +68,13 @@
                 }
               }
             }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
           }
-        }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
       }
     }
   },
@@ -221,19 +196,6 @@
         ],
         "title": "AuthenticatedUser"
       },
-      "HTTPValidationError": {
-        "properties": {
-          "detail": {
-            "items": {
-              "$ref": "#/components/schemas/ValidationError"
-            },
-            "type": "array",
-            "title": "Detail"
-          }
-        },
-        "type": "object",
-        "title": "HTTPValidationError"
-      },
       "HealthData": {
         "properties": {
           "status": {
@@ -271,60 +233,14 @@
           "timestamp"
         ],
         "title": "HealthData"
-      },
-      "ValidationError": {
-        "properties": {
-          "loc": {
-            "items": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "integer"
-                }
-              ]
-            },
-            "type": "array",
-            "title": "Location"
-          },
-          "msg": {
-            "type": "string",
-            "title": "Message"
-          },
-          "type": {
-            "type": "string",
-            "title": "Error Type"
-          },
-          "input": {
-            "title": "Input"
-          },
-          "ctx": {
-            "type": "object",
-            "title": "Context"
-          }
-        },
-        "type": "object",
-        "required": [
-          "loc",
-          "msg",
-          "type"
-        ],
-        "title": "ValidationError"
       }
     },
     "securitySchemes": {
-      "ClerkAuth": {
+      "HTTPBearer": {
         "type": "http",
-        "scheme": "bearer",
-        "bearerFormat": "JWT",
-        "description": "Clerk session JWT token. Pass 'Bearer <token>'."
+        "description": "Clerk Bearer JWT token",
+        "scheme": "bearer"
       }
     }
-  },
-  "security": [
-    {
-      "ClerkAuth": []
-    }
-  ]
+  }
 }

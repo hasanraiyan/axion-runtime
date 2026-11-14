@@ -163,18 +163,6 @@ def create_application() -> FastAPI:
             routes=application.routes,
         )
 
-        # Add Bearer Security Scheme for Clerk JWTs
-        schema["components"]["securitySchemes"] = {
-            "ClerkAuth": {
-                "type": "http",
-                "scheme": "bearer",
-                "bearerFormat": "JWT",
-                "description": "Clerk session JWT token. Pass 'Bearer <token>'.",
-            }
-        }
-        # Apply globally to OpenAPI
-        schema["security"] = [{"ClerkAuth": []}]
-
         application.openapi_schema = schema
         return schema
 
