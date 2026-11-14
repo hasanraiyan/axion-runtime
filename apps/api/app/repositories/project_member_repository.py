@@ -93,7 +93,11 @@ class ProjectMemberRepository(BaseRepository[ProjectMember]):
         try:
             return await super().create(document, session=session)
         except DuplicateKeyError as exc:
-            raise ConflictError("User is already a member of this project") from exc
+            key_pattern = (exc.details or {}).get("keyPattern", {})
+            if not key_pattern or {"project_id", "user_id"} <= set(key_pattern):
+                raise ConflictError("User is already a member of this project") from exc
+            fields = ", ".join(key_pattern)
+            raise ConflictError(f"Project member violates a unique constraint on: {fields}") from exc
 
     async def update(self, document: ProjectMember, session: Optional[Any] = None) -> ProjectMember:
         """Update an existing ProjectMember document."""

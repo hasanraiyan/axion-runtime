@@ -28,5 +28,10 @@ class BaseDocument(Document):
     def update_timestamp(self) -> None:
         self.updated_at = datetime.now(timezone.utc)
 
-    class Settings:
-        is_root = True
+    # NOTE: Do not set `is_root = True` here. Beanie treats every subclass of an
+    # is_root document as sharing that document's collection, which would put
+    # users, projects, members, audit logs and secrets into a single
+    # "BaseDocument" collection. Their unique indexes would then collide across
+    # unrelated models (e.g. a User and a Project both matching a unique
+    # (project_id, user_id) index with null values). Each concrete document
+    # declares its own collection via its own `Settings.name`.

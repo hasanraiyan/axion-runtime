@@ -87,6 +87,7 @@ class InMemoryProjectRepository(ProjectRepository):
         self,
         project_ids: List[PydanticObjectId],
         status: Optional[ProjectStatus] = None,
+        statuses: Optional[List[ProjectStatus]] = None,
         search: Optional[str] = None,
         tags: Optional[List[str]] = None,
         sort_by: str = "updated_at",
@@ -97,7 +98,10 @@ class InMemoryProjectRepository(ProjectRepository):
         id_strs = {str(pid) for pid in project_ids}
         matched: List[Project] = [p for p in self.projects.values() if str(p.id) in id_strs]
 
-        if status is not None:
+        if statuses:
+            allowed = set(statuses)
+            matched = [p for p in matched if p.status in allowed]
+        elif status is not None:
             matched = [p for p in matched if p.status == status]
         else:
             # Default: exclude SOFT_DELETED and PURGED unless specified

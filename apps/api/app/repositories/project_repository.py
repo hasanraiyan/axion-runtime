@@ -11,7 +11,7 @@ from pymongo.errors import DuplicateKeyError
 
 from app.core.exceptions import ConflictError, InvalidStateTransitionError, NotFoundError
 from app.models.project import Project, ProjectStatus
-from app.repositories.base import BaseRepository
+from app.repositories.base import BaseRepository, serialize_for_mongo
 
 
 class ProjectRepository(BaseRepository[Project]):
@@ -47,6 +47,7 @@ class ProjectRepository(BaseRepository[Project]):
         self,
         project_ids: List[Union[PydanticObjectId, ObjectId, str]],
         status: Optional[ProjectStatus] = None,
+        statuses: Optional[List[ProjectStatus]] = None,
         search: Optional[str] = None,
         tags: Optional[List[str]] = None,
         sort_by: str = "updated_at",
@@ -56,6 +57,7 @@ class ProjectRepository(BaseRepository[Project]):
     ) -> Tuple[List[Project], int]:
         """
         List projects matching an ID set with optional filtering, search, sorting, and pagination.
+        Accepts either a single `status` or a `statuses` set.
         Returns a tuple of (projects, total_matching_count).
         """
         if not self.is_db_ready() or not project_ids:
@@ -64,7 +66,11 @@ class ProjectRepository(BaseRepository[Project]):
         obj_ids = [self._to_object_id(pid) for pid in project_ids]
         query: Dict[str, Any] = {"_id": {"$in": obj_ids}}
 
-        if status is not None:
+        if statuses:
+            query["status"] = {
+                "$in": [s.value if hasattr(s, "value") else str(s) for s in statuses]
+            }
+        elif status is not None:
             query["status"] = status.value if hasattr(status, "value") else str(status)
 
         if tags:
@@ -76,6 +82,7 @@ class ProjectRepository(BaseRepository[Project]):
                 query["$or"] = [
                     {"name": {"$regex": re.escape(search_term), "$options": "i"}},
                     {"description": {"$regex": re.escape(search_term), "$options": "i"}},
+                    {"slug": {"$regex": re.escape(search_term), "$options": "i"}},
                 ]
 
         total = await self.count(query)
@@ -96,7 +103,11 @@ class ProjectRepository(BaseRepository[Project]):
         try:
             return await super().create(document, session=session)
         except DuplicateKeyError as exc:
-            raise ConflictError(f"Project with slug '{document.slug}' already exists") from exc
+            key_pattern = (exc.details or {}).get("keyPattern", {})
+            if not key_pattern or "slug" in key_pattern:
+                raise ConflictError(f"Project with slug '{document.slug}' already exists") from exc
+            fields = ", ".join(key_pattern)
+            raise ConflictError(f"Project violates a unique constraint on: {fields}") from exc
 
     async def update(self, document: Project, session: Optional[Any] = None) -> Project:
         """Update an existing Project document."""
@@ -150,7 +161,7 @@ class ProjectRepository(BaseRepository[Project]):
         col = self.get_collection()
         res = await col.find_one_and_update(
             query,
-            {"$set": set_fields},
+            {"$set": serialize_for_mongo(set_fields)},
             return_document=ReturnDocument.AFTER,
             session=session,
         )
@@ -199,12 +210,20 @@ class ProjectRepository(BaseRepository[Project]):
         }
 
         col = self.get_collection()
-        res = await col.find_one_and_update(
-            query,
-            {"$set": set_fields},
-            return_document=ReturnDocument.AFTER,
-            session=session,
-        )
+        try:
+            res = await col.find_one_and_update(
+                query,
+                {"$set": serialize_for_mongo(set_fields)},
+                return_document=ReturnDocument.AFTER,
+                session=session,
+            )
+        except DuplicateKeyError as exc:
+            # Re-activating (unarchive/restore) a project whose slug is already
+            # held by another ACTIVE project violates the unique active slug index.
+            raise ConflictError(
+                f"Cannot transition project '{project_id}' to '{to_state_val}': "
+                "its slug is already in use by another active project"
+            ) from exc
 
         if res is None:
             existing = await self.get_by_id(project_id)

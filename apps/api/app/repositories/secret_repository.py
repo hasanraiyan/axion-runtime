@@ -8,10 +8,11 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 from beanie import PydanticObjectId
 from bson import ObjectId
 from pymongo import ASCENDING, DESCENDING, ReturnDocument
+from pymongo.errors import DuplicateKeyError
 
 from app.core.exceptions import ConflictError, NotFoundError
 from app.models.secret import ProjectSecret
-from app.repositories.base import BaseRepository
+from app.repositories.base import BaseRepository, serialize_for_mongo
 
 
 class ProjectSecretRepository(BaseRepository[ProjectSecret]):
@@ -22,6 +23,24 @@ class ProjectSecretRepository(BaseRepository[ProjectSecret]):
 
     def __init__(self) -> None:
         super().__init__(ProjectSecret)
+
+    async def create(self, document: ProjectSecret, session: Optional[Any] = None) -> ProjectSecret:
+        """
+        Insert a new ProjectSecret document. A concurrent create can pass the
+        service-level existence check and still hit the unique compound index,
+        so translate that DuplicateKeyError into a proper 409 Conflict instead
+        of letting it surface as a 500.
+        """
+        try:
+            return await super().create(document, session=session)
+        except DuplicateKeyError as exc:
+            key_pattern = (exc.details or {}).get("keyPattern", {})
+            if not key_pattern or {"project_id", "environment", "name"} <= set(key_pattern):
+                raise ConflictError(
+                    f"Secret '{document.name}' already exists in environment '{document.environment}'"
+                ) from exc
+            fields = ", ".join(key_pattern)
+            raise ConflictError(f"Secret violates a unique constraint on: {fields}") from exc
 
     async def check_exists(
         self,
@@ -186,6 +205,9 @@ class ProjectSecretRepository(BaseRepository[ProjectSecret]):
             "updated_at": now,
         }
 
+        # Convert nested Pydantic submodels (like EncryptedEnvelope) to dicts for PyMongo
+        serialized_set_fields = serialize_for_mongo(set_fields)
+
         query = {
             "_id": target_id,
             "project_id": proj_id,
@@ -196,7 +218,7 @@ class ProjectSecretRepository(BaseRepository[ProjectSecret]):
         col = self.get_collection()
         res = await col.find_one_and_update(
             query,
-            {"$set": set_fields},
+            {"$set": serialized_set_fields},
             return_document=ReturnDocument.AFTER,
             session=session,
         )

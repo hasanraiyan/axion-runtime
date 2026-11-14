@@ -42,6 +42,10 @@ from app.repositories.project_repository import (
     ProjectRepository,
     get_project_repository,
 )
+from app.repositories.secret_repository import (
+    ProjectSecretRepository,
+    get_secret_repository,
+)
 from app.schemas.project import (
     ProjectCreateRequest,
     ProjectResponse,
@@ -62,11 +66,13 @@ class ProjectService:
         project_repo: Optional[ProjectRepository] = None,
         member_repo: Optional[ProjectMemberRepository] = None,
         audit_repo: Optional[ProjectAuditRepository] = None,
+        secret_repo: Optional[ProjectSecretRepository] = None,
         mongo_client: Optional[AsyncMongoClient] = None,
     ) -> None:
         self.project_repo = project_repo if project_repo is not None else get_project_repository()
         self.member_repo = member_repo if member_repo is not None else get_project_member_repository()
         self.audit_repo = audit_repo if audit_repo is not None else get_project_audit_repository()
+        self.secret_repo = secret_repo
         self.mongo_client = mongo_client
 
     def _get_client(self) -> Optional[AsyncMongoClient]:
@@ -108,18 +114,23 @@ class ProjectService:
 
     async def _resolve_unique_slug(self, base_slug: str) -> str:
         """
-        Check if base_slug collides with an active project. If it does,
+        Check if base_slug collides with any project that still owns it. If it does,
         attempt up to 3 times to append a 4-hex random suffix.
+
+        Slugs are reserved for every non-purged project (ACTIVE, ARCHIVED and
+        SOFT_DELETED). Reusing a soft-deleted/archived project's slug would make
+        a later restore/unarchive violate the unique active-slug index and fail
+        with a database error.
         """
         existing = await self.project_repo.get_by_slug(base_slug)
-        if existing is None or existing.status != ProjectStatus.ACTIVE:
+        if existing is None or existing.status == ProjectStatus.PURGED:
             return base_slug
 
         for _ in range(3):
             suffix = secrets.token_hex(2)  # 4 hexadecimal characters
             candidate = f"{base_slug}-{suffix}"
             candidate_existing = await self.project_repo.get_by_slug(candidate)
-            if candidate_existing is None or candidate_existing.status != ProjectStatus.ACTIVE:
+            if candidate_existing is None or candidate_existing.status == ProjectStatus.PURGED:
                 return candidate
 
         raise ConflictError("Unable to auto-generate a unique project slug after 3 attempts")
@@ -137,9 +148,9 @@ class ProjectService:
         - Emits PROJECT_CREATED audit log.
         """
         if data.slug:
-            # Explicit slug requested
+            # Explicit slug requested. Reserve it until the owning project is purged.
             existing = await self.project_repo.get_by_slug(data.slug)
-            if existing is not None and existing.status == ProjectStatus.ACTIVE:
+            if existing is not None and existing.status != ProjectStatus.PURGED:
                 raise ConflictError("Project slug already in use")
             chosen_slug = data.slug
         else:
@@ -160,14 +171,25 @@ class ProjectService:
 
         created_project = await self.project_repo.create(project)
 
-        # Register creator as OWNER member
+        # Register creator as OWNER member. If this fails, remove the project so
+        # the slug is not left orphaned and blocked for future create attempts.
         member = ProjectMember(
             project_id=created_project.id,
             user_id=user_id,
             role=ProjectRole.OWNER,
             joined_at=datetime.now(timezone.utc),
         )
-        await self.member_repo.create(member)
+        try:
+            await self.member_repo.create(member)
+        except Exception:
+            try:
+                await self.project_repo.delete(created_project)
+            except Exception as cleanup_exc:
+                logger.error(
+                    f"Failed to roll back orphaned project '{created_project.id}' "
+                    f"('{created_project.slug}'): {cleanup_exc}"
+                )
+            raise
 
         # Log PROJECT_CREATED audit event
         await self.audit_repo.log_event(
@@ -317,18 +339,24 @@ class ProjectService:
         if not project_ids:
             return ([], 0)
 
-        # Default status filtering behavior per FR-04:
-        query_status = status
-        if query_status is None:
-            if not include_archived and not include_deleted:
-                query_status = ProjectStatus.ACTIVE
+        # Default status filtering behavior per FR-04. Each flag only adds its
+        # own state: `include_archived` must never expose soft-deleted projects
+        # (and vice versa). PURGED projects are never listed.
+        if status is not None:
+            query_statuses = [status]
+        else:
+            query_statuses = [ProjectStatus.ACTIVE]
+            if include_archived:
+                query_statuses.append(ProjectStatus.ARCHIVED)
+            if include_deleted:
+                query_statuses.append(ProjectStatus.SOFT_DELETED)
 
         actual_skip = skip if skip is not None else max(0, (page - 1) * page_size)
         actual_limit = limit if limit is not None else page_size
 
         projects, total = await self.project_repo.list_by_ids(
             project_ids=project_ids,
-            status=query_status,
+            statuses=query_statuses,
             search=search,
             tags=tags,
             sort_by=sort_by,
@@ -718,8 +746,10 @@ class ProjectService:
             additional_updates={"deleted_at": now},
         )
 
-        # 2. Cascade delete project_members
+        # 2. Cascade delete project_members and child secrets
         deleted_members = await self.member_repo.delete_by_project_id(project.id)
+        if self.secret_repo is not None:
+            await self.secret_repo.purge_by_project(project.id)
 
         # 3. Emit PROJECT_PURGED audit log
         await self.audit_repo.log_event(
@@ -744,10 +774,12 @@ def get_project_service(
     project_repo: ProjectRepository = Depends(get_project_repository),
     member_repo: ProjectMemberRepository = Depends(get_project_member_repository),
     audit_repo: ProjectAuditRepository = Depends(get_project_audit_repository),
+    secret_repo: ProjectSecretRepository = Depends(get_secret_repository),
 ) -> ProjectService:
     """Dependency injection provider for ProjectService."""
     return ProjectService(
         project_repo=project_repo,
         member_repo=member_repo,
         audit_repo=audit_repo,
+        secret_repo=secret_repo,
     )

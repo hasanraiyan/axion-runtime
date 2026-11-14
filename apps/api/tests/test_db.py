@@ -42,7 +42,11 @@ async def test_base_document_metadata(init_mock_beanie):
     assert item.created_at is not None
     assert item.updated_at is not None
     assert SampleItem.get_settings().is_root is False
-    assert BaseDocument.get_settings().is_root is True
+    # BaseDocument must not be a root document: otherwise every model inherits
+    # its collection and all documents/indexes get merged into "BaseDocument".
+    assert BaseDocument.get_settings().is_root is False
+    assert SampleItem.get_settings().name == "test_items"
+    assert BaseDocument.get_settings().name != SampleItem.get_settings().name
 
 
 async def test_check_db_health_uninitialized():

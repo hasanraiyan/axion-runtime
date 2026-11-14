@@ -1,12 +1,36 @@
 """
 Generic Base Repository providing standardized CRUD operations for Beanie Documents.
 """
-from typing import Any, Generic, List, Mapping, Optional, Type, TypeVar
+from collections.abc import Mapping
+from enum import Enum
+from typing import Any, Generic, List, Optional, Type, TypeVar
 from beanie import Document, PydanticObjectId
 from beanie.odm.queries.find import FindMany
 from bson import ObjectId
+from pydantic import BaseModel
 
 T = TypeVar("T", bound=Document)
+
+
+def serialize_for_mongo(value: Any) -> Any:
+    """
+    Recursively convert Pydantic models, enums, and containers into BSON-safe
+    primitives before handing them to raw PyMongo operations.
+
+    Beanie serializes documents automatically, but calls made directly on the
+    underlying PyMongo collection (``find_one_and_update``, ``update_one``, ...)
+    receive plain Python objects. Without this conversion, nested models such as
+    ``EncryptedEnvelope`` fail with ``bson.errors.InvalidDocument``.
+    """
+    if isinstance(value, BaseModel):
+        return serialize_for_mongo(value.model_dump())
+    if isinstance(value, Enum):
+        return serialize_for_mongo(value.value)
+    if isinstance(value, Mapping):
+        return {key: serialize_for_mongo(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple, set, frozenset)):
+        return [serialize_for_mongo(item) for item in value]
+    return value
 
 
 class BaseRepository(Generic[T]):
@@ -45,9 +69,11 @@ class BaseRepository(Generic[T]):
             return None
         try:
             oid = self._to_object_id(id)
-            return await self.model_class.get(oid)
-        except Exception:
+        except ValueError:
+            # Only malformed identifiers map to "not found". Database errors
+            # must propagate so they are not silently reported as HTTP 404.
             return None
+        return await self.model_class.get(oid)
 
     async def find_one(self, *expressions: Mapping[str, Any] | bool, **kwargs: Any) -> Optional[T]:
         """Find a single document matching criteria."""
