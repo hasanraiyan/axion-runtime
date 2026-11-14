@@ -4,440 +4,3037 @@
  */
 
 export interface paths {
-  "/health": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/health": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Root Service Health
+         * @description Top-level health endpoint verifying service liveness.
+         */
+        get: operations["get_root_health"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /**
-     * Root Service Health
-     * @description Top-level health endpoint verifying service liveness.
-     */
-    get: operations["get_root_health"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/health": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/health": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Service Health Check
+         * @description Check the operational status, version, and uptime of the API service.
+         */
+        get: operations["get_health_status"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /**
-     * Service Health Check
-     * @description Check the operational status, version, and uptime of the API service.
-     */
-    get: operations["get_health_status"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/auth/me": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/auth/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Authenticated User
+         * @description Retrieve the current verified Clerk user profile, MongoDB sync state, and assigned role.
+         */
+        get: operations["get_current_authenticated_user"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /**
-     * Get Authenticated User
-     * @description Retrieve the current verified Clerk user profile, MongoDB sync state, and assigned role.
-     */
-    get: operations["get_current_authenticated_user"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/auth/users/{clerk_id}/role": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/auth/users/{clerk_id}/role": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Update User Role
+         * @description Update the authorization role of a user ('admin' or 'user'). Requires admin role.
+         */
+        put: operations["update_user_role"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    /**
-     * Update User Role
-     * @description Update the authorization role of a user ('admin' or 'user'). Requires admin role.
-     */
-    put: operations["update_user_role"];
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
+    "/api/v1/projects": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Caller Projects
+         * @description List projects accessible to caller with pagination, text search, status, and tag filtering.
+         */
+        get: operations["list_caller_projects"];
+        put?: never;
+        /**
+         * Create Project
+         * @description Create a new project workspace. Automatically assigns caller as OWNER and emits PROJECT_CREATED audit log.
+         */
+        post: operations["create_project"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Project by ID or Slug
+         * @description Retrieve project metadata, settings, calculated member count, and caller's effective role. Enforces multi-tenant isolation.
+         */
+        get: operations["get_project_by_id_or_slug"];
+        put?: never;
+        post?: never;
+        /**
+         * Soft-Delete Project
+         * @description Transition project to SOFT_DELETED with retention grace period (FSM T-04, T-05). Restricted to OWNER.
+         */
+        delete: operations["soft_delete_project"];
+        options?: never;
+        head?: never;
+        /**
+         * Update Project with OCC
+         * @description Partial update of project configuration and settings with Optimistic Concurrency Control (version checking).
+         */
+        patch: operations["update_project"];
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Archive Project
+         * @description Transition project from ACTIVE to ARCHIVED frozen read-only state (FSM T-02).
+         */
+        post: operations["archive_project"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/unarchive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Unarchive Project
+         * @description Transition project from ARCHIVED to ACTIVE operational state (FSM T-03).
+         */
+        post: operations["unarchive_project"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Restore Soft-Deleted Project
+         * @description Restore soft-deleted project within retention grace period (FSM T-06). Restricted to OWNER.
+         */
+        post: operations["restore_project"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/purge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Permanently Purge Project
+         * @description Terminal purge of soft-deleted project (FSM T-07). Cascades cleanup across child collections. Restricted to OWNER.
+         */
+        delete: operations["purge_project"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/transfer-ownership": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Transfer Project Ownership
+         * @description Atomic ownership transfer to an active member executed inside a MongoDB transaction (FR-07). Restricted to OWNER.
+         */
+        post: operations["transfer_project_ownership"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/members": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Project Members
+         * @description List members registered in project with pagination. Accessible to all members (VIEWER+).
+         */
+        get: operations["list_project_members"];
+        put?: never;
+        /**
+         * Add Project Member
+         * @description Add an existing user into the project with an assigned role. Restricted to OWNER or ADMIN.
+         */
+        post: operations["add_project_member"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/members/{user_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Remove Member / Self-Leave
+         * @description Remove a member from project or allow member to voluntarily leave. Enforces sole owner invariant and admin hierarchy.
+         */
+        delete: operations["remove_project_member"];
+        options?: never;
+        head?: never;
+        /**
+         * Update Member Role
+         * @description Modify assigned role of an existing project member. Enforces admin hierarchy boundary.
+         */
+        patch: operations["update_project_member_role"];
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/audit-logs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieve Project Audit Logs
+         * @description Retrieve immutable security and state mutation event trail. Restricted to OWNER or ADMIN.
+         */
+        get: operations["get_project_audit_logs"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/secrets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Secret Metadata
+         * @description Retrieve a paginated list of secret metadata for a project. Zero plaintext or ciphertext is returned.
+         */
+        get: operations["list_secrets"];
+        put?: never;
+        /**
+         * Create Secret
+         * @description Create and envelope-encrypt a new project secret. Returns metadata only; zero plaintext is returned.
+         */
+        post: operations["create_secret"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/secrets/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Batch Resolve Runtime Secrets
+         * @description Batch resolve decrypted plaintext secrets for runtime sandboxes and workflow execution nodes.
+         */
+        post: operations["batch_resolve_secrets"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/secrets/{secret_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Secret Metadata
+         * @description Retrieve metadata for a single project secret. Zero plaintext or ciphertext is returned.
+         */
+        get: operations["get_secret_metadata"];
+        /**
+         * Update Secret with OCC
+         * @description In-place update of secret metadata or value with Optimistic Concurrency Control revision verification.
+         */
+        put: operations["update_secret"];
+        post?: never;
+        /**
+         * Soft-Delete Secret
+         * @description Soft delete a secret. Immediately excludes it from listings and runtime resolution.
+         */
+        delete: operations["delete_secret"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/secrets/{secret_id}/reveal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Privileged Reveal Secret Value
+         * @description Privileged plaintext reveal for project administrators (OWNER, ADMIN). Decrypts in-memory, emits immutable audit log, and sets non-cacheable headers.
+         */
+        post: operations["reveal_secret_value"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/secrets/{secret_id}/rotate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Rotate Secret Value
+         * @description In-place rotation of secret value with fresh DEK/nonce generation and OCC revision check.
+         */
+        post: operations["rotate_secret"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
-  schemas: {
-    /** ApiErrorPayload */
-    ApiErrorPayload: {
-      /**
-       * Code
-       * @description Machine-readable error code
-       */
-      code: string;
-      /**
-       * Message
-       * @description Human-readable error summary
-       */
-      message: string;
-      /**
-       * Details
-       * @description Detailed validation or sub-errors
-       */
-      details?: components["schemas"]["ErrorDetail"][];
+    schemas: {
+        /** AddMemberRequest */
+        AddMemberRequest: {
+            /**
+             * User Id
+             * @description Clerk ID of the user to add
+             * @example user_2abc123
+             */
+            user_id: string;
+            /**
+             * @description Initial role
+             * @default member
+             * @example member
+             */
+            role: components["schemas"]["ProjectRole"];
+        };
+        /** ApiErrorPayload */
+        ApiErrorPayload: {
+            /**
+             * Code
+             * @description Machine-readable error code
+             */
+            code: string;
+            /**
+             * Message
+             * @description Human-readable error summary
+             */
+            message: string;
+            /**
+             * Details
+             * @description Detailed validation or sub-errors
+             */
+            details?: components["schemas"]["ErrorDetail"][];
+        };
+        /** ApiErrorResponse */
+        ApiErrorResponse: {
+            /**
+             * Success
+             * @description Always false for error responses
+             * @default false
+             * @constant
+             */
+            success: false;
+            /** @description Error details payload */
+            error: components["schemas"]["ApiErrorPayload"];
+        };
+        /** ApiResponse[AuthenticatedUser] */
+        ApiResponse_AuthenticatedUser_: {
+            /**
+             * Success
+             * @description Always true for successful responses
+             * @default true
+             * @constant
+             */
+            success: true;
+            /** @description Response payload */
+            data: components["schemas"]["AuthenticatedUser"];
+            /**
+             * Message
+             * @description Status message
+             * @default Operation completed successfully
+             */
+            message: string;
+        };
+        /** ApiResponse[Dict[str, str]] */
+        ApiResponse_Dict_str__str__: {
+            /**
+             * Success
+             * @description Always true for successful responses
+             * @default true
+             * @constant
+             */
+            success: true;
+            /**
+             * Data
+             * @description Response payload
+             */
+            data: {
+                [key: string]: string;
+            };
+            /**
+             * Message
+             * @description Status message
+             * @default Operation completed successfully
+             */
+            message: string;
+        };
+        /** ApiResponse[HealthData] */
+        ApiResponse_HealthData_: {
+            /**
+             * Success
+             * @description Always true for successful responses
+             * @default true
+             * @constant
+             */
+            success: true;
+            /** @description Response payload */
+            data: components["schemas"]["HealthData"];
+            /**
+             * Message
+             * @description Status message
+             * @default Operation completed successfully
+             */
+            message: string;
+        };
+        /** ApiResponse[MemberResponse] */
+        ApiResponse_MemberResponse_: {
+            /**
+             * Success
+             * @description Always true for successful responses
+             * @default true
+             * @constant
+             */
+            success: true;
+            /** @description Response payload */
+            data: components["schemas"]["MemberResponse"];
+            /**
+             * Message
+             * @description Status message
+             * @default Operation completed successfully
+             */
+            message: string;
+        };
+        /** ApiResponse[NoneType] */
+        ApiResponse_NoneType_: {
+            /**
+             * Success
+             * @description Always true for successful responses
+             * @default true
+             * @constant
+             */
+            success: true;
+            /**
+             * Data
+             * @description Response payload
+             */
+            data: null;
+            /**
+             * Message
+             * @description Status message
+             * @default Operation completed successfully
+             */
+            message: string;
+        };
+        /** ApiResponse[ProjectResponse] */
+        ApiResponse_ProjectResponse_: {
+            /**
+             * Success
+             * @description Always true for successful responses
+             * @default true
+             * @constant
+             */
+            success: true;
+            /** @description Response payload */
+            data: components["schemas"]["ProjectResponse"];
+            /**
+             * Message
+             * @description Status message
+             * @default Operation completed successfully
+             */
+            message: string;
+        };
+        /** ApiResponse[SecretBatchResolveResponse] */
+        ApiResponse_SecretBatchResolveResponse_: {
+            /**
+             * Success
+             * @description Always true for successful responses
+             * @default true
+             * @constant
+             */
+            success: true;
+            /** @description Response payload */
+            data: components["schemas"]["SecretBatchResolveResponse"];
+            /**
+             * Message
+             * @description Status message
+             * @default Operation completed successfully
+             */
+            message: string;
+        };
+        /** ApiResponse[SecretResponse] */
+        ApiResponse_SecretResponse_: {
+            /**
+             * Success
+             * @description Always true for successful responses
+             * @default true
+             * @constant
+             */
+            success: true;
+            /** @description Response payload */
+            data: components["schemas"]["SecretResponse"];
+            /**
+             * Message
+             * @description Status message
+             * @default Operation completed successfully
+             */
+            message: string;
+        };
+        /** ApiResponse[SecretValueResponse] */
+        ApiResponse_SecretValueResponse_: {
+            /**
+             * Success
+             * @description Always true for successful responses
+             * @default true
+             * @constant
+             */
+            success: true;
+            /** @description Response payload */
+            data: components["schemas"]["SecretValueResponse"];
+            /**
+             * Message
+             * @description Status message
+             * @default Operation completed successfully
+             */
+            message: string;
+        };
+        /** AuditLogResponse */
+        AuditLogResponse: {
+            /** Id */
+            id: string;
+            /** Project Id */
+            project_id: string;
+            /** Actor Id */
+            actor_id: string;
+            /** Action */
+            action: string;
+            /** Target User Id */
+            target_user_id?: string | null;
+            /** Payload */
+            payload?: {
+                [key: string]: unknown;
+            };
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** AuthenticatedUser */
+        AuthenticatedUser: {
+            /**
+             * Id
+             * @description Unique Database ID (MongoDB ObjectId)
+             */
+            id: string;
+            /**
+             * Clerk Id
+             * @description Unique Clerk User identifier (user_...)
+             */
+            clerk_id: string;
+            /**
+             * Email
+             * @description Primary email address
+             */
+            email?: string | null;
+            /**
+             * First Name
+             * @description First name
+             */
+            first_name?: string | null;
+            /**
+             * Last Name
+             * @description Last name
+             */
+            last_name?: string | null;
+            /**
+             * Image Url
+             * @description Profile avatar image URL
+             */
+            image_url?: string | null;
+            /**
+             * @description Assigned role: 'admin' or 'user'
+             * @default user
+             */
+            role: components["schemas"]["UserRole"];
+            /**
+             * Roles
+             * @description Assigned authorization roles
+             */
+            roles?: string[];
+            /**
+             * Is Active
+             * @description Account active state
+             * @default true
+             */
+            is_active: boolean;
+            /**
+             * Is Authenticated
+             * @description Authentication state
+             * @default true
+             */
+            is_authenticated: boolean;
+            /**
+             * Created At
+             * @description Account creation timestamp
+             */
+            created_at?: string | null;
+            /**
+             * Updated At
+             * @description Account last update timestamp
+             */
+            updated_at?: string | null;
+        };
+        /** ErrorDetail */
+        ErrorDetail: {
+            /**
+             * Field
+             * @description Field path causing the error
+             */
+            field?: string | null;
+            /**
+             * Message
+             * @description Error message description
+             */
+            message: string;
+            /**
+             * Code
+             * @description Specific error code
+             */
+            code?: string | null;
+        };
+        /** HTTPValidationError */
+        HTTPValidationError: {
+            /** Detail */
+            detail?: components["schemas"]["ValidationError"][];
+        };
+        /** HealthData */
+        HealthData: {
+            /**
+             * Status
+             * @description Overall service status
+             * @default ok
+             */
+            status: string;
+            /**
+             * Version
+             * @description Application version
+             */
+            version: string;
+            /**
+             * Environment
+             * @description Running environment
+             */
+            environment: string;
+            /**
+             * Uptime Seconds
+             * @description Service uptime in seconds
+             */
+            uptime_seconds: number;
+            /**
+             * Timestamp
+             * @description Current ISO timestamp
+             */
+            timestamp: string;
+            /**
+             * Database
+             * @description Database connection status
+             */
+            database?: string | null;
+        };
+        /** MemberResponse */
+        MemberResponse: {
+            /** Id */
+            id: string;
+            /** Project Id */
+            project_id: string;
+            /** User Id */
+            user_id: string;
+            role: components["schemas"]["ProjectRole"];
+            /** Invited By */
+            invited_by?: string | null;
+            /**
+             * Joined At
+             * Format: date-time
+             */
+            joined_at: string;
+            /** Email */
+            email?: string | null;
+            /** First Name */
+            first_name?: string | null;
+            /** Last Name */
+            last_name?: string | null;
+        };
+        /** PaginatedData[AuditLogResponse] */
+        PaginatedData_AuditLogResponse_: {
+            /**
+             * Items
+             * @description List of items for current page
+             */
+            items: components["schemas"]["AuditLogResponse"][];
+            /** @description Pagination metadata */
+            pagination: components["schemas"]["PaginationMeta"];
+        };
+        /** PaginatedData[MemberResponse] */
+        PaginatedData_MemberResponse_: {
+            /**
+             * Items
+             * @description List of items for current page
+             */
+            items: components["schemas"]["MemberResponse"][];
+            /** @description Pagination metadata */
+            pagination: components["schemas"]["PaginationMeta"];
+        };
+        /** PaginatedData[ProjectSummaryResponse] */
+        PaginatedData_ProjectSummaryResponse_: {
+            /**
+             * Items
+             * @description List of items for current page
+             */
+            items: components["schemas"]["ProjectSummaryResponse"][];
+            /** @description Pagination metadata */
+            pagination: components["schemas"]["PaginationMeta"];
+        };
+        /** PaginatedData[SecretSummaryResponse] */
+        PaginatedData_SecretSummaryResponse_: {
+            /**
+             * Items
+             * @description List of items for current page
+             */
+            items: components["schemas"]["SecretSummaryResponse"][];
+            /** @description Pagination metadata */
+            pagination: components["schemas"]["PaginationMeta"];
+        };
+        /** PaginatedResponse[AuditLogResponse] */
+        PaginatedResponse_AuditLogResponse_: {
+            /**
+             * Success
+             * @description Always true for successful responses
+             * @default true
+             * @constant
+             */
+            success: true;
+            /** @description Response payload */
+            data: components["schemas"]["PaginatedData_AuditLogResponse_"];
+            /**
+             * Message
+             * @description Status message
+             * @default Operation completed successfully
+             */
+            message: string;
+        };
+        /** PaginatedResponse[MemberResponse] */
+        PaginatedResponse_MemberResponse_: {
+            /**
+             * Success
+             * @description Always true for successful responses
+             * @default true
+             * @constant
+             */
+            success: true;
+            /** @description Response payload */
+            data: components["schemas"]["PaginatedData_MemberResponse_"];
+            /**
+             * Message
+             * @description Status message
+             * @default Operation completed successfully
+             */
+            message: string;
+        };
+        /** PaginatedResponse[ProjectSummaryResponse] */
+        PaginatedResponse_ProjectSummaryResponse_: {
+            /**
+             * Success
+             * @description Always true for successful responses
+             * @default true
+             * @constant
+             */
+            success: true;
+            /** @description Response payload */
+            data: components["schemas"]["PaginatedData_ProjectSummaryResponse_"];
+            /**
+             * Message
+             * @description Status message
+             * @default Operation completed successfully
+             */
+            message: string;
+        };
+        /** PaginatedResponse[SecretSummaryResponse] */
+        PaginatedResponse_SecretSummaryResponse_: {
+            /**
+             * Success
+             * @description Always true for successful responses
+             * @default true
+             * @constant
+             */
+            success: true;
+            /** @description Response payload */
+            data: components["schemas"]["PaginatedData_SecretSummaryResponse_"];
+            /**
+             * Message
+             * @description Status message
+             * @default Operation completed successfully
+             */
+            message: string;
+        };
+        /** PaginationMeta */
+        PaginationMeta: {
+            /**
+             * Page
+             * @description Current page number (1-based)
+             */
+            page: number;
+            /**
+             * Page Size
+             * @description Number of items per page
+             */
+            page_size: number;
+            /**
+             * Total Records
+             * @description Total count of matching records
+             */
+            total_records: number;
+            /**
+             * Totalpages
+             * @description Total number of pages
+             */
+            totalPages: number;
+            /**
+             * Hasnextpage
+             * @description True if a next page is available
+             */
+            hasNextPage: boolean;
+            /**
+             * Haspreviouspage
+             * @description True if a previous page is available
+             */
+            hasPreviousPage: boolean;
+        };
+        /** ProjectCreateRequest */
+        ProjectCreateRequest: {
+            /**
+             * Name
+             * @example Core Platform Services
+             */
+            name: string;
+            /**
+             * Slug
+             * @example core-platform-services
+             */
+            slug?: string | null;
+            /**
+             * Description
+             * @example Primary orchestration workspace
+             */
+            description?: string | null;
+            /**
+             * Tags
+             * @example [
+             *       "infrastructure",
+             *       "prod"
+             *     ]
+             */
+            tags?: string[];
+            settings?: components["schemas"]["ProjectSettings"] | null;
+            /** Metadata */
+            metadata?: {
+                [key: string]: unknown;
+            };
+        };
+        /** ProjectResponse */
+        ProjectResponse: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Slug */
+            slug: string;
+            /** Description */
+            description?: string | null;
+            /** Owner Id */
+            owner_id: string;
+            status: components["schemas"]["ProjectStatus"];
+            /** Tags */
+            tags?: string[];
+            settings: components["schemas"]["ProjectSettings"];
+            /** Metadata */
+            metadata?: {
+                [key: string]: unknown;
+            };
+            /** Version */
+            version: number;
+            user_role?: components["schemas"]["ProjectRole"] | null;
+            /**
+             * Member Count
+             * @default 1
+             */
+            member_count: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Archived At */
+            archived_at?: string | null;
+            /** Deleted At */
+            deleted_at?: string | null;
+            /** Purge After */
+            purge_after?: string | null;
+        };
+        /**
+         * ProjectRole
+         * @enum {string}
+         */
+        ProjectRole: "owner" | "admin" | "member" | "viewer";
+        /** ProjectSettings */
+        ProjectSettings: {
+            /**
+             * Default Environment
+             * @description Default environment context
+             * @default production
+             */
+            default_environment: string;
+            /**
+             * Notifications Enabled
+             * @description Enable notification hooks
+             * @default true
+             */
+            notifications_enabled: boolean;
+            /**
+             * Retention Days
+             * @description Retention grace period in days for soft-deleted projects
+             * @default 30
+             */
+            retention_days: number;
+            /**
+             * Custom Settings
+             * @description Arbitrary custom settings
+             */
+            custom_settings?: {
+                [key: string]: unknown;
+            };
+        };
+        /**
+         * ProjectStatus
+         * @enum {string}
+         */
+        ProjectStatus: "active" | "archived" | "soft_deleted" | "purged";
+        /** ProjectSummaryResponse */
+        ProjectSummaryResponse: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Slug */
+            slug: string;
+            /** Description */
+            description?: string | null;
+            /** Owner Id */
+            owner_id: string;
+            status: components["schemas"]["ProjectStatus"];
+            /** Tags */
+            tags?: string[];
+            user_role: components["schemas"]["ProjectRole"];
+            /** Member Count */
+            member_count: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /** ProjectUpdateRequest */
+        ProjectUpdateRequest: {
+            /** Name */
+            name?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Tags */
+            tags?: string[] | null;
+            settings?: components["schemas"]["ProjectSettings"] | null;
+            /** Metadata */
+            metadata?: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Version
+             * @description Expected current version for optimistic locking
+             * @example 1
+             */
+            version: number;
+        };
+        /** SecretBatchResolveRequest */
+        SecretBatchResolveRequest: {
+            /**
+             * Names
+             * @description List of secret keys to resolve
+             */
+            names: string[];
+            /**
+             * Environment
+             * @description Execution environment
+             * @default production
+             */
+            environment: string;
+            /**
+             * Execution Id
+             * @description Associated execution run ID for audit
+             */
+            execution_id?: string | null;
+        };
+        /** SecretBatchResolveResponse */
+        SecretBatchResolveResponse: {
+            /**
+             * Resolved
+             * @description Map of secret names to decrypted plaintext values
+             */
+            resolved: {
+                [key: string]: string;
+            };
+            /**
+             * Missing
+             * @description Requested keys not found or inactive
+             */
+            missing?: string[];
+        };
+        /** SecretCreateRequest */
+        SecretCreateRequest: {
+            /**
+             * Name
+             * @description Uppercase identifier (e.g. OPENAI_API_KEY)
+             */
+            name: string;
+            /**
+             * Value
+             * Format: password
+             * @description Plaintext secret value
+             */
+            value: string;
+            /**
+             * Environment
+             * @description Target environment
+             * @default production
+             */
+            environment: string;
+            /**
+             * Description
+             * @description Description
+             */
+            description?: string | null;
+            /**
+             * Tags
+             * @description Categorization tags
+             */
+            tags?: string[];
+            /**
+             * Expires At
+             * @description Optional expiration date
+             */
+            expires_at?: string | null;
+        };
+        /**
+         * SecretResponse
+         * @description Detailed metadata response - ZERO PLAINTEXT.
+         */
+        SecretResponse: {
+            /** Id */
+            id: string;
+            /** Project Id */
+            project_id: string;
+            /** Name */
+            name: string;
+            /** Environment */
+            environment: string;
+            /** Description */
+            description?: string | null;
+            /** Tags */
+            tags?: string[];
+            /**
+             * Is System
+             * @default false
+             */
+            is_system: boolean;
+            /**
+             * Revision
+             * @description OCC revision counter
+             */
+            revision: number;
+            /** Last Rotated At */
+            last_rotated_at?: string | null;
+            /** Expires At */
+            expires_at?: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Algorithm */
+            algorithm: string;
+            /** Kek Id */
+            kek_id: string;
+            /** Created By */
+            created_by: string;
+            /** Updated By */
+            updated_by: string;
+        };
+        /** SecretRevealRequest */
+        SecretRevealRequest: {
+            /**
+             * Reason
+             * @description Operator justification for revealing secret
+             */
+            reason?: string | null;
+        };
+        /** SecretRotateRequest */
+        SecretRotateRequest: {
+            /**
+             * New Value
+             * Format: password
+             * @description Rotated plaintext value
+             */
+            new_value: string;
+            /**
+             * Revision
+             * @description Current OCC revision counter for concurrency check
+             */
+            revision: number;
+        };
+        /**
+         * SecretSummaryResponse
+         * @description Metadata summary response for listings - ZERO PLAINTEXT.
+         */
+        SecretSummaryResponse: {
+            /** Id */
+            id: string;
+            /** Project Id */
+            project_id: string;
+            /** Name */
+            name: string;
+            /** Environment */
+            environment: string;
+            /** Description */
+            description?: string | null;
+            /** Tags */
+            tags?: string[];
+            /**
+             * Is System
+             * @default false
+             */
+            is_system: boolean;
+            /**
+             * Revision
+             * @description OCC revision counter
+             */
+            revision: number;
+            /** Last Rotated At */
+            last_rotated_at?: string | null;
+            /** Expires At */
+            expires_at?: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /** SecretUpdateRequest */
+        SecretUpdateRequest: {
+            /**
+             * Value
+             * @description New secret value if replacing
+             */
+            value?: string | null;
+            /**
+             * Description
+             * @description Updated description
+             */
+            description?: string | null;
+            /**
+             * Tags
+             * @description Updated tags
+             */
+            tags?: string[] | null;
+            /**
+             * Expires At
+             * @description Updated expiration date
+             */
+            expires_at?: string | null;
+            /**
+             * Revision
+             * @description Current OCC revision counter for concurrency check
+             */
+            revision: number;
+        };
+        /**
+         * SecretValueResponse
+         * @description Privileged plaintext reveal response.
+         */
+        SecretValueResponse: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Environment */
+            environment: string;
+            /**
+             * Value
+             * @description Decrypted plaintext value
+             */
+            value: string;
+            /**
+             * Revealed At
+             * Format: date-time
+             * @description UTC timestamp of reveal
+             */
+            revealed_at: string;
+            /**
+             * Audit Logged
+             * @description Confirmation of audit logging
+             * @default true
+             */
+            audit_logged: boolean;
+        };
+        /** TransferOwnershipRequest */
+        TransferOwnershipRequest: {
+            /**
+             * New Owner User Id
+             * @description Clerk ID of active member receiving ownership
+             * @example user_3def456
+             */
+            new_owner_user_id: string;
+            /**
+             * @description Role assigned to former owner
+             * @default admin
+             */
+            former_owner_role: components["schemas"]["ProjectRole"];
+        };
+        /** UpdateMemberRoleRequest */
+        UpdateMemberRoleRequest: {
+            /**
+             * @description New role for member
+             * @example admin
+             */
+            role: components["schemas"]["ProjectRole"];
+        };
+        /** UpdateUserRoleRequest */
+        UpdateUserRoleRequest: {
+            /** @description New role to assign: 'admin' or 'user' */
+            role: components["schemas"]["UserRole"];
+        };
+        /**
+         * UserRole
+         * @enum {string}
+         */
+        UserRole: "admin" | "user";
+        /** ValidationError */
+        ValidationError: {
+            /** Location */
+            loc: (string | number)[];
+            /** Message */
+            msg: string;
+            /** Error Type */
+            type: string;
+            /** Input */
+            input?: unknown;
+            /** Context */
+            ctx?: Record<string, never>;
+        };
     };
-    /** ApiErrorResponse */
-    ApiErrorResponse: {
-      /**
-       * Success
-       * @description Always false for error responses
-       * @default false
-       * @constant
-       */
-      success: false;
-      /** @description Error details payload */
-      error: components["schemas"]["ApiErrorPayload"];
-    };
-    /** ApiResponse[AuthenticatedUser] */
-    ApiResponse_AuthenticatedUser_: {
-      /**
-       * Success
-       * @description Always true for successful responses
-       * @default true
-       * @constant
-       */
-      success: true;
-      /** @description Response payload */
-      data: components["schemas"]["AuthenticatedUser"];
-      /**
-       * Message
-       * @description Status message
-       * @default Operation completed successfully
-       */
-      message: string;
-    };
-    /** ApiResponse[HealthData] */
-    ApiResponse_HealthData_: {
-      /**
-       * Success
-       * @description Always true for successful responses
-       * @default true
-       * @constant
-       */
-      success: true;
-      /** @description Response payload */
-      data: components["schemas"]["HealthData"];
-      /**
-       * Message
-       * @description Status message
-       * @default Operation completed successfully
-       */
-      message: string;
-    };
-    /** AuthenticatedUser */
-    AuthenticatedUser: {
-      /**
-       * Id
-       * @description Unique Database ID (MongoDB ObjectId)
-       */
-      id: string;
-      /**
-       * Clerk Id
-       * @description Unique Clerk User identifier (user_...)
-       */
-      clerk_id: string;
-      /**
-       * Email
-       * @description Primary email address
-       */
-      email?: string | null;
-      /**
-       * First Name
-       * @description First name
-       */
-      first_name?: string | null;
-      /**
-       * Last Name
-       * @description Last name
-       */
-      last_name?: string | null;
-      /**
-       * Image Url
-       * @description Profile avatar image URL
-       */
-      image_url?: string | null;
-      /**
-       * @description Assigned role: 'admin' or 'user'
-       * @default user
-       */
-      role: components["schemas"]["UserRole"];
-      /**
-       * Roles
-       * @description Assigned authorization roles
-       */
-      roles?: string[];
-      /**
-       * Is Active
-       * @description Account active state
-       * @default true
-       */
-      is_active: boolean;
-      /**
-       * Is Authenticated
-       * @description Authentication state
-       * @default true
-       */
-      is_authenticated: boolean;
-      /**
-       * Created At
-       * @description Account creation timestamp
-       */
-      created_at?: string | null;
-      /**
-       * Updated At
-       * @description Account last update timestamp
-       */
-      updated_at?: string | null;
-    };
-    /** ErrorDetail */
-    ErrorDetail: {
-      /**
-       * Field
-       * @description Field path causing the error
-       */
-      field?: string | null;
-      /**
-       * Message
-       * @description Error message description
-       */
-      message: string;
-      /**
-       * Code
-       * @description Specific error code
-       */
-      code?: string | null;
-    };
-    /** HTTPValidationError */
-    HTTPValidationError: {
-      /** Detail */
-      detail?: components["schemas"]["ValidationError"][];
-    };
-    /** HealthData */
-    HealthData: {
-      /**
-       * Status
-       * @description Overall service status
-       * @default ok
-       */
-      status: string;
-      /**
-       * Version
-       * @description Application version
-       */
-      version: string;
-      /**
-       * Environment
-       * @description Running environment
-       */
-      environment: string;
-      /**
-       * Uptime Seconds
-       * @description Service uptime in seconds
-       */
-      uptime_seconds: number;
-      /**
-       * Timestamp
-       * @description Current ISO timestamp
-       */
-      timestamp: string;
-      /**
-       * Database
-       * @description Database connection status
-       */
-      database?: string | null;
-    };
-    /** UpdateUserRoleRequest */
-    UpdateUserRoleRequest: {
-      /** @description New role to assign: 'admin' or 'user' */
-      role: components["schemas"]["UserRole"];
-    };
-    /**
-     * UserRole
-     * @enum {string}
-     */
-    UserRole: "admin" | "user";
-    /** ValidationError */
-    ValidationError: {
-      /** Location */
-      loc: (string | number)[];
-      /** Message */
-      msg: string;
-      /** Error Type */
-      type: string;
-      /** Input */
-      input?: unknown;
-      /** Context */
-      ctx?: Record<string, never>;
-    };
-  };
-  responses: never;
-  parameters: never;
-  requestBodies: never;
-  headers: never;
-  pathItems: never;
+    responses: never;
+    parameters: never;
+    requestBodies: never;
+    headers: never;
+    pathItems: never;
 }
 export type $defs = Record<string, never>;
 export interface operations {
-  get_root_health: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    get_root_health: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_HealthData_"];
+                };
+            };
+        };
     };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown;
+    get_health_status: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        content: {
-          "application/json": components["schemas"]["ApiResponse_HealthData_"];
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_HealthData_"];
+                };
+            };
         };
-      };
     };
-  };
-  get_health_status: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    get_current_authenticated_user: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_AuthenticatedUser_"];
+                };
+            };
+            /** @description Missing, expired, or invalid authorization token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
     };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown;
+    update_user_role: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Target Clerk User ID */
+                clerk_id: string;
+            };
+            cookie?: never;
         };
-        content: {
-          "application/json": components["schemas"]["ApiResponse_HealthData_"];
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateUserRoleRequest"];
+            };
         };
-      };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_AuthenticatedUser_"];
+                };
+            };
+            /** @description Missing or invalid authorization token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Admin privileges required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Target user not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
     };
-  };
-  get_current_authenticated_user: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    list_caller_projects: {
+        parameters: {
+            query?: {
+                /** @description Filter by project lifecycle status */
+                status?: components["schemas"]["ProjectStatus"] | null;
+                /** @description Search by name, description, or slug */
+                search?: string | null;
+                /** @description Filter by tags */
+                tags?: string[] | null;
+                /** @description Field to sort by */
+                sort_by?: string;
+                /** @description Sort order direction */
+                sort_order?: string;
+                /** @description Page number (1-based) */
+                page?: number;
+                /** @description Items per page */
+                page_size?: number;
+                /** @description Limit override */
+                limit?: number | null;
+                /** @description Offset override */
+                offset?: number | null;
+                /** @description Include archived projects */
+                include_archived?: boolean;
+                /** @description Include soft-deleted projects */
+                include_deleted?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Projects retrieved successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedResponse_ProjectSummaryResponse_"];
+                };
+            };
+            /** @description Missing or invalid authentication token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
     };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown;
+    create_project: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        content: {
-          "application/json": components["schemas"]["ApiResponse_AuthenticatedUser_"];
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProjectCreateRequest"];
+            };
         };
-      };
-      /** @description Missing, expired, or invalid authorization token */
-      401: {
-        headers: {
-          [name: string]: unknown;
+        responses: {
+            /** @description Project created successfully */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_ProjectResponse_"];
+                };
+            };
+            /** @description Validation error or invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Missing or invalid authentication token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Explicit slug conflict or unresolvable collision */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
         };
-        content: {
-          "application/json": components["schemas"]["ApiErrorResponse"];
-        };
-      };
     };
-  };
-  update_user_role: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Target Clerk User ID */
-        clerk_id: string;
-      };
-      cookie?: never;
+    get_project_by_id_or_slug: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Project 24-char ObjectId hex or URL-safe slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Project retrieved successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_ProjectResponse_"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Project not found or caller not a member */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
     };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["UpdateUserRoleRequest"];
-      };
+    soft_delete_project: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Project ID or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Project soft-deleted successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_Dict_str__str__"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Project not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Illegal state transition */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
     };
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown;
+    update_project: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Project ID or slug */
+                project_id: string;
+            };
+            cookie?: never;
         };
-        content: {
-          "application/json": components["schemas"]["ApiResponse_AuthenticatedUser_"];
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProjectUpdateRequest"];
+            };
         };
-      };
-      /** @description Missing or invalid authorization token */
-      401: {
-        headers: {
-          [name: string]: unknown;
+        responses: {
+            /** @description Project updated successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_ProjectResponse_"];
+                };
+            };
+            /** @description Validation error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Project not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description OCC version conflict or FSM state mutation prohibition */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
         };
-        content: {
-          "application/json": components["schemas"]["ApiErrorResponse"];
-        };
-      };
-      /** @description Admin privileges required */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ApiErrorResponse"];
-        };
-      };
-      /** @description Target user not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ApiErrorResponse"];
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
     };
-  };
+    archive_project: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Project ID or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Project archived successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_ProjectResponse_"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Project not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Illegal state transition */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    unarchive_project: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Project ID or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Project unarchived successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_ProjectResponse_"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Project not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Illegal state transition */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    restore_project: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Project ID or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Project restored successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_ProjectResponse_"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Project not found or retention period expired */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Illegal state transition */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    purge_project: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Project ID or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Project permanently purged successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_Dict_str__str__"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Project not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Illegal transition (must be soft-deleted first) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    transfer_project_ownership: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Project ID or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TransferOwnershipRequest"];
+            };
+        };
+        responses: {
+            /** @description Project ownership transferred successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_ProjectResponse_"];
+                };
+            };
+            /** @description Invalid target or former role */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Project or target member not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description FSM mutation prohibition */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_project_members: {
+        parameters: {
+            query?: {
+                /** @description Page number (1-based) */
+                page?: number;
+                /** @description Items per page */
+                page_size?: number;
+                /** @description Limit override */
+                limit?: number | null;
+                /** @description Offset override */
+                offset?: number | null;
+            };
+            header?: never;
+            path: {
+                /** @description Project ID or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Project members retrieved successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedResponse_MemberResponse_"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Project not found or caller not a member */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_project_member: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Project ID or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddMemberRequest"];
+            };
+        };
+        responses: {
+            /** @description Member added successfully */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_MemberResponse_"];
+                };
+            };
+            /** @description Direct OWNER assignment prohibited */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Project not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description User already a member or project archived */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_project_member: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Project ID or slug */
+                project_id: string;
+                /** @description Target member Clerk User ID */
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Member removed successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_Dict_str__str__"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Sole owner leaving or admin hierarchy violation */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Project or member not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Project archived and caller not self-leaving */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_project_member_role: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Project ID or slug */
+                project_id: string;
+                /** @description Target member Clerk User ID */
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateMemberRoleRequest"];
+            };
+        };
+        responses: {
+            /** @description Member role updated successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_MemberResponse_"];
+                };
+            };
+            /** @description Direct OWNER promotion prohibited */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Admin hierarchy violation or altering owner */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Project or member not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Project archived or deleted */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_project_audit_logs: {
+        parameters: {
+            query?: {
+                /** @description Page number (1-based) */
+                page?: number;
+                /** @description Items per page */
+                page_size?: number;
+                /** @description Limit override */
+                limit?: number | null;
+                /** @description Offset override */
+                offset?: number | null;
+            };
+            header?: never;
+            path: {
+                /** @description Project ID or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Audit logs retrieved successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedResponse_AuditLogResponse_"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Insufficient project permissions */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Project not found or caller not a member */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_secrets: {
+        parameters: {
+            query?: {
+                /** @description Filter secrets by execution environment */
+                environment?: string | null;
+                /** @description Search secret name or description */
+                search?: string | null;
+                /** @description Filter by categorization tags */
+                tags?: string[] | null;
+                /** @description Field to sort by */
+                sort_by?: string;
+                /** @description Sort order direction */
+                sort_order?: string;
+                /** @description Page number (1-based) */
+                page?: number;
+                /** @description Items per page */
+                page_size?: number;
+                /** @description Limit override */
+                limit?: number | null;
+                /** @description Offset override */
+                offset?: number | null;
+            };
+            header?: never;
+            path: {
+                /** @description Project 24-char ObjectId hex or URL-safe slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Secrets retrieved successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedResponse_SecretSummaryResponse_"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Project not found or caller not a member */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_secret: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Project ID or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SecretCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description Secret created successfully */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_SecretResponse_"];
+                };
+            };
+            /** @description Validation error or invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Project not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Secret with name already exists in environment, or project is archived */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    batch_resolve_secrets: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Project ID or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SecretBatchResolveRequest"];
+            };
+        };
+        responses: {
+            /** @description Secrets resolved successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_SecretBatchResolveResponse_"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Insufficient permissions (requires MEMBER+) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Project not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Project is archived or inactive */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_secret_metadata: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Project ID or slug */
+                project_id: string;
+                /** @description Secret document ID */
+                secret_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Secret metadata retrieved successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_SecretResponse_"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Secret or project not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_secret: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Project ID or slug */
+                project_id: string;
+                /** @description Secret document ID */
+                secret_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SecretUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description Secret updated successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_SecretResponse_"];
+                };
+            };
+            /** @description Validation error or invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Secret or project not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description OCC revision mismatch or project archived */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_secret: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Project ID or slug */
+                project_id: string;
+                /** @description Secret document ID */
+                secret_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Secret soft-deleted successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_NoneType_"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Secret or project not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Project archived */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reveal_secret_value: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Project ID or slug */
+                project_id: string;
+                /** @description Secret document ID */
+                secret_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["SecretRevealRequest"] | null;
+            };
+        };
+        responses: {
+            /** @description Secret revealed successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_SecretValueResponse_"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden (VIEWER and MEMBER cannot reveal secret plaintext) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Secret or project not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    rotate_secret: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Project ID or slug */
+                project_id: string;
+                /** @description Secret document ID */
+                secret_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SecretRotateRequest"];
+            };
+        };
+        responses: {
+            /** @description Secret rotated successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_SecretResponse_"];
+                };
+            };
+            /** @description Validation error or invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Secret or project not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description OCC revision mismatch or project archived */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
 }
