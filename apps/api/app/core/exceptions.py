@@ -99,3 +99,57 @@ class ServiceUnavailableError(AppException):
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             details=details,
         )
+
+
+# ==============================================================================
+# Project FSM & Lifecycle Domain Exceptions (SRS-01 Section 4.5)
+# ==============================================================================
+
+
+class ProjectFSMError(ConflictError):
+    """Base exception for FSM domain rule violations."""
+
+    def __init__(self, message: str = "Project state machine violation", details: Optional[List[Dict[str, Any]]] = None):
+        super().__init__(message=message, details=details)
+
+
+class InvalidStateTransitionError(ProjectFSMError):
+    """Raised when an illegal transition is requested."""
+
+    def __init__(self, from_state: str, to_state: str, details: Optional[List[Dict[str, Any]]] = None):
+        super().__init__(
+            message=f"Illegal project state transition from '{from_state}' to '{to_state}'",
+            details=details,
+        )
+
+
+class ProjectNotActiveError(ProjectFSMError):
+    """Raised when a mutation is attempted on a non-active project."""
+
+    def __init__(self, message: str = "Project is not in active state", details: Optional[List[Dict[str, Any]]] = None):
+        super().__init__(message=message, details=details)
+
+
+class ProjectArchivedError(ProjectNotActiveError):
+    def __init__(self, project_id: str, details: Optional[List[Dict[str, Any]]] = None):
+        super().__init__(
+            message=f"Project '{project_id}' is ARCHIVED. Mutation operations are prohibited.",
+            details=details,
+        )
+
+
+class ProjectDeletedError(ProjectNotActiveError):
+    def __init__(self, project_id: str, details: Optional[List[Dict[str, Any]]] = None):
+        super().__init__(
+            message=f"Project '{project_id}' is SOFT_DELETED. Restore project before modifying resources.",
+            details=details,
+        )
+
+
+class ProjectPurgedError(NotFoundError):
+    def __init__(self, project_id: str, details: Optional[List[Dict[str, Any]]] = None):
+        super().__init__(
+            message=f"Project '{project_id}' has been permanently purged.",
+            details=details,
+        )
+

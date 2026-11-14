@@ -3,13 +3,40 @@ from fastapi import Depends, Query, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 
-from app.core.exceptions import ForbiddenError, ServiceUnavailableError, UnauthorizedError
+from app.core.exceptions import (
+    ForbiddenError,
+    NotFoundError,
+    ProjectPurgedError,
+    ServiceUnavailableError,
+    UnauthorizedError,
+)
 from app.core.logging import logger
 from app.core.security import verify_clerk_token
 from app.db.client import get_global_client, get_global_database
+from app.models.project import Project, ProjectMember, ProjectRole, ProjectStatus
 from app.models.user import UserRole
+from app.repositories.project_member_repository import (
+    ProjectMemberRepository,
+    get_project_member_repository,
+)
+from app.repositories.project_repository import (
+    ProjectRepository,
+    get_project_repository,
+)
 from app.schemas.auth import AuthenticatedUser
 from app.schemas.common import FilterParams, PaginationParams
+from app.services.project_audit_service import (
+    ProjectAuditService,
+    get_project_audit_service,
+)
+from app.services.project_member_service import (
+    ProjectMemberService,
+    get_project_member_service,
+)
+from app.services.project_service import (
+    ProjectService,
+    get_project_service,
+)
 from app.services.user_service import UserService, get_user_service
 
 # Native FastAPI security scheme
@@ -145,6 +172,89 @@ def require_role(required_role: UserRole):
     return role_checker
 
 
+def require_project_role(*allowed_roles: ProjectRole):
+    """
+    FastAPI dependency factory enforcing project-level Role-Based Access Control (RBAC).
+    Extracts project_id or slug from path/query parameter.
+    Verifies caller's membership via ProjectMemberRepository / ProjectRepository.
+    If caller is not a member (and not super admin), raises NotFoundError("Project not found")
+    to eliminate tenant resource enumeration vulnerabilities per SRS Section 8.3.
+    If caller is a member but lacks sufficient role, raises ForbiddenError.
+    Attaches current project, caller role, and member to request.state and returns ProjectMember.
+    """
+    ROLE_HIERARCHY = {
+        ProjectRole.VIEWER: 1,
+        ProjectRole.MEMBER: 2,
+        ProjectRole.ADMIN: 3,
+        ProjectRole.OWNER: 4,
+    }
+
+    async def project_role_checker(
+        request: Request,
+        current_user: Annotated[AuthenticatedUser, Depends(get_current_user)],
+        project_repo: Annotated[ProjectRepository, Depends(get_project_repository)],
+        member_repo: Annotated[ProjectMemberRepository, Depends(get_project_member_repository)],
+    ) -> ProjectMember:
+        identifier = (
+            request.path_params.get("project_id")
+            or request.query_params.get("project_id")
+            or request.path_params.get("slug")
+            or request.query_params.get("slug")
+        )
+        if not identifier:
+            raise NotFoundError("Project not found")
+
+        project = await project_repo.get_by_id_or_slug(identifier)
+        if project is None:
+            raise NotFoundError("Project not found")
+
+        if project.status == ProjectStatus.PURGED:
+            raise ProjectPurgedError(str(project.id))
+
+        is_super_admin = (current_user.role == UserRole.ADMIN)
+
+        member = await member_repo.get_membership(project.id, current_user.clerk_id)
+        if member is None and not is_super_admin:
+            raise NotFoundError("Project not found")
+
+        # In SOFT_DELETED state: project access restricted to OWNER only (unless super admin)
+        if project.status == ProjectStatus.SOFT_DELETED and not is_super_admin:
+            if member is None or member.role != ProjectRole.OWNER:
+                raise NotFoundError("Project not found")
+
+        caller_role = (
+            member.role
+            if member is not None
+            else (
+                ProjectRole.OWNER
+                if (is_super_admin and project.owner_id == current_user.clerk_id)
+                else (ProjectRole.ADMIN if is_super_admin else None)
+            )
+        )
+
+        if allowed_roles and not is_super_admin:
+            if caller_role is None:
+                raise ForbiddenError("Insufficient project permissions")
+            min_required = min(ROLE_HIERARCHY.get(r, 0) for r in allowed_roles)
+            caller_level = ROLE_HIERARCHY.get(caller_role, 0)
+            if caller_role not in allowed_roles and caller_level < min_required:
+                raise ForbiddenError("Insufficient project permissions")
+
+        effective_member = member or ProjectMember(
+            project_id=project.id,
+            user_id=current_user.clerk_id,
+            role=caller_role or ProjectRole.ADMIN,
+        )
+
+        request.state.project = project
+        request.state.project_role = caller_role
+        request.state.project_member = effective_member
+
+        return effective_member
+
+    return project_role_checker
+
+
 # Modern Annotated Type Aliases for clean endpoint signatures
 CurrentUser = Annotated[AuthenticatedUser, Depends(get_current_user)]
 OptionalUser = Annotated[Optional[AuthenticatedUser], Depends(get_optional_user)]
@@ -153,3 +263,6 @@ PaginationDep = Annotated[PaginationParams, Depends(get_pagination_params)]
 FilterDep = Annotated[FilterParams, Depends(get_filter_params)]
 MongoClientDep = Annotated[AsyncIOMotorClient, Depends(get_mongo_client)]
 DatabaseDep = Annotated[AsyncIOMotorDatabase, Depends(get_database)]
+ProjectServiceDep = Annotated[ProjectService, Depends(get_project_service)]
+ProjectMemberServiceDep = Annotated[ProjectMemberService, Depends(get_project_member_service)]
+ProjectAuditServiceDep = Annotated[ProjectAuditService, Depends(get_project_audit_service)]

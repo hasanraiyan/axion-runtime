@@ -26,6 +26,15 @@ class BaseRepository(Generic[T]):
         except Exception:
             return False
 
+    def get_collection(self) -> Any:
+        """Return the underlying Motor/PyMongo collection."""
+        if hasattr(self.model_class, "get_motor_collection"):
+            return self.model_class.get_motor_collection()
+        if hasattr(self.model_class, "get_pymongo_collection"):
+            return self.model_class.get_pymongo_collection()
+        settings = self.model_class.get_settings()
+        return settings.pymongo_collection
+
     def _to_object_id(self, id_val: str | PydanticObjectId | ObjectId) -> ObjectId:
         """Safely convert string or PydanticObjectId to BSON ObjectId."""
         if isinstance(id_val, ObjectId):
@@ -78,19 +87,28 @@ class BaseRepository(Generic[T]):
         count = await self.count(*expressions, **kwargs)
         return count > 0
 
-    async def create(self, document: T) -> T:
+    async def create(self, document: T, session: Optional[Any] = None) -> T:
         """Insert a new document into MongoDB."""
-        await document.insert()
+        if session is not None:
+            await document.insert(session=session)
+        else:
+            await document.insert()
         return document
 
-    async def update(self, document: T) -> T:
+    async def update(self, document: T, session: Optional[Any] = None) -> T:
         """Save changes to an existing document."""
-        await document.save()
+        if session is not None:
+            await document.save(session=session)
+        else:
+            await document.save()
         return document
 
-    async def delete(self, document: T) -> None:
+    async def delete(self, document: T, session: Optional[Any] = None) -> None:
         """Delete a document from MongoDB."""
-        await document.delete()
+        if session is not None:
+            await document.delete(session=session)
+        else:
+            await document.delete()
 
     async def delete_by_id(self, id: str | PydanticObjectId | ObjectId) -> bool:
         """Delete a document by ID. Returns True if deleted, False if not found."""

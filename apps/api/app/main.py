@@ -27,6 +27,10 @@ TAGS_METADATA = [
         "name": "Authentication",
         "description": "User profile verification and session identity management powered by Clerk.",
     },
+    {
+        "name": "Projects",
+        "description": "Project workspace lifecycle, RBAC membership governance, OCC, and audit logging.",
+    },
 ]
 
 
