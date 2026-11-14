@@ -13,10 +13,21 @@ class JSONFormatter(logging.Formatter):
     """Structured JSON formatter for production logging."""
 
     def format(self, record: logging.LogRecord) -> str:
+        raw_msg = record.getMessage()
+
+        # If the message is already a JSON string (e.g., from PyMongo internal logging),
+        # parse it so it isn't double-escaped with backslashes (\") inside the outer JSON payload
+        message_val: object = raw_msg
+        if isinstance(raw_msg, str) and raw_msg.startswith("{") and raw_msg.endswith("}"):
+            try:
+                message_val = json.loads(raw_msg)
+            except Exception:
+                message_val = raw_msg
+
         log_obj = {
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "level": record.levelname,
-            "message": record.getMessage(),
+            "message": message_val,
             "logger": record.name,
         }
 
@@ -41,8 +52,21 @@ def setup_logging(debug: bool = False) -> logging.Logger:
         handler.setFormatter(JSONFormatter())
         root_logger.addHandler(handler)
 
-    # Silence noisy loggers
-    logging.getLogger("uvicorn.access").setLevel(logging.WARNING)
+    # Silence noisy third-party loggers (e.g. pymongo topology/heartbeats, uvicorn access, httpx)
+    noisy_loggers = [
+        "uvicorn.access",
+        "pymongo",
+        "pymongo.topology",
+        "pymongo.connection",
+        "pymongo.serverSelection",
+        "pymongo.command",
+        "motor",
+        "asyncio",
+        "httpcore",
+        "httpx",
+    ]
+    for noisy in noisy_loggers:
+        logging.getLogger(noisy).setLevel(logging.WARNING)
 
     return logging.getLogger("app")
 
