@@ -1,0 +1,35 @@
+# Dependencies and build artifacts
+**/node_modules
+**/.next
+**/.turbo
+**/dist
+**/build
+**/out
+
+# Python virtual environments & bytecode
+**/.venv
+**/env
+**/venv
+**/__pycache__
+**/*.pyc
+**/*.pyo
+**/*.pyd
+**/.pytest_cache
+**/.coverage
+**/htmlcov
+
+# Git & IDE
+.git
+.github
+.idea
+.vscode
+*.swp
+*.swo
+
+# Environment files
+**/.env*.local
+**/*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*

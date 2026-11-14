@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend CI (FastAPI & Python)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          version: "latest"
+
+      - name: Set up Python
+        run: uv python install 3.13
+
+      - name: Install backend dependencies
+        run: uv sync --project apps/api --extra dev
+
+      - name: Run Ruff Lint
+        run: uv run --project apps/api ruff check app tests
+
+      - name: Run Pytest Test Suite
+        env:
+          CLERK_SECRET_KEY: sk_test_ci_dummy_secret_key
+          CLERK_PUBLISHABLE_KEY: pk_test_ci_dummy_publishable_key
+          ENVIRONMENT: test
+        run: uv run --project apps/api pytest apps/api/tests
+
+  frontend:
+    name: Frontend & Packages CI (TypeScript & Next.js)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - name: Install JavaScript dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check Code Formatting (Prettier)
+        run: pnpm format:check
+
+      - name: Run Type Checking
+        run: pnpm typecheck
+
+      - name: Build Next.js & Turborepo
+        env:
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_ZXZpZGVudC1hYXJkdmFyay0zMi5jbGVyay5hY2NvdW50cy5kZXYk
+          CLERK_SECRET_KEY: sk_test_dummy_key_for_build
+          NEXT_PUBLIC_API_URL: http://localhost:8000
+        run: pnpm build
