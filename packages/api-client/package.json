@@ -1,0 +1,27 @@
+{
+  "name": "@platform/api-client",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "generate": "openapi-typescript ../../apps/api/openapi.json -o ./src/generated/schema.ts"
+  },
+  "dependencies": {
+    "@platform/types": "workspace:*"
+  },
+  "devDependencies": {
+    "@platform/tsconfig": "workspace:*",
+    "openapi-typescript": "^7.6.1",
+    "typescript": "^5.7.3"
+  }
+}

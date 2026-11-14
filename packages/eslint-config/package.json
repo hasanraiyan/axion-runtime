@@ -1,0 +1,13 @@
+{
+  "name": "@platform/eslint-config",
+  "version": "0.1.0",
+  "private": true,
+  "main": "index.js",
+  "files": [
+    "index.js",
+    "next.js"
+  ],
+  "dependencies": {
+    "eslint-config-prettier": "^10.0.1"
+  }
+}
