@@ -39,7 +39,8 @@ export default async function Home() {
       <main className="max-w-xl space-y-6">
         <h1 className="text-4xl font-extrabold tracking-tight">AI Platform</h1>
         <p className="text-zinc-400 text-lg">
-          Clerk authentication is fully configured. Sign in or sign up to access your protected workspace.
+          Clerk authentication is fully configured. Sign in or sign up to access your protected
+          workspace.
         </p>
 
         <div className="flex gap-4 justify-center pt-4">

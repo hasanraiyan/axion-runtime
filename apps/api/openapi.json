@@ -8,9 +8,7 @@
   "paths": {
     "/health": {
       "get": {
-        "tags": [
-          "Health"
-        ],
+        "tags": ["Health"],
         "summary": "Root Service Health",
         "description": "Top-level health endpoint verifying service liveness.",
         "operationId": "get_root_health",
@@ -30,9 +28,7 @@
     },
     "/api/v1/health": {
       "get": {
-        "tags": [
-          "Health"
-        ],
+        "tags": ["Health"],
         "summary": "Service Health Check",
         "description": "Check the operational status, version, and uptime of the API service.",
         "operationId": "get_health_status",
@@ -52,9 +48,7 @@
     },
     "/api/v1/auth/me": {
       "get": {
-        "tags": [
-          "Authentication"
-        ],
+        "tags": ["Authentication"],
         "summary": "Get Authenticated User",
         "description": "Retrieve the current verified Clerk user profile and session identity.",
         "operationId": "get_current_authenticated_user",
@@ -112,10 +106,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "code",
-          "message"
-        ],
+        "required": ["code", "message"],
         "title": "ApiErrorPayload"
       },
       "ApiErrorResponse": {
@@ -133,9 +124,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "error"
-        ],
+        "required": ["error"],
         "title": "ApiErrorResponse"
       },
       "ApiResponse_AuthenticatedUser_": {
@@ -159,9 +148,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "data"
-        ],
+        "required": ["data"],
         "title": "ApiResponse[AuthenticatedUser]"
       },
       "ApiResponse_HealthData_": {
@@ -185,9 +172,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "data"
-        ],
+        "required": ["data"],
         "title": "ApiResponse[HealthData]"
       },
       "AuthenticatedUser": {
@@ -249,9 +234,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "id"
-        ],
+        "required": ["id"],
         "title": "AuthenticatedUser"
       },
       "ErrorDetail": {
@@ -287,9 +270,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "message"
-        ],
+        "required": ["message"],
         "title": "ErrorDetail"
       },
       "HealthData": {
@@ -322,12 +303,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "version",
-          "environment",
-          "uptime_seconds",
-          "timestamp"
-        ],
+        "required": ["version", "environment", "uptime_seconds", "timestamp"],
         "title": "HealthData"
       }
     },

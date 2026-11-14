@@ -3,6 +3,7 @@
 FastAPI backend service powering the AI Platform foundation.
 
 ## Features
+
 - **API Versioning**: `/api/v1` routes.
 - **Authentication**: Official Clerk SDK and JWT verification.
 - **Standardized Response Formats**: Unified success and error envelope.

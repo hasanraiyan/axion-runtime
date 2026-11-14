@@ -4,293 +4,293 @@
  */
 
 export interface paths {
-    "/health": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Root Service Health
-         * @description Top-level health endpoint verifying service liveness.
-         */
-        get: operations["get_root_health"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+  "/health": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/v1/health": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Service Health Check
-         * @description Check the operational status, version, and uptime of the API service.
-         */
-        get: operations["get_health_status"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    /**
+     * Root Service Health
+     * @description Top-level health endpoint verifying service liveness.
+     */
+    get: operations["get_root_health"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/health": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/v1/auth/me": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get Authenticated User
-         * @description Retrieve the current verified Clerk user profile and session identity.
-         */
-        get: operations["get_current_authenticated_user"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    /**
+     * Service Health Check
+     * @description Check the operational status, version, and uptime of the API service.
+     */
+    get: operations["get_health_status"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/auth/me": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
+    /**
+     * Get Authenticated User
+     * @description Retrieve the current verified Clerk user profile and session identity.
+     */
+    get: operations["get_current_authenticated_user"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
-    schemas: {
-        /** ApiErrorPayload */
-        ApiErrorPayload: {
-            /**
-             * Code
-             * @description Machine-readable error code
-             */
-            code: string;
-            /**
-             * Message
-             * @description Human-readable error summary
-             */
-            message: string;
-            /**
-             * Details
-             * @description Detailed validation or sub-errors
-             */
-            details?: components["schemas"]["ErrorDetail"][];
-        };
-        /** ApiErrorResponse */
-        ApiErrorResponse: {
-            /**
-             * Success
-             * @description Always false for error responses
-             * @default false
-             * @constant
-             */
-            success: false;
-            /** @description Error details payload */
-            error: components["schemas"]["ApiErrorPayload"];
-        };
-        /** ApiResponse[AuthenticatedUser] */
-        ApiResponse_AuthenticatedUser_: {
-            /**
-             * Success
-             * @description Always true for successful responses
-             * @default true
-             * @constant
-             */
-            success: true;
-            /** @description Response payload */
-            data: components["schemas"]["AuthenticatedUser"];
-            /**
-             * Message
-             * @description Status message
-             * @default Operation completed successfully
-             */
-            message: string;
-        };
-        /** ApiResponse[HealthData] */
-        ApiResponse_HealthData_: {
-            /**
-             * Success
-             * @description Always true for successful responses
-             * @default true
-             * @constant
-             */
-            success: true;
-            /** @description Response payload */
-            data: components["schemas"]["HealthData"];
-            /**
-             * Message
-             * @description Status message
-             * @default Operation completed successfully
-             */
-            message: string;
-        };
-        /** AuthenticatedUser */
-        AuthenticatedUser: {
-            /**
-             * Id
-             * @description Unique Clerk User ID (e.g. user_...)
-             */
-            id: string;
-            /**
-             * Email
-             * @description Primary email address
-             */
-            email?: string | null;
-            /**
-             * First Name
-             * @description First name
-             */
-            first_name?: string | null;
-            /**
-             * Last Name
-             * @description Last name
-             */
-            last_name?: string | null;
-            /**
-             * Roles
-             * @description Assigned authorization roles
-             */
-            roles?: string[];
-            /**
-             * Is Authenticated
-             * @description Authentication state
-             * @default true
-             */
-            is_authenticated: boolean;
-        };
-        /** ErrorDetail */
-        ErrorDetail: {
-            /**
-             * Field
-             * @description Field path causing the error
-             */
-            field?: string | null;
-            /**
-             * Message
-             * @description Error message description
-             */
-            message: string;
-            /**
-             * Code
-             * @description Specific error code
-             */
-            code?: string | null;
-        };
-        /** HealthData */
-        HealthData: {
-            /**
-             * Status
-             * @description Overall service status
-             * @default ok
-             */
-            status: string;
-            /**
-             * Version
-             * @description Application version
-             */
-            version: string;
-            /**
-             * Environment
-             * @description Running environment
-             */
-            environment: string;
-            /**
-             * Uptime Seconds
-             * @description Service uptime in seconds
-             */
-            uptime_seconds: number;
-            /**
-             * Timestamp
-             * @description Current ISO timestamp
-             */
-            timestamp: string;
-        };
+  schemas: {
+    /** ApiErrorPayload */
+    ApiErrorPayload: {
+      /**
+       * Code
+       * @description Machine-readable error code
+       */
+      code: string;
+      /**
+       * Message
+       * @description Human-readable error summary
+       */
+      message: string;
+      /**
+       * Details
+       * @description Detailed validation or sub-errors
+       */
+      details?: components["schemas"]["ErrorDetail"][];
     };
-    responses: never;
-    parameters: never;
-    requestBodies: never;
-    headers: never;
-    pathItems: never;
+    /** ApiErrorResponse */
+    ApiErrorResponse: {
+      /**
+       * Success
+       * @description Always false for error responses
+       * @default false
+       * @constant
+       */
+      success: false;
+      /** @description Error details payload */
+      error: components["schemas"]["ApiErrorPayload"];
+    };
+    /** ApiResponse[AuthenticatedUser] */
+    ApiResponse_AuthenticatedUser_: {
+      /**
+       * Success
+       * @description Always true for successful responses
+       * @default true
+       * @constant
+       */
+      success: true;
+      /** @description Response payload */
+      data: components["schemas"]["AuthenticatedUser"];
+      /**
+       * Message
+       * @description Status message
+       * @default Operation completed successfully
+       */
+      message: string;
+    };
+    /** ApiResponse[HealthData] */
+    ApiResponse_HealthData_: {
+      /**
+       * Success
+       * @description Always true for successful responses
+       * @default true
+       * @constant
+       */
+      success: true;
+      /** @description Response payload */
+      data: components["schemas"]["HealthData"];
+      /**
+       * Message
+       * @description Status message
+       * @default Operation completed successfully
+       */
+      message: string;
+    };
+    /** AuthenticatedUser */
+    AuthenticatedUser: {
+      /**
+       * Id
+       * @description Unique Clerk User ID (e.g. user_...)
+       */
+      id: string;
+      /**
+       * Email
+       * @description Primary email address
+       */
+      email?: string | null;
+      /**
+       * First Name
+       * @description First name
+       */
+      first_name?: string | null;
+      /**
+       * Last Name
+       * @description Last name
+       */
+      last_name?: string | null;
+      /**
+       * Roles
+       * @description Assigned authorization roles
+       */
+      roles?: string[];
+      /**
+       * Is Authenticated
+       * @description Authentication state
+       * @default true
+       */
+      is_authenticated: boolean;
+    };
+    /** ErrorDetail */
+    ErrorDetail: {
+      /**
+       * Field
+       * @description Field path causing the error
+       */
+      field?: string | null;
+      /**
+       * Message
+       * @description Error message description
+       */
+      message: string;
+      /**
+       * Code
+       * @description Specific error code
+       */
+      code?: string | null;
+    };
+    /** HealthData */
+    HealthData: {
+      /**
+       * Status
+       * @description Overall service status
+       * @default ok
+       */
+      status: string;
+      /**
+       * Version
+       * @description Application version
+       */
+      version: string;
+      /**
+       * Environment
+       * @description Running environment
+       */
+      environment: string;
+      /**
+       * Uptime Seconds
+       * @description Service uptime in seconds
+       */
+      uptime_seconds: number;
+      /**
+       * Timestamp
+       * @description Current ISO timestamp
+       */
+      timestamp: string;
+    };
+  };
+  responses: never;
+  parameters: never;
+  requestBodies: never;
+  headers: never;
+  pathItems: never;
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    get_root_health: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiResponse_HealthData_"];
-                };
-            };
-        };
+  get_root_health: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    get_health_status: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiResponse_HealthData_"];
-                };
-            };
+        content: {
+          "application/json": components["schemas"]["ApiResponse_HealthData_"];
         };
+      };
     };
-    get_current_authenticated_user: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiResponse_AuthenticatedUser_"];
-                };
-            };
-            /** @description Missing, expired, or invalid authorization token */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponse"];
-                };
-            };
-        };
+  };
+  get_health_status: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiResponse_HealthData_"];
+        };
+      };
+    };
+  };
+  get_current_authenticated_user: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiResponse_AuthenticatedUser_"];
+        };
+      };
+      /** @description Missing, expired, or invalid authorization token */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorResponse"];
+        };
+      };
+    };
+  };
 }

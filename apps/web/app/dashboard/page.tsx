@@ -26,7 +26,11 @@ export default async function DashboardPage() {
         <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-6 border border-gray-200 dark:border-gray-800">
           <h2 className="text-lg font-semibold mb-2">Authenticated Session</h2>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Welcome, <span className="font-medium text-gray-900 dark:text-gray-100">{user?.firstName ?? "User"}</span>!
+            Welcome,{" "}
+            <span className="font-medium text-gray-900 dark:text-gray-100">
+              {user?.firstName ?? "User"}
+            </span>
+            !
           </p>
           <div className="mt-4 text-xs font-mono bg-white dark:bg-black p-3 rounded border border-gray-200 dark:border-gray-700">
             <div>User ID: {user?.id}</div>

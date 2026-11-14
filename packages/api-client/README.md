@@ -12,6 +12,7 @@ pnpm generate:api
 ```
 
 This runs:
+
 1. `uv run python -m app.utils.export_openapi` to generate `apps/api/openapi.json`
 2. `openapi-typescript` to update `packages/api-client/src/generated/schema.ts`
 

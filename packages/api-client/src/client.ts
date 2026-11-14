@@ -1,7 +1,4 @@
-import type {
-  ApiResponse,
-  AuthUser,
-} from "@platform/types";
+import type { ApiResponse, AuthUser } from "@platform/types";
 
 export interface ApiClientConfig {
   baseUrl?: string;
@@ -78,7 +75,11 @@ export class ApiClient {
     return this.request<T>(path, { ...options, method: "GET" });
   }
 
-  public async post<T = unknown>(path: string, body?: unknown, options: RequestInit = {}): Promise<T> {
+  public async post<T = unknown>(
+    path: string,
+    body?: unknown,
+    options: RequestInit = {}
+  ): Promise<T> {
     return this.request<T>(path, {
       ...options,
       method: "POST",
@@ -86,7 +87,11 @@ export class ApiClient {
     });
   }
 
-  public async put<T = unknown>(path: string, body?: unknown, options: RequestInit = {}): Promise<T> {
+  public async put<T = unknown>(
+    path: string,
+    body?: unknown,
+    options: RequestInit = {}
+  ): Promise<T> {
     return this.request<T>(path, {
       ...options,
       method: "PUT",
@@ -99,10 +104,14 @@ export class ApiClient {
   }
 
   public readonly health = {
-    check: async (): Promise<ApiResponse<{ status: string; version: string; uptime_seconds: number }>> => {
+    check: async (): Promise<
+      ApiResponse<{ status: string; version: string; uptime_seconds: number }>
+    > => {
       return this.get("/health");
     },
-    v1Check: async (): Promise<ApiResponse<{ status: string; version: string; uptime_seconds: number }>> => {
+    v1Check: async (): Promise<
+      ApiResponse<{ status: string; version: string; uptime_seconds: number }>
+    > => {
       return this.get("/api/v1/health");
     },
   };

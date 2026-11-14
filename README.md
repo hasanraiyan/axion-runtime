@@ -4,16 +4,16 @@ Enterprise monorepo foundation for the AI Platform using Turborepo, Next.js, and
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Monorepo Orchestration | [Turborepo](https://turbo.build/) |
-| JS Package Manager | [pnpm](https://pnpm.io/) |
-| Frontend | [Next.js](https://nextjs.org/) (App Router, TypeScript, Tailwind CSS) |
-| Backend | [FastAPI](https://fastapi.tiangolo.com/) (Python 3.13) |
-| Python Package Manager | [uv](https://docs.astral.sh/uv/) |
-| Authentication | [Clerk](https://clerk.com/) (`@clerk/nextjs` & `clerk-backend-api`) |
-| API Specification | OpenAPI 3.1 & Swagger UI |
-| SDK Generation | `openapi-typescript` |
+| Layer                  | Technology                                                            |
+| ---------------------- | --------------------------------------------------------------------- |
+| Monorepo Orchestration | [Turborepo](https://turbo.build/)                                     |
+| JS Package Manager     | [pnpm](https://pnpm.io/)                                              |
+| Frontend               | [Next.js](https://nextjs.org/) (App Router, TypeScript, Tailwind CSS) |
+| Backend                | [FastAPI](https://fastapi.tiangolo.com/) (Python 3.13)                |
+| Python Package Manager | [uv](https://docs.astral.sh/uv/)                                      |
+| Authentication         | [Clerk](https://clerk.com/) (`@clerk/nextjs` & `clerk-backend-api`)   |
+| API Specification      | OpenAPI 3.1 & Swagger UI                                              |
+| SDK Generation         | `openapi-typescript`                                                  |
 
 ---
 
@@ -66,6 +66,7 @@ Enterprise monorepo foundation for the AI Platform using Turborepo, Next.js, and
 ## Quickstart
 
 ### 1. Prerequisites
+
 - Node.js >= 20
 - pnpm >= 10
 - Python >= 3.11
@@ -84,23 +85,28 @@ uv sync --project apps/api --extra dev
 ### 3. Run the Applications
 
 #### Run Backend API (FastAPI)
+
 ```bash
 uv run --project apps/api uvicorn app.main:app --reload --port 8000
 ```
+
 - **Swagger UI**: [http://localhost:8000/docs](http://localhost:8000/docs)
 - **ReDoc**: [http://localhost:8000/redoc](http://localhost:8000/redoc)
 - **Health Check**: [http://localhost:8000/health](http://localhost:8000/health)
 - **OpenAPI Schema**: [http://localhost:8000/openapi.json](http://localhost:8000/openapi.json)
 
 #### Run Frontend (Next.js)
+
 ```bash
 pnpm --filter web dev
 ```
+
 - Available at [http://localhost:3000](http://localhost:3000)
 - Sign-In route: [http://localhost:3000/sign-in](http://localhost:3000/sign-in)
 - Protected Dashboard: [http://localhost:3000/dashboard](http://localhost:3000/dashboard)
 
 #### Run Both Concurrently via Turbo
+
 ```bash
 pnpm dev
 ```
@@ -129,4 +135,5 @@ Whenever the backend OpenAPI schema changes, regenerate the TypeScript types:
 ```bash
 pnpm generate:api
 ```
+
 This exports `apps/api/openapi.json` and compiles it into `packages/api-client/src/generated/schema.ts`.
