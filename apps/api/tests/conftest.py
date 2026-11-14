@@ -31,5 +31,10 @@ def auth_headers():
 
 
 @pytest.fixture
+def admin_auth_headers():
+    return {"Authorization": "Bearer dev-token-admin_super"}
+
+
+@pytest.fixture
 def invalid_auth_headers():
     return {"Authorization": "Bearer invalid-token"}

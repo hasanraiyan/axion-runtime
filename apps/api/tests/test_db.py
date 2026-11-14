@@ -16,16 +16,23 @@ class SampleItem(BaseDocument):
 
 @pytest.fixture
 async def init_mock_beanie():
+    from bson import ObjectId
+    from app.models.user import User
+
     db = MagicMock()
     db.name = "axion_test"
     db.command = AsyncMock(return_value={"version": "7.0.0", "versionArray": [7, 0, 0]})
     db.list_collection_names = AsyncMock(return_value=[])
     col = MagicMock()
-    col.name = "test_items"
+    col.name = "users"
     col.create_index = AsyncMock()
+    col.create_indexes = AsyncMock(return_value=[])
     col.index_information = AsyncMock(return_value={})
+    col.find_one = AsyncMock(return_value=None)
+    col.count_documents = AsyncMock(return_value=0)
+    col.insert_one = AsyncMock(return_value=MagicMock(inserted_id=ObjectId()))
     db.__getitem__.return_value = col
-    await init_beanie(database=db, document_models=[SampleItem])
+    await init_beanie(database=db, document_models=[SampleItem, User])
     return db
 
 
@@ -63,3 +70,27 @@ def test_deps_raise_service_unavailable():
 
     with pytest.raises(ServiceUnavailableError):
         get_database(mock_request)
+
+
+def test_user_model_definition():
+    from app.models.user import User, UserRole
+
+    assert UserRole.ADMIN.value == "admin"
+    assert UserRole.USER.value == "user"
+    assert User.Settings.name == "users"
+    assert len(User.Settings.indexes) >= 3
+
+
+async def test_user_service_sync_first_user(init_mock_beanie):
+    from app.models.user import UserRole
+    from app.services.user_service import UserService
+
+    user = await UserService.sync_clerk_user(
+        clerk_id="user_admin_first",
+        email="admin@example.com",
+        first_name="Super",
+        last_name="Admin",
+    )
+    assert user is not None
+    assert user.clerk_id == "user_admin_first"
+    assert user.role == UserRole.ADMIN

@@ -3,11 +3,14 @@ from fastapi import Depends, Query, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 
-from app.core.exceptions import ServiceUnavailableError, UnauthorizedError
+from app.core.exceptions import ForbiddenError, ServiceUnavailableError, UnauthorizedError
+from app.core.logging import logger
 from app.core.security import verify_clerk_token
 from app.db.client import get_global_client, get_global_database
+from app.models.user import UserRole
 from app.schemas.auth import AuthenticatedUser
 from app.schemas.common import FilterParams, PaginationParams
+from app.services.user_service import UserService
 
 # Native FastAPI security scheme
 security = HTTPBearer(
@@ -21,11 +24,40 @@ async def get_current_user(
 ) -> AuthenticatedUser:
     """
     FastAPI native security dependency enforcing Bearer authentication.
+    Verifies Clerk token and synchronizes user identity into MongoDB.
     """
     if not credentials or not credentials.credentials:
         raise UnauthorizedError("Missing Authorization header")
 
-    return await verify_clerk_token(credentials.credentials)
+    clerk_user = await verify_clerk_token(credentials.credentials)
+
+    try:
+        db_user = await UserService.sync_clerk_user(
+            clerk_id=clerk_user.clerk_id,
+            email=clerk_user.email,
+            first_name=clerk_user.first_name,
+            last_name=clerk_user.last_name,
+            image_url=clerk_user.image_url,
+        )
+        if db_user is not None:
+            return AuthenticatedUser(
+                id=str(db_user.id),
+                clerk_id=db_user.clerk_id,
+                email=db_user.email,
+                first_name=db_user.first_name,
+                last_name=db_user.last_name,
+                image_url=db_user.image_url,
+                role=db_user.role,
+                roles=[db_user.role.value],
+                is_active=db_user.is_active,
+                is_authenticated=True,
+                created_at=db_user.created_at,
+                updated_at=db_user.updated_at,
+            )
+    except Exception as exc:
+        logger.debug(f"User DB sync bypassed (DB offline or uninitialized): {exc}")
+
+    return clerk_user
 
 
 async def get_optional_user(
@@ -95,9 +127,27 @@ def get_database(request: Request) -> AsyncIOMotorDatabase:
     return db
 
 
+def require_role(required_role: UserRole):
+    """
+    Factory dependency enforcing role-based access control (RBAC).
+    """
+
+    async def role_checker(
+        current_user: Annotated[AuthenticatedUser, Depends(get_current_user)],
+    ) -> AuthenticatedUser:
+        if current_user.role != required_role:
+            raise ForbiddenError(
+                f"Insufficient permissions: requires '{required_role.value}' role"
+            )
+        return current_user
+
+    return role_checker
+
+
 # Modern Annotated Type Aliases for clean endpoint signatures
 CurrentUser = Annotated[AuthenticatedUser, Depends(get_current_user)]
 OptionalUser = Annotated[Optional[AuthenticatedUser], Depends(get_optional_user)]
+CurrentAdmin = Annotated[AuthenticatedUser, Depends(require_role(UserRole.ADMIN))]
 PaginationDep = Annotated[PaginationParams, Depends(get_pagination_params)]
 FilterDep = Annotated[FilterParams, Depends(get_filter_params)]
 MongoClientDep = Annotated[AsyncIOMotorClient, Depends(get_mongo_client)]

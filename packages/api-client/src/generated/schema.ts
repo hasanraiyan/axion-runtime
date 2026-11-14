@@ -53,10 +53,30 @@ export interface paths {
     };
     /**
      * Get Authenticated User
-     * @description Retrieve the current verified Clerk user profile and session identity.
+     * @description Retrieve the current verified Clerk user profile, MongoDB sync state, and assigned role.
      */
     get: operations["get_current_authenticated_user"];
     put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/auth/users/{clerk_id}/role": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /**
+     * Update User Role
+     * @description Update the authorization role of a user ('admin' or 'user'). Requires admin role.
+     */
+    put: operations["update_user_role"];
     post?: never;
     delete?: never;
     options?: never;
@@ -138,9 +158,14 @@ export interface components {
     AuthenticatedUser: {
       /**
        * Id
-       * @description Unique Clerk User ID (e.g. user_...)
+       * @description Unique Database ID (MongoDB ObjectId)
        */
       id: string;
+      /**
+       * Clerk Id
+       * @description Unique Clerk User identifier (user_...)
+       */
+      clerk_id: string;
       /**
        * Email
        * @description Primary email address
@@ -157,16 +182,42 @@ export interface components {
        */
       last_name?: string | null;
       /**
+       * Image Url
+       * @description Profile avatar image URL
+       */
+      image_url?: string | null;
+      /**
+       * @description Assigned role: 'admin' or 'user'
+       * @default user
+       */
+      role: components["schemas"]["UserRole"];
+      /**
        * Roles
        * @description Assigned authorization roles
        */
       roles?: string[];
+      /**
+       * Is Active
+       * @description Account active state
+       * @default true
+       */
+      is_active: boolean;
       /**
        * Is Authenticated
        * @description Authentication state
        * @default true
        */
       is_authenticated: boolean;
+      /**
+       * Created At
+       * @description Account creation timestamp
+       */
+      created_at?: string | null;
+      /**
+       * Updated At
+       * @description Account last update timestamp
+       */
+      updated_at?: string | null;
     };
     /** ErrorDetail */
     ErrorDetail: {
@@ -185,6 +236,11 @@ export interface components {
        * @description Specific error code
        */
       code?: string | null;
+    };
+    /** HTTPValidationError */
+    HTTPValidationError: {
+      /** Detail */
+      detail?: components["schemas"]["ValidationError"][];
     };
     /** HealthData */
     HealthData: {
@@ -219,6 +275,29 @@ export interface components {
        * @description Database connection status
        */
       database?: string | null;
+    };
+    /** UpdateUserRoleRequest */
+    UpdateUserRoleRequest: {
+      /** @description New role to assign: 'admin' or 'user' */
+      role: components["schemas"]["UserRole"];
+    };
+    /**
+     * UserRole
+     * @enum {string}
+     */
+    UserRole: "admin" | "user";
+    /** ValidationError */
+    ValidationError: {
+      /** Location */
+      loc: (string | number)[];
+      /** Message */
+      msg: string;
+      /** Error Type */
+      type: string;
+      /** Input */
+      input?: unknown;
+      /** Context */
+      ctx?: Record<string, never>;
     };
   };
   responses: never;
@@ -294,6 +373,69 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["ApiErrorResponse"];
+        };
+      };
+    };
+  };
+  update_user_role: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Target Clerk User ID */
+        clerk_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["UpdateUserRoleRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiResponse_AuthenticatedUser_"];
+        };
+      };
+      /** @description Missing or invalid authorization token */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorResponse"];
+        };
+      };
+      /** @description Admin privileges required */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorResponse"];
+        };
+      };
+      /** @description Target user not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
         };
       };
     };

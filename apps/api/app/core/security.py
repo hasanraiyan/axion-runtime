@@ -4,6 +4,7 @@ import jwt
 from clerk_backend_api import Clerk
 from app.core.config import settings
 from app.core.exceptions import UnauthorizedError
+from app.models.user import UserRole
 from app.schemas.auth import AuthenticatedUser
 
 logger = logging.getLogger("app.security")
@@ -38,12 +39,15 @@ async def verify_clerk_token(token: str) -> AuthenticatedUser:
         user_id = token.replace("dev-token-", "").replace("test-token-", "")
         if user_id == "mock-valid-token":
             user_id = "user_dev_123"
+        is_admin = "admin" in user_id
         return AuthenticatedUser(
             id=f"user_{user_id}",
+            clerk_id=f"user_{user_id}",
             email=f"{user_id}@example.com",
             first_name="Dev",
             last_name="Tester",
-            roles=["developer", "admin"],
+            role=UserRole.ADMIN if is_admin else UserRole.USER,
+            roles=["admin"] if is_admin else ["user"],
         )
 
     # 2. If Clerk public JWT key is configured, verify signature directly
@@ -58,12 +62,17 @@ async def verify_clerk_token(token: str) -> AuthenticatedUser:
             user_id = payload.get("sub")
             if not user_id:
                 raise UnauthorizedError("Invalid token payload: missing subject")
+            roles = payload.get("roles", ["user"])
+            is_admin = "admin" in roles
             return AuthenticatedUser(
                 id=user_id,
+                clerk_id=user_id,
                 email=payload.get("email"),
                 first_name=payload.get("first_name"),
                 last_name=payload.get("last_name"),
-                roles=payload.get("roles", ["user"]),
+                image_url=payload.get("image_url"),
+                role=UserRole.ADMIN if is_admin else UserRole.USER,
+                roles=roles,
             )
         except jwt.PyJWTError as e:
             logger.warning(f"JWT verification failed: {e}")
@@ -81,11 +90,15 @@ async def verify_clerk_token(token: str) -> AuthenticatedUser:
                 email = None
                 if user and user.email_addresses and len(user.email_addresses) > 0:
                     email = user.email_addresses[0].email_address
+                image_url = getattr(user, "image_url", None)
                 return AuthenticatedUser(
                     id=user.id,
+                    clerk_id=user.id,
                     email=email,
                     first_name=user.first_name,
                     last_name=user.last_name,
+                    image_url=image_url,
+                    role=UserRole.USER,
                     roles=["user"],
                 )
         except Exception as e:

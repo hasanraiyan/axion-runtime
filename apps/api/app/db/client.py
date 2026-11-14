@@ -6,7 +6,6 @@ from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 
 from app.core.config import settings
 from app.core.logging import logger
-from app.models import DOCUMENT_MODELS
 
 # Module-level client reference
 _client: Optional[AsyncIOMotorClient] = None
@@ -42,6 +41,8 @@ async def init_db(app: Optional[FastAPI] = None) -> None:
         logger.info("MongoDB connection successfully established.")
 
         # Initialize Beanie ODM if models are registered
+        from app.models import DOCUMENT_MODELS
+
         if DOCUMENT_MODELS:
             await init_beanie(
                 database=_database,

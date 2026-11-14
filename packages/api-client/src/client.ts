@@ -1,4 +1,4 @@
-import type { ApiResponse, AuthUser } from "@platform/types";
+import type { ApiResponse, AuthUser, UserRole } from "@platform/types";
 
 export interface ApiClientConfig {
   baseUrl?: string;
@@ -119,6 +119,9 @@ export class ApiClient {
   public readonly auth = {
     me: async (): Promise<ApiResponse<AuthUser>> => {
       return this.get("/api/v1/auth/me");
+    },
+    updateUserRole: async (clerkId: string, role: UserRole): Promise<ApiResponse<AuthUser>> => {
+      return this.put(`/api/v1/auth/users/${clerkId}/role`, { role });
     },
   };
 }

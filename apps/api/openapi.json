@@ -50,7 +50,7 @@
       "get": {
         "tags": ["Authentication"],
         "summary": "Get Authenticated User",
-        "description": "Retrieve the current verified Clerk user profile and session identity.",
+        "description": "Retrieve the current verified Clerk user profile, MongoDB sync state, and assigned role.",
         "operationId": "get_current_authenticated_user",
         "responses": {
           "200": {
@@ -79,6 +79,94 @@
             "HTTPBearer": []
           }
         ]
+      }
+    },
+    "/api/v1/auth/users/{clerk_id}/role": {
+      "put": {
+        "tags": ["Authentication"],
+        "summary": "Update User Role",
+        "description": "Update the authorization role of a user ('admin' or 'user'). Requires admin role.",
+        "operationId": "update_user_role",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "clerk_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Target Clerk User ID",
+              "title": "Clerk Id"
+            },
+            "description": "Target Clerk User ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserRoleRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_AuthenticatedUser_"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authorization token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Admin privileges required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Target user not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     }
   },
@@ -180,7 +268,12 @@
           "id": {
             "type": "string",
             "title": "Id",
-            "description": "Unique Clerk User ID (e.g. user_...)"
+            "description": "Unique Database ID (MongoDB ObjectId)"
+          },
+          "clerk_id": {
+            "type": "string",
+            "title": "Clerk Id",
+            "description": "Unique Clerk User identifier (user_...)"
           },
           "email": {
             "anyOf": [
@@ -218,6 +311,23 @@
             "title": "Last Name",
             "description": "Last name"
           },
+          "image_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Url",
+            "description": "Profile avatar image URL"
+          },
+          "role": {
+            "$ref": "#/components/schemas/UserRole",
+            "description": "Assigned role: 'admin' or 'user'",
+            "default": "user"
+          },
           "roles": {
             "items": {
               "type": "string"
@@ -226,15 +336,47 @@
             "title": "Roles",
             "description": "Assigned authorization roles"
           },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active",
+            "description": "Account active state",
+            "default": true
+          },
           "is_authenticated": {
             "type": "boolean",
             "title": "Is Authenticated",
             "description": "Authentication state",
             "default": true
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At",
+            "description": "Account creation timestamp"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At",
+            "description": "Account last update timestamp"
           }
         },
         "type": "object",
-        "required": ["id"],
+        "required": ["id", "clerk_id"],
         "title": "AuthenticatedUser"
       },
       "ErrorDetail": {
@@ -272,6 +414,19 @@
         "type": "object",
         "required": ["message"],
         "title": "ErrorDetail"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
       },
       "HealthData": {
         "properties": {
@@ -317,6 +472,58 @@
         "type": "object",
         "required": ["version", "environment", "uptime_seconds", "timestamp"],
         "title": "HealthData"
+      },
+      "UpdateUserRoleRequest": {
+        "properties": {
+          "role": {
+            "$ref": "#/components/schemas/UserRole",
+            "description": "New role to assign: 'admin' or 'user'"
+          }
+        },
+        "type": "object",
+        "required": ["role"],
+        "title": "UpdateUserRoleRequest"
+      },
+      "UserRole": {
+        "type": "string",
+        "enum": ["admin", "user"],
+        "title": "UserRole"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": ["loc", "msg", "type"],
+        "title": "ValidationError"
       }
     },
     "securitySchemes": {
