@@ -37,21 +37,42 @@ import httpx
 # --------------------------------------------------------------------------
 # CONFIG — put your key here for quick testing
 # --------------------------------------------------------------------------
-PROVIDER = "google_genai"  # openai | google_genai | anthropic | custom
+PROVIDER = "google_genai"  # openai | openrouter | google_genai | anthropic | custom
 API_KEY = os.environ.get("PROBE_API_KEY", "PASTE-YOUR-API-KEY-HERE")
 BASE_URL: Optional[str] = None  # required for "custom"; optional override otherwise
-CUSTOM_HEADERS: Dict[str, str] = {}  # e.g. {"HTTP-Referer": "https://..."} for OpenRouter
+CUSTOM_HEADERS: Dict[str, str] = {}  # e.g. {"HTTP-Referer": "https://...", "X-Title": "..."}
 
 OUTPUT_DIR = Path(__file__).resolve().parent / "out"
 TIMEOUT_SECONDS = 30
 
+OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
+
+# Providers whose endpoint is `GET {base_url}/models` with a bearer token.
+# `openrouter` speaks the same protocol as `custom`, just with a known base URL.
+_OPENAI_PROTOCOL = {
+    "openai": "https://api.openai.com/v1",
+    "openrouter": OPENROUTER_BASE_URL,
+    "custom": None,  # base URL must be supplied by the caller
+}
+
 
 def build_request(provider: str, api_key: str, base_url: Optional[str]) -> tuple[str, Dict[str, str]]:
+    provider = provider.strip().lower()
+    if provider == "custom_openai_compatible":  # alias used by ProviderType
+        provider = "custom"
+
     headers: Dict[str, str] = dict(CUSTOM_HEADERS)
-    if provider in ("openai", "custom"):
-        base = (base_url or "https://api.openai.com/v1").rstrip("/")
+    if provider in _OPENAI_PROTOCOL:
+        base = base_url or _OPENAI_PROTOCOL[provider]
+        if not base:
+            raise SystemExit(
+                "--base-url is required for --provider custom "
+                "(e.g. https://openrouter.ai/api/v1, or just use --provider openrouter)."
+            )
         headers.setdefault("Authorization", f"Bearer {api_key}")
-        return f"{base}/models", headers
+        if provider == "openrouter":
+            headers.setdefault("X-Title", "Axion live-model probe")
+        return f"{base.rstrip('/')}/models", headers
     if provider == "google_genai":
         headers.setdefault("Content-Type", "application/json")
         return f"https://generativelanguage.googleapis.com/v1beta/models?key={api_key}", headers
@@ -60,7 +81,9 @@ def build_request(provider: str, api_key: str, base_url: Optional[str]) -> tuple
         headers.setdefault("x-api-key", api_key)
         headers.setdefault("anthropic-version", "2023-06-01")
         return f"{base}/models", headers
-    raise SystemExit(f"Unknown provider '{provider}'. Use openai | google_genai | anthropic | custom.")
+    raise SystemExit(
+        f"Unknown provider '{provider}'. Use openai | openrouter | google_genai | anthropic | custom."
+    )
 
 
 def redact_url(url: str) -> str:
