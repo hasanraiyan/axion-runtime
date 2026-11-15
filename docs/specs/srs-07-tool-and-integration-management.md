@@ -1,7 +1,7 @@
 # Software Requirements Specification (SRS)
 ## Module 07: Tool & Integration Management (Axion Runtime)
 
-- **Document Version**: 1.3.0
+- **Document Version**: 1.4.0
 - **Status**: Draft for Architectural Review
 - **Module ID**: `MOD-07`
 - **Component**: `apps/api` (backend), `apps/web` (connector management UI and MCP App host)
@@ -1386,7 +1386,8 @@ tokens, block and erasure; project-purge cascade; secret-deletion guard.
 | Per-user discovery | with a connected user's credentials | with the calling admin's **own** connection | An admin connects their own account, then runs discovery |
 | Revoked state | `connections.status = revoked` | the record is deleted | Deleting removes the credential outright; the audit log keeps the history |
 | Toolset cache (NFR-P1) | 30 s TTL cache | not implemented | Resolution is DB-bound; measure before caching |
-| Session pool (FR-18, FR-81) | pooled sessions | one session per call | Next slice |
+| Session pool (FR-18, FR-81) | pooled per subject | pooled per credential fingerprint (per-user credentials imply per-subject) | `connect` has no subject parameter; the fingerprint gives the same isolation |
+| `list_changed` for per-user integrations | automatic re-discovery | marked `catalog_stale` for an admin to refresh | Discovery must use one person's credentials and tools may differ per user |
 
 ### Phase 2, slice B: MCP Apps and MCP resources (complete)
 - **Resources and prompts** of an MCP server are listed through the adapter (`ResourceReader`, `PromptProvider` roles,
@@ -1407,9 +1408,26 @@ tokens, block and erasure; project-purge cascade; secret-deletion guard.
 - 7 endpoints; a shared dependency (`make_subject_caller`) serves members (Clerk) and end users (session token with
   `apps:use`); API keys are refused on person-only endpoints.
 
+### Phase 2, slice C: session pool and list_changed (complete)
+- **Session pool** (FR-18, FR-81): initialized MCP sessions are reused across calls. Each session is owned by a dedicated
+  task (an SDK `anyio` requirement), keyed by integration, integration revision and a keyed hash of the credentials, so
+  users with different credentials never share a session and a shared project credential is one session for everyone.
+  Per-user sessions expire sooner (120 s vs 300 s); per-integration (8) and global (256) caps evict the least recently
+  used idle session and otherwise serve an unpooled session rather than block. Any failure evicts the session; only
+  "session expired" is retried, once. Pooling removes the per-call handshake (verified: roughly one request per call
+  instead of four).
+- **Invalidation**: changing credentials or the endpoint, disabling or deleting an integration, and revoking, disconnecting,
+  blocking or erasing a connection publish `McpSessionsInvalidated`, and the pool closes that integration's sessions.
+- **list_changed** (FR-10): the MCP connector forwards the SDK's tools/resources/prompts list-changed notifications as
+  `McpListChanged`. A subscriber re-discovers shared integrations (debounced, coalesced, one follow-up run if a change
+  arrives mid-run) with every safety rule intact: new tools arrive disabled, changed approved tools are suspended,
+  apps are re-pinned but never approved. Per-user integrations are marked `catalog_stale` instead, because tools can
+  differ per user and discovery needs one person's credentials. Failures are contained and never affect the session
+  that delivered the notification.
+- Process-level wiring (subscribers, shutdown of the pool) is registered at the composition root in the app lifespan.
+
 ### Still to build
-The MCP session pool (per subject) and `list_changed` handling; REST/OpenAPI and webhook adapters (deferred by decision:
-MCP first); OAuth client credentials; bulk tool
+REST/OpenAPI and webhook adapters (deferred by decision: MCP first); OAuth client credentials; bulk tool
 operations; the web UI and hosted pages. End users cannot register their own MCP servers (out of scope by decision).
 
 ---
@@ -1419,6 +1437,7 @@ operations; the web UI and hosted pages. End users cannot register their own MCP
 | Version | Date | Description |
 |---|---|---|
 | 1.0.0 | 2026-11-15 | Initial draft based on analysis of the Agent Marketplace backend and Axion MOD-01/02/03/06 |
+| 1.4.0 | 2026-11-15 | Phase 2 slice C implemented (MCP session pool, list_changed handling); MCP side complete |
 | 1.3.0 | 2026-11-15 | Phase 2 slice B implemented (MCP resources, prompts, and MCP Apps) |
 | 1.2.0 | 2026-11-15 | Phase 2 slice A implemented (OAuth, per-user connections); implementation status rewritten |
 | 1.1.0 | 2026-11-15 | Added principals, credential modes, per-user authentication for members and end users, end-user governance, context-bound arguments, dry run; split tool definition/setting; added SOLID review and normative SOLID requirements; incorporated reference connectors spec and external-users module |

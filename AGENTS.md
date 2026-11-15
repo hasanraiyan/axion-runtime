@@ -109,6 +109,11 @@ app/middleware        -> request id, logging, rate limiting, CORS, security head
   (`app/middleware/logging.py#sanitize_path`).
 - Unique indexes: project `slug`; member `(project_id, user_id)`; secret
   `(project_id, environment, name)` with `is_deleted: False`.
+- MCP sessions are pooled (`app/integrations/mcp_pool.py`). Never open an SDK session outside the connector: SDK
+  sessions use `anyio` task groups that must be entered and exited in one task, which the pool guarantees with a
+  dedicated owner task per session. Tunables: `MCP_POOL_ENABLED`, `MCP_POOL_IDLE_SECONDS`,
+  `MCP_POOL_PER_USER_IDLE_SECONDS`, `MCP_POOL_MAX_PER_INTEGRATION`, `MCP_POOL_MAX_TOTAL`,
+  `MCP_LIST_CHANGED_DEBOUNCE_SECONDS`.
 - MOD-07 layering: services depend on ports (`app/core/tools`), never on `app/repositories`, `app/integrations`,
   the MCP SDK, or HTTP libraries; only `app/services/tools/providers.py` wires concretes. Never branch on
   integration/auth type outside the registries. `tests/test_tools_architecture.py` enforces this.

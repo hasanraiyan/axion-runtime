@@ -82,6 +82,14 @@ class Settings(BaseSettings):
         default=False, description="Allow plain http integration targets (development only)"
     )
 
+    # MCP session pool (MOD-07). Idle sessions are closed after the TTL; per-user sessions use the shorter one.
+    MCP_POOL_ENABLED: bool = Field(default=True, description="Reuse MCP sessions across tool calls")
+    MCP_POOL_IDLE_SECONDS: float = Field(default=300.0, ge=1.0, description="Idle TTL for shared-credential sessions")
+    MCP_POOL_PER_USER_IDLE_SECONDS: float = Field(default=120.0, ge=1.0, description="Idle TTL for per-user sessions")
+    MCP_POOL_MAX_PER_INTEGRATION: int = Field(default=8, ge=1, description="Pooled sessions per integration (LRU eviction)")
+    MCP_POOL_MAX_TOTAL: int = Field(default=256, ge=1, description="Pooled sessions per process")
+    MCP_LIST_CHANGED_DEBOUNCE_SECONDS: float = Field(default=5.0, ge=0.0, description="Coalescing window before re-discovery")
+
     # Public base URL of this API, used to build OAuth redirect URIs and hosted connect links (MOD-07)
     PUBLIC_API_BASE_URL: str = Field(
         default="http://localhost:8000", description="Externally reachable base URL of the API (no trailing slash)"

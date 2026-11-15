@@ -399,6 +399,39 @@ opening the review screen and clicking Approve.
 Approval also lists the exact domains and permissions granted, each of which must be a subset of what the app declared;
 anything unlisted is denied, and rendering returns only the approved set.
 
+### 25. A pooled SDK session needs an owner task; callers only use it
+
+**Problem.** The MCP SDK's `ClientSession` and Streamable HTTP transport use `anyio` task groups, which raise
+"Attempted to exit cancel scope in a different task" if exited from a task other than the one that entered them. A pool
+that opens a session inside whichever request asked first, and closes it from another, breaks (the same constraint as
+learnings #16 for test fixtures).
+
+**Design.** Each pooled session is owned by one background task that opens it, parks until told to close (or idle), and
+closes it, all in that task. Callers use the session from their own tasks through a proxy, which the SDK allows. Idle
+expiry runs inside the owner task, so no janitor is needed; `close_all` signals every owner and waits for them.
+`test_the_session_is_always_entered_and_exited_in_one_owner_task` and the real-SDK pool tests guard this.
+
+**Safety rules.** Keyed by `(integration, revision, keyed-hash of the credentials)`, so different users never share a
+session; any failure evicts the session; only "session expired" is retried (once) because the server never saw the
+request, so a tool call can never run twice; caps fall back to an unpooled session instead of blocking.
+
+### 26. The standalone notification stream cannot be carried by an in-memory ASGI transport
+
+**Limitation.** `notifications/tools/list_changed` arrives on a long-lived SSE `GET`. `httpx2.ASGITransport` buffers a
+response until it completes, so that stream never delivers in-process, and a test cannot observe a real notification
+end to end. What is verified instead: the SDK's real notification types (`ToolListChangedNotification`, ...) through the
+real handler, and the subscriber through the whole container (discovery, drift, audit). Real delivery should be checked
+once against a live MCP server that emits `list_changed` before relying on it in production.
+
+### 27. Unsaved Beanie documents all have `id = None`
+
+**Symptom.** A pool test that created several `Integration` objects without inserting them saw them all share one pool
+entry, because the key used `str(integration.id)` and every unsaved document has `id = None`, so "a different
+integration" was the same key.
+
+**Fix.** Tests that need distinct identities set `PydanticObjectId()` explicitly. Production is unaffected (documents are
+inserted before use), but any code keyed on `id` must never be exercised with unsaved documents.
+
 ---
 
 ## Bugs found and fixed (commit `5ea80d9`)

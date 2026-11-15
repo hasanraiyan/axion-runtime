@@ -17,7 +17,7 @@ from app.core.exceptions import BadRequestError, NotFoundError
 from app.core.outbound import OutboundUrlGuard
 from app.core.protocols.repositories import ISecretRepository
 from app.core.protocols.tool_repositories import IIntegrationRepository
-from app.core.tools.events import ToolsetChanged
+from app.core.tools.events import McpSessionsInvalidated, ToolsetChanged
 from app.core.tools.ports import AuditPort, DomainEventPort, IntegrationConnectionsPort
 from app.core.tools.registry import AdapterRegistry, AuthStrategyRegistry, adapter_key
 from app.models.integration import (
@@ -205,6 +205,8 @@ class IntegrationService:
             {"integration_id": str(updated.id), "fields": sorted(k for k in update if k != "updated_by")},
         )
         await self._events.publish(ToolsetChanged(str(project.id), "integration_updated"))
+        if connection_changed:
+            await self._events.publish(McpSessionsInvalidated(str(project.id), str(updated.id), "connection_changed"))
         return updated
 
     # --------------------------------------------------------------- enable/disable
@@ -228,6 +230,8 @@ class IntegrationService:
             {"integration_id": str(updated.id)},
         )
         await self._events.publish(ToolsetChanged(str(project.id), "integration_toggled"))
+        if not enabled:
+            await self._events.publish(McpSessionsInvalidated(str(project.id), str(updated.id), "disabled"))
         return updated
 
     # ----------------------------------------------------------------- soft delete
@@ -251,6 +255,7 @@ class IntegrationService:
             str(project.id), actor_id, ProjectAuditAction.INTEGRATION_DELETED.value, {"integration_id": str(updated.id)}
         )
         await self._events.publish(ToolsetChanged(str(project.id), "integration_deleted"))
+        await self._events.publish(McpSessionsInvalidated(str(project.id), str(updated.id), "deleted"))
         return updated
 
     async def restore(self, project_id: IdLike, integration_id: IdLike, actor_id: str) -> Integration:

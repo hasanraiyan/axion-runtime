@@ -8,8 +8,9 @@ all traffic. SDK and transport exceptions are mapped to the neutral ``Upstream*`
 """
 from __future__ import annotations
 
+import logging
 from contextlib import AbstractAsyncContextManager, asynccontextmanager
-from typing import Any, AsyncIterator, Dict, List, Optional, Protocol
+from typing import Any, AsyncIterator, Awaitable, Callable, Dict, List, Optional, Protocol
 
 import httpx2
 from mcp import ClientSession, types
@@ -30,6 +31,14 @@ from app.core.tools.types import ResolvedCredentials
 from app.integrations.guarded_transport import GuardedAsyncTransport
 from app.models.integration import Integration
 
+logger = logging.getLogger(__name__)
+
+LIST_CHANGED_KINDS = {
+    types.ToolListChangedNotification: "tools",
+    types.ResourceListChangedNotification: "resources",
+    types.PromptListChangedNotification: "prompts",
+}
+ListChangedCallback = Callable[[Integration, str], Awaitable[None]]
 CLIENT_NAME = "axion"
 CLIENT_VERSION = "1.0.0"
 MAX_TOOL_PAGES = 50
@@ -60,6 +69,23 @@ class McpConnectorPort(Protocol):
     ) -> AbstractAsyncContextManager[McpSessionPort]:
         """Open an initialized session; closing the context terminates it."""
         ...
+
+
+def build_message_handler(integration: Integration, callback: Optional[ListChangedCallback]) -> Callable[[Any], Awaitable[None]]:
+    """
+    ClientSession message handler: forwards ``*/list_changed`` notifications and ignores everything else.
+    A failing callback can never break the MCP session that delivered the notification.
+    """
+
+    async def on_message(message: Any) -> None:
+        kind = LIST_CHANGED_KINDS.get(type(message))
+        if kind is not None and callback is not None:
+            try:
+                await callback(integration, kind)
+            except Exception:
+                logger.exception("list_changed handler failed")
+
+    return on_message
 
 
 # --------------------------------------------------------------------------- error mapping
@@ -126,9 +152,11 @@ def map_sdk_exception(exc: BaseException, http_statuses: Optional[List[int]] = N
 
 # ------------------------------------------------------------------------------ session
 class SdkMcpSession:
-    def __init__(self, session: ClientSession, init: types.InitializeResult, timeout: float) -> None:
+    def __init__(self, session: ClientSession, init: types.InitializeResult, timeout: float, http_statuses: Optional[List[int]] = None) -> None:
         self._session = session
         self._timeout = timeout
+        # HTTP statuses seen on this session's connection; the pool uses them to classify failures the SDK hides.
+        self.http_statuses: List[int] = http_statuses if http_statuses is not None else []
         dumped = init.model_dump(by_alias=True, exclude_none=True)
         self.server_info: Dict[str, Any] = dumped.get("serverInfo") or {}
         self.capabilities: Dict[str, Any] = dumped.get("capabilities") or {}
@@ -191,10 +219,12 @@ class SdkMcpConnector:
         *,
         inner_transport: Optional[httpx2.AsyncBaseTransport] = None,
         pin_ips: bool = True,
+        on_list_changed: Optional[ListChangedCallback] = None,
     ) -> None:
         self._guard = guard
         self._inner = inner_transport
         self._pin = pin_ips
+        self._on_list_changed = on_list_changed
 
     @asynccontextmanager
     async def connect(
@@ -218,6 +248,8 @@ class SdkMcpConnector:
             timeout=httpx2.Timeout(timeout),
             follow_redirects=False,
         )
+        on_message = build_message_handler(integration, self._on_list_changed)
+
         try:
             async with client:
                 async with streamable_http_client(config["url"], http_client=client) as streams:
@@ -227,9 +259,10 @@ class SdkMcpConnector:
                         read_timeout_seconds=timeout,
                         client_info=types.Implementation(name=CLIENT_NAME, version=CLIENT_VERSION),
                         extensions=UI_EXTENSION,
+                        message_handler=on_message,
                     ) as session:
                         init = await session.initialize()
-                        yield SdkMcpSession(session, init, timeout)
+                        yield SdkMcpSession(session, init, timeout, statuses)
         except UpstreamError:
             raise
         except BaseException as exc:  # noqa: BLE001 - re-raised after mapping

@@ -24,7 +24,8 @@ from app.core.protocols.tool_repositories import (
 )
 from app.core.tools.errors import OAuthFlowFailed, OAuthInvalidClient, OAuthInvalidGrant, UpstreamError
 from app.core.tools.oauth import TokenSet
-from app.core.tools.ports import AuditPort, OAuthFlowPort, TokenCipherPort
+from app.core.tools.events import McpSessionsInvalidated
+from app.core.tools.ports import AuditPort, DomainEventPort, OAuthFlowPort, TokenCipherPort
 from app.core.tools.resilience import KeyedLocks
 from app.core.tools.types import ResolvedCredentials, Subject, SubjectType
 from app.models.connection import (
@@ -96,6 +97,7 @@ class ConnectionService:
         cipher: TokenCipherPort,
         oauth: OAuthFlowPort,
         audit: AuditPort,
+        events: Optional[DomainEventPort] = None,
     ) -> None:
         self._lifecycle = lifecycle
         self._connections = connection_repo
@@ -104,6 +106,7 @@ class ConnectionService:
         self._cipher = cipher
         self._oauth = oauth
         self._audit = audit
+        self._events = events
 
     # ------------------------------------------------------------------- storing
     async def store_oauth(
@@ -189,9 +192,15 @@ class ConnectionService:
             raise NotFoundError("Connection not found")
         await self._remove(project.id, connection, actor_id, reason)
 
+    async def _invalidate(self, project_id: Any, integration_id: Any, reason: str) -> None:
+        """Close pooled MCP sessions that were opened with credentials that no longer exist or are no longer allowed."""
+        if self._events is not None:
+            await self._events.publish(McpSessionsInvalidated(str(project_id), str(integration_id), reason))
+
     async def _remove(self, project_id: Any, connection: IntegrationConnection, actor_id: str, reason: str) -> None:
         await self._revoke_upstream(str(project_id), connection)
         await self._connections.delete(connection.id)
+        await self._invalidate(project_id, connection.integration_id, reason)
         await self._audit.record(
             str(project_id),
             actor_id,
@@ -234,6 +243,7 @@ class ConnectionService:
                 await self._connections.delete(connection.id)
                 removed += 1
         await self._clients.delete_by_integration(integration_id)
+        await self._invalidate(project_id, integration_id, reason)
         if removed:
             await self._audit.record(
                 str(project_id), actor_id, ProjectAuditAction.CONNECTION_REVOKED.value,
@@ -243,6 +253,8 @@ class ConnectionService:
 
     # -------------------------------------------------- EndUserConnectionPort
     async def suspend_subject(self, project_id: str, end_user_id: str) -> int:
+        for connection in await self._connections.list_for_subject(project_id, ConnectionSubjectType.END_USER, end_user_id):
+            await self._invalidate(project_id, connection.integration_id, "end_user_blocked")
         return await self._connections.set_status_for_subject(
             project_id, ConnectionSubjectType.END_USER, end_user_id, ConnectionStatus.ACTIVE, ConnectionStatus.SUSPENDED
         )
@@ -256,6 +268,7 @@ class ConnectionService:
         """Right to erasure: revoke upstream where possible, then delete the tokens synchronously."""
         for connection in await self._connections.list_for_subject(project_id, ConnectionSubjectType.END_USER, end_user_id):
             await self._revoke_upstream(project_id, connection)
+            await self._invalidate(project_id, connection.integration_id, "end_user_erased")
         return await self._connections.delete_by_subject(project_id, ConnectionSubjectType.END_USER, end_user_id)
 
 

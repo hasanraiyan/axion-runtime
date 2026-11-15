@@ -110,6 +110,7 @@ class DiscoveryService:
                 "status": new_status,
                 "status_reason": None,
                 "consecutive_failures": 0,
+                "catalog_stale": False,
             },
         )
         await self._audit.record(
@@ -133,6 +134,10 @@ class DiscoveryService:
             )
         await self._events.publish(ToolsetChanged(str(project.id), "discovery"))
         return summary
+
+    async def mark_stale(self, project_id: IdLike, integration_id: IdLike) -> None:
+        """Record that the server's catalog changed but cannot be re-discovered automatically (per-user integrations)."""
+        await self._integrations.update_runtime_state(integration_id, project_id, {"catalog_stale": True})
 
     async def _fail(self, integration, reason: str) -> None:
         await self._integrations.update_runtime_state(

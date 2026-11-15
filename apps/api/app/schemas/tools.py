@@ -78,6 +78,7 @@ class IntegrationResponse(BaseModel):
     is_enabled: bool
     end_user_access: EndUserAccess
     last_discovery_at: Optional[datetime]
+    catalog_stale: bool = False
     health: Dict[str, Any]
     revision: int
     created_by: str
@@ -111,6 +112,7 @@ class IntegrationResponse(BaseModel):
             is_enabled=doc.is_enabled,
             end_user_access=doc.end_user_access,
             last_discovery_at=doc.last_discovery_at,
+            catalog_stale=doc.catalog_stale,
             health=doc.health.model_dump(mode="json"),
             revision=doc.revision,
             created_by=doc.created_by,

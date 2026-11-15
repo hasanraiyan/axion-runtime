@@ -74,6 +74,7 @@ class ScriptedAdapter:
         self.probe_handler: Optional[Callable[[ResolvedCredentials], ProbeResult]] = None
         self.seen_credentials: List[ResolvedCredentials] = []
         self.sleep: float = 0.0
+        self.discover_delay: float = 0.0
 
     def validate_config(self, config: Dict[str, Any]) -> Dict[str, Any]:
         if config.get("kind") != "scripted":
@@ -98,6 +99,10 @@ class ScriptedAdapter:
 
     async def discover(self, integration: Integration, credentials: ResolvedCredentials) -> List[DiscoveredTool]:
         self.seen_credentials.append(credentials)
+        if self.discover_delay:
+            import asyncio
+
+            await asyncio.sleep(self.discover_delay)
         if self.raise_on_discover:
             raise self.raise_on_discover
         return list(self.catalog)

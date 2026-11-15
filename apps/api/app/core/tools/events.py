@@ -25,6 +25,24 @@ class ConnectionChanged:
 
 
 @dataclass(frozen=True)
+class McpListChanged:
+    """An MCP server announced that its tools, resources, or prompts changed (SRS-07 FR-10)."""
+
+    project_id: str
+    integration_id: str
+    kind: str  # tools | resources | prompts
+
+
+@dataclass(frozen=True)
+class McpSessionsInvalidated:
+    """Pooled MCP sessions for an integration must be closed (credentials, endpoint, or state changed)."""
+
+    project_id: str
+    integration_id: str
+    reason: str = ""
+
+
+@dataclass(frozen=True)
 class EndUserBlocked:
     project_id: str
     end_user_id: str

@@ -113,6 +113,9 @@ class Integration(BaseDocument):
     shared_identity_ack: Optional[SharedIdentityAck] = None
     last_discovery_at: Optional[datetime] = None
     catalog_hash: Optional[str] = None
+    catalog_stale: bool = Field(
+        default=False, description="The server announced a change that has not been re-discovered yet (per-user integrations)"
+    )
     health: IntegrationHealth = Field(default_factory=IntegrationHealth)
     consecutive_failures: int = Field(default=0, ge=0)
     referenced_secret_ids: List[PydanticObjectId] = Field(

@@ -11,6 +11,7 @@ from app.core.exceptions import AppException
 from app.core.logging import logger, setup_logging
 from app.db.client import close_db, init_db
 from app.middleware.logging import RequestLoggingMiddleware
+from app.services.tools.providers import start_background_services, stop_background_services
 from app.middleware.rate_limit import InMemoryRateLimiterMiddleware
 from app.middleware.request_id import RequestIdMiddleware
 from app.middleware.security_headers import SecurityHeadersMiddleware
@@ -54,8 +55,10 @@ async def lifespan(app: FastAPI):
     setup_logging(debug=settings.DEBUG)
     logger.info(f"Starting {settings.PROJECT_NAME} v{settings.VERSION} [{settings.ENVIRONMENT}]")
     await init_db(app)
+    start_background_services()
     yield
     logger.info(f"Shutting down {settings.PROJECT_NAME} gracefully...")
+    await stop_background_services()
     await close_db(app)
 
 
