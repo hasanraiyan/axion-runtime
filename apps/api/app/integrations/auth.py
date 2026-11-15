@@ -15,6 +15,7 @@ from app.core.exceptions import BadRequestError
 from app.core.tools.errors import OAuthFlowFailed, OAuthInvalidClient, UpstreamAuthError, UpstreamError
 from app.core.tools.ports import ClientCredentialsPort, SecretReaderPort
 from app.core.tools.registry import AuthStrategyRegistry
+from app.core.tools.telemetry import NullTelemetry, TelemetryPort
 from app.core.tools.token_cache import TokenCache
 from app.core.tools.types import ResolvedCredentials
 from app.models.integration import AuthProfile, AuthType, CredentialMode
@@ -244,7 +245,10 @@ class OAuthClientCredentialsStrategy:
     uses_connection = False
     static_kind = None
 
-    def __init__(self, flow: ClientCredentialsPort, cache: Optional[TokenCache] = None) -> None:
+    def __init__(
+        self, flow: ClientCredentialsPort, cache: Optional[TokenCache] = None, telemetry: Optional[TelemetryPort] = None
+    ) -> None:
+        self._telemetry: TelemetryPort = telemetry or NullTelemetry()
         self._flow = flow
         self._cache = cache if cache is not None else TokenCache()
 
@@ -314,7 +318,7 @@ class OAuthClientCredentialsStrategy:
 
         async def fetch():
             try:
-                return await self._flow.client_credentials(
+                tokens = await self._flow.client_credentials(
                     self._token_endpoint(oauth),
                     oauth["client_id"],
                     client_secret,
@@ -322,9 +326,13 @@ class OAuthClientCredentialsStrategy:
                     list(oauth.get("scopes", [])),
                     oauth.get("resource"),
                 )
+                self._telemetry.count("axion_oauth_token_requests_total", {"grant": "client_credentials", "outcome": "ok"})
+                return tokens
             except OAuthInvalidClient as exc:
+                self._telemetry.count("axion_oauth_token_requests_total", {"grant": "client_credentials", "outcome": "rejected"})
                 raise UpstreamAuthError("The authorization server rejected the OAuth client credentials") from exc
             except OAuthFlowFailed as exc:
+                self._telemetry.count("axion_oauth_token_requests_total", {"grant": "client_credentials", "outcome": "error"})
                 raise UpstreamError(str(exc)) from exc
 
         token = await self._cache.get(self._key(project_id, profile), fingerprint, fetch)
@@ -332,7 +340,9 @@ class OAuthClientCredentialsStrategy:
 
 
 def build_default_auth_registry(
-    flow: Optional[ClientCredentialsPort] = None, token_cache: Optional[TokenCache] = None
+    flow: Optional[ClientCredentialsPort] = None,
+    token_cache: Optional[TokenCache] = None,
+    telemetry: Optional[TelemetryPort] = None,
 ) -> AuthStrategyRegistry:
     registry = AuthStrategyRegistry()
     strategies = [
@@ -344,7 +354,7 @@ def build_default_auth_registry(
         OAuthAuthorizationCodeStrategy(),
     ]
     if flow is not None:  # machine-to-machine OAuth needs a way to reach the token endpoint
-        strategies.append(OAuthClientCredentialsStrategy(flow, token_cache))
+        strategies.append(OAuthClientCredentialsStrategy(flow, token_cache, telemetry))
     for strategy in strategies:
         registry.register(strategy)
     return registry

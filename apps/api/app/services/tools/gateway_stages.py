@@ -27,6 +27,7 @@ from app.core.tools.errors import (
 )
 from app.core.tools.ports import ToolExecutor, supports
 from app.core.tools.registry import AdapterRegistry
+from app.core.tools.telemetry import NullTelemetry, TelemetryPort
 from app.core.tools.resilience import CircuitBreaker, ConcurrencyLimiter, IdempotencyStore, SlidingWindowRateLimiter
 from app.core.tools.signing import TokenSigner, arguments_hash
 from app.core.tools.types import ContentBlock, InvocationResult, RawToolResult, SubjectType
@@ -377,7 +378,9 @@ class ExecuteStage:
         default_concurrency: int = 16,
         concurrency_wait_seconds: float = 2.0,
         credentials: Optional[CredentialBuilder] = None,
+        telemetry: Optional[TelemetryPort] = None,
     ) -> None:
+        self._telemetry: TelemetryPort = telemetry or NullTelemetry()
         self._credentials = credentials
         self._adapters = adapters
         self._breaker = breaker
@@ -416,7 +419,12 @@ class ExecuteStage:
                 )
         try:
             async with asyncio.timeout(timeout):
-                raw = await adapter.execute(integration, tool, state.arguments, state.credentials, timeout)
+                with self._telemetry.span("integration.execute", {"integration.type": tool.integration_type}) as span:
+                    try:
+                        raw = await adapter.execute(integration, tool, state.arguments, state.credentials, timeout)
+                    except Exception as exc:
+                        span.record_error(exc)
+                        raise
         except (UpstreamTimeout, TimeoutError):
             return await self._failure(integration, key, InvocationStatus.TIMEOUT, "upstream_timeout", "The tool timed out", True)
         except UpstreamAuthError:
@@ -515,6 +523,7 @@ def build_stages(
     concurrency: Optional[ConcurrencyLimiter] = None,
     default_concurrency: int = 16,
     concurrency_wait_seconds: float = 2.0,
+    telemetry: Optional[TelemetryPort] = None,
 ) -> List[Any]:
     """The default ordered pipeline."""
     return [
@@ -528,6 +537,6 @@ def build_stages(
         CircuitStage(breaker),
         IdempotencyStage(idempotency),
         CredentialStage(credentials),
-        ExecuteStage(adapters, breaker, health, concurrency, default_concurrency, concurrency_wait_seconds, credentials),
+        ExecuteStage(adapters, breaker, health, concurrency, default_concurrency, concurrency_wait_seconds, credentials, telemetry),
         NormalizeStage(),
     ]

@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from app.api.metrics import router as metrics_router
 from app.api.v1.router import api_v1_router
 from app.core.config import settings
 from app.core.exceptions import AppException
@@ -180,6 +181,8 @@ def create_application() -> FastAPI:
     async def root_health() -> ApiResponse[HealthData]:
         data = await HealthService.get_health()
         return ApiResponse(data=data, message="Service is healthy")
+
+    application.include_router(metrics_router)
 
     # 5. Include API v1 Router
     application.include_router(api_v1_router, prefix=settings.API_V1_PREFIX)

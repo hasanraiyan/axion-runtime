@@ -7,6 +7,7 @@ approved definition is suspended (``changed``) until an admin re-approves it.
 """
 from __future__ import annotations
 
+import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Union
@@ -25,6 +26,7 @@ from app.core.tools.events import ToolsetChanged
 from app.core.tools.hashing import catalog_hash, definition_hash, make_tool_key
 from app.core.tools.policy import default_approval_policy, stricter
 from app.core.tools.ports import AuditPort, DomainEventPort, ToolDiscoverer, supports
+from app.core.tools.telemetry import NullTelemetry, TelemetryPort
 from app.core.tools.registry import AdapterRegistry
 from app.core.tools.types import DiscoveredTool, Subject, SubjectType
 from app.models.integration import IntegrationStatus
@@ -62,7 +64,9 @@ class DiscoveryService:
         audit: AuditPort,
         events: DomainEventPort,
         policy_reader: Optional[Any] = None,
+        telemetry: Optional[TelemetryPort] = None,
     ) -> None:
+        self._telemetry: TelemetryPort = telemetry or NullTelemetry()
         self._policy_reader = policy_reader
         self._lifecycle = lifecycle
         self._integrations = integration_repo
@@ -97,13 +101,18 @@ class DiscoveryService:
             await self._fail(integration, str(exc))
             raise UpstreamFailureError(f"Discovery failed: {str(exc)[:200]}") from exc
 
+        started = time.monotonic()
         try:
-            discovered = await adapter.discover(integration, credentials)
+            with self._telemetry.span("integration.discover", {"integration.type": integration.type.value}):
+                discovered = await adapter.discover(integration, credentials)
+            self._record_discovery(integration, "ok", started)
         except UpstreamAuthError as exc:
+            self._record_discovery(integration, "auth_failed", started)
             self._credentials.forget(integration)
             await self._fail(integration, "Upstream rejected the credentials")
             raise UpstreamFailureError("The upstream rejected the credentials", code="UPSTREAM_AUTH_FAILED") from exc
         except UpstreamError as exc:
+            self._record_discovery(integration, "error", started)
             await self._fail(integration, str(exc))
             raise UpstreamFailureError(f"Discovery failed: {str(exc)[:200]}") from exc
 
@@ -147,6 +156,11 @@ class DiscoveryService:
     async def mark_stale(self, project_id: IdLike, integration_id: IdLike) -> None:
         """Record that the server's catalog changed but cannot be re-discovered automatically (per-user integrations)."""
         await self._integrations.update_runtime_state(integration_id, project_id, {"catalog_stale": True})
+
+    def _record_discovery(self, integration: Any, outcome: str, started: float) -> None:
+        labels = {"integration_type": integration.type.value}
+        self._telemetry.count("axion_tool_discovery_total", {**labels, "outcome": outcome})
+        self._telemetry.observe("axion_tool_discovery_seconds", time.monotonic() - started, labels)
 
     async def _fail(self, integration, reason: str) -> None:
         await self._integrations.update_runtime_state(

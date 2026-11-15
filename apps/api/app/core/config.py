@@ -89,6 +89,7 @@ class Settings(BaseSettings):
     MCP_POOL_MAX_PER_INTEGRATION: int = Field(default=8, ge=1, description="Pooled sessions per integration (LRU eviction)")
     MCP_POOL_MAX_TOTAL: int = Field(default=256, ge=1, description="Pooled sessions per process")
     TOOL_MAX_CONCURRENT_CALLS: int = Field(default=16, ge=1, le=256, description="In-flight tool calls per integration per process (override per integration with config.max_concurrent_calls)")
+    METRICS_TOKEN: str = Field(default="", description="Bearer token required to scrape /metrics; empty disables the endpoint")
     TOOL_CONCURRENCY_WAIT_SECONDS: float = Field(default=2.0, ge=0, le=30, description="How long a call waits for a free concurrency slot before a retryable rate_limited")
     MCP_LIST_CHANGED_DEBOUNCE_SECONDS: float = Field(default=5.0, ge=0.0, description="Coalescing window before re-discovery")
 

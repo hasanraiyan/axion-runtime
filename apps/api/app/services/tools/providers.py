@@ -16,7 +16,9 @@ from app.core.outbound import OutboundUrlGuard, get_outbound_url_guard
 from app.core.tools.events import InProcessEventBus, McpListChanged, McpSessionsInvalidated, ToolsetChanged, get_event_bus
 from app.core.tools.registry import AdapterRegistry, AuthStrategyRegistry
 from app.core.tools.ports import OAuthFlowPort
+from app.core.tools.telemetry import Telemetry
 from app.core.tools.token_cache import TokenCache
+from app.integrations.telemetry import build_tracer
 from app.core.tools.resilience import CircuitBreaker, ConcurrencyLimiter, IdempotencyStore, KeyedLocks, SlidingWindowRateLimiter
 from app.core.tools.signing import TokenSigner
 from app.integrations.adapters import McpAdapter, NativeAdapter
@@ -82,6 +84,7 @@ class SharedToolState:
     toolset_cache: ToolsetCache = field(default_factory=ToolsetCache)
     concurrency: ConcurrencyLimiter = field(default_factory=ConcurrencyLimiter)
     token_cache: TokenCache = field(default_factory=TokenCache)
+    telemetry: Telemetry = field(default_factory=lambda: Telemetry(tracer=build_tracer()))
     catalog_sync: Optional[CatalogSyncSubscriber] = None
 
     def __post_init__(self) -> None:
@@ -179,7 +182,7 @@ def build_tools_container(
     adapters.register(NativeAdapter(shared.native))
     adapters.register(McpAdapter(connector or _default_connector(guard, shared)))
     oauth_flow = oauth or OAuthFlowClient(guard)
-    auth_registry = build_default_auth_registry(oauth_flow, shared.token_cache)
+    auth_registry = build_default_auth_registry(oauth_flow, shared.token_cache, shared.telemetry)
 
     secret_reader = ProjectSecretReader(secret_repo, crypto)
     cipher = TokenCipher(crypto)
@@ -197,7 +200,8 @@ def build_tools_container(
 
     health = IntegrationHealthService(lifecycle, integration_repo, adapters, credentials, audit, events)
     discovery = DiscoveryService(
-        lifecycle, integration_repo, tool_repo, setting_repo, adapters, credentials, audit, events, policy_reader=policy_reader
+        lifecycle, integration_repo, tool_repo, setting_repo, adapters, credentials, audit, events, policy_reader=policy_reader,
+        telemetry=shared.telemetry,
     )
     catalog = ToolCatalogService(lifecycle, tool_repo, setting_repo)
     tool_settings = ToolSettingService(lifecycle, tool_repo, setting_repo, audit, events)
@@ -205,18 +209,18 @@ def build_tools_container(
     toolset = ToolsetResolver(
         lifecycle, integration_repo, tool_repo, setting_repo, binding_repo, adapters,
         auth_registry=auth_registry, connections=connections, policy_reader=policy_reader,
-        cache=shared.toolset_cache,
+        cache=shared.toolset_cache, telemetry=shared.telemetry,
     )
     end_users = EndUserService(lifecycle, end_user_repo, signer, audit, events, invocation_repo, connections=connections)
     principals = PrincipalResolver(end_users)
     approvals = ApprovalService(signer, end_users, audit)
     stages = build_stages(
         toolset, end_users, signer, shared.limiter, shared.breaker, shared.idempotency, credentials, adapters, health,
-        policy_reader=policy_reader, concurrency=shared.concurrency,
+        policy_reader=policy_reader, concurrency=shared.concurrency, telemetry=shared.telemetry,
         default_concurrency=app_settings.TOOL_MAX_CONCURRENT_CALLS,
         concurrency_wait_seconds=app_settings.TOOL_CONCURRENCY_WAIT_SECONDS,
     )
-    gateway = ToolExecutionGateway(stages, InvocationRecorder(invocation_repo, audit, policy_reader))
+    gateway = ToolExecutionGateway(stages, InvocationRecorder(invocation_repo, audit, policy_reader), shared.telemetry)
     apps = McpAppService(
         lifecycle, integration_repo, tool_repo, app_repo, adapters, credentials, gateway, shared.limiter, audit_port
     )

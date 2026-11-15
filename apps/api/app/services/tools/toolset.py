@@ -26,6 +26,7 @@ from app.models.integration import Integration
 from app.models.tool import ToolBinding, ToolDefinition, ToolSetting
 from app.models.integration import CredentialMode
 from app.services.tools.access import Availability, ConnectionState, ToolAccessService
+from app.core.tools.telemetry import NullTelemetry, TelemetryPort
 from app.services.tools.common import ProjectLifecycle
 from app.services.tools.toolset_cache import ToolsetCache
 
@@ -98,7 +99,9 @@ class ToolsetResolver:
         connections: Optional[ConnectionLookupPort] = None,
         policy_reader: Optional[Any] = None,
         cache: Optional[ToolsetCache] = None,
+        telemetry: Optional[TelemetryPort] = None,
     ) -> None:
+        self._telemetry: TelemetryPort = telemetry or NullTelemetry()
         self._cache = cache
         self._lifecycle = lifecycle
         self._integrations = integration_repo
@@ -196,6 +199,7 @@ class ToolsetResolver:
             return await self._compute_toolset(project, principal)
         key = self._cache.key(project.id, principal.subject.key, principal.agent_id)
         cached = self._cache.get(key)
+        self._telemetry.count("axion_toolset_cache_total", {"result": "hit" if cached is not None else "miss"})
         if cached is not None:
             return Toolset(cached.version, list(cached.tools), list(cached.excluded), list(cached.auth_required))
         generation = self._cache.generation(project.id)

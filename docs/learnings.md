@@ -490,6 +490,22 @@ calls report `tool_unavailable` until an admin re-tests it; the re-test then fet
 **Verification.** `tests/test_oauth_client_credentials.py` (real SDK server + authorization server); 18 mutants, one
 equivalent survivor (a too-short token is refetched either way).
 
+### 31. Metrics must not carry tenant identity; telemetry must never fail a tool call
+
+**Design.** `app/core/tools/telemetry.py` holds the `TelemetryPort`, `NullTelemetry` default, and a small
+`MetricsRegistry` that renders the Prometheus text format (no new dependency). Labels are restricted to
+`ALLOWED_LABELS`: project ids, tool keys, and user ids are unbounded and would leak tenant data to anyone who can scrape
+`/metrics`. Label values are escaped (a newline could otherwise forge a series) and truncated; total series are capped.
+`Telemetry` swallows and logs metric errors. Spans go through the OpenTelemetry **API** only: it is a no-op without an
+SDK, so exporters stay a deployment decision. Span attributes accept scalars only and errors record the exception class,
+never its message. `GuardedAsyncTransport` forwards `traceparent`/`tracestate` but never `baggage`.
+
+**Why `/metrics` is token-gated.** It is off (404) unless `METRICS_TOKEN` is set, then requires that bearer token and is
+excluded from the OpenAPI contract.
+
+**Verification.** `tests/test_tools_telemetry.py`; the OTel SDK is not installed, so the adapter's span handle is tested
+against a fake span and the gateway against a recording tracer. 16 mutants killed.
+
 ---
 
 ## Bugs found and fixed (commit `5ea80d9`)

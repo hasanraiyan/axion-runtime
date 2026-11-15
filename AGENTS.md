@@ -119,6 +119,9 @@ app/middleware        -> request id, logging, rate limiting, CORS, security head
   integration/auth type outside the registries. `tests/test_tools_architecture.py` enforces this.
 - Toolset *listings* are cached (`ToolsetCache`, 30 s, invalidated by `ToolsetChanged`); invocation must always resolve
   fresh via `resolve_one`. Anything that changes what a subject may see must publish `ToolsetChanged`.
+- Metrics (`/metrics`, off unless `METRICS_TOKEN` is set) may only use the labels in
+  `app/core/tools/telemetry.py#ALLOWED_LABELS`; never add project, tool, user, or integration ids as labels or span
+  attributes, and never put arguments, results, or error messages on spans.
 - Before dropping/altering a collection, check `docs/learnings.md` for migration context.
 
 ## Memory protocol

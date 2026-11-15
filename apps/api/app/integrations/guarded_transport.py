@@ -14,6 +14,7 @@ from typing import Iterable, Optional
 import httpx2
 
 from app.core.outbound import OutboundUrlGuard
+from app.integrations.telemetry import inject_trace_context
 
 
 class GuardedAsyncTransport(httpx2.AsyncBaseTransport):
@@ -32,6 +33,11 @@ class GuardedAsyncTransport(httpx2.AsyncBaseTransport):
 
     async def handle_async_request(self, request: httpx2.Request) -> httpx2.Response:
         target = await self._guard.check(str(request.url), allowed_hosts=self._allowed_hosts)
+        carrier: dict = {}
+        inject_trace_context(carrier)  # traceparent only; no baggage, so no tenant data leaves the platform
+        for name, value in carrier.items():
+            if name.lower() == "traceparent" or name.lower() == "tracestate":
+                request.headers[name] = value
 
         if self._pin and target.pinned_ips:
             headers = request.headers.copy()

@@ -18,6 +18,7 @@ from app.core.tools.redaction import redact_arguments
 from app.core.tools.types import InvocationRequest, InvocationResult, RawToolResult, ResolvedCredentials
 from app.core.protocols.tool_repositories import IToolInvocationRepository
 from app.core.tools.ports import AuditPort
+from app.core.tools.telemetry import NullTelemetry, TelemetryPort
 from app.models.project import ProjectAuditAction
 from app.models.tool_invocation import InvocationStatus, ToolInvocation
 from app.services.tools.toolset import ToolContext
@@ -39,6 +40,7 @@ class InvocationState:
     started: float = field(default_factory=time.monotonic)
     idempotency_cache_key: Optional[str] = None
     notes: Dict[str, Any] = field(default_factory=dict)
+    trace_id: Optional[str] = None
 
 
 class InvocationStage(Protocol):
@@ -97,7 +99,7 @@ class InvocationRecorder:
                 result_summary=summary,
                 expire_at=expire_at,
                 latency_ms=result.latency_ms,
-                trace_id=principal.trace_id,
+                trace_id=state.trace_id or principal.trace_id,
                 request_id=principal.request_id,
             )
             saved = await self._invocations.create(document)
@@ -131,12 +133,26 @@ class InvocationRecorder:
 
 
 class ToolExecutionGateway:
-    def __init__(self, stages: List[InvocationStage], recorder: InvocationRecorder) -> None:
+    def __init__(
+        self, stages: List[InvocationStage], recorder: InvocationRecorder, telemetry: Optional[TelemetryPort] = None
+    ) -> None:
         self._stages = stages
         self._recorder = recorder
+        self._telemetry: TelemetryPort = telemetry or NullTelemetry()
 
     async def invoke(self, request: InvocationRequest) -> InvocationResult:
-        state = InvocationState(request=request, arguments=dict(request.arguments))
+        with self._telemetry.span("tool.invoke") as span:
+            state = InvocationState(request=request, arguments=dict(request.arguments), trace_id=span.trace_id)
+            result = await self._run(state)
+            integration_type = state.context.tool.integration_type if state.context else "unknown"
+            span.set_attribute("integration.type", integration_type)
+            span.set_attribute("tool.status", result.status.value)
+            labels = {"integration_type": integration_type, "status": result.status.value}
+            self._telemetry.count("axion_tool_invocations_total", labels)
+            self._telemetry.observe("axion_tool_invocation_seconds", time.monotonic() - state.started, {"integration_type": integration_type})
+            return result
+
+    async def _run(self, state: InvocationState) -> InvocationResult:
         result: Optional[InvocationResult] = None
         try:
             for stage in self._stages:
