@@ -7,7 +7,6 @@ that listing and invoking share exactly the same availability logic.
 """
 from __future__ import annotations
 
-import copy
 import hashlib
 import json
 from dataclasses import dataclass, field
@@ -28,6 +27,7 @@ from app.models.tool import ToolBinding, ToolDefinition, ToolSetting
 from app.models.integration import CredentialMode
 from app.services.tools.access import Availability, ConnectionState, ToolAccessService
 from app.services.tools.common import ProjectLifecycle
+from app.services.tools.toolset_cache import ToolsetCache
 
 DEFAULT_TIMEOUT_SECONDS = 30
 MAX_TIMEOUT_SECONDS = 300
@@ -66,15 +66,20 @@ class ToolContext:
 
 
 def visible_schema(schema: Dict[str, Any], hidden: set[str]) -> Dict[str, Any]:
-    """Schema shown to the model: locked and context-bound parameters are removed (FR-15, FR-76)."""
-    result = copy.deepcopy(schema or {"type": "object", "properties": {}})
+    """
+    Schema shown to the model: locked and context-bound parameters are removed (FR-15, FR-76).
+
+    Copies only the containers it changes (never the whole upstream schema), so the stored definition is not mutated.
+    """
+    result = dict(schema) if schema else {"type": "object", "properties": {}}
     props = result.get("properties")
-    if isinstance(props, dict):
-        for name in hidden:
-            props.pop(name, None)
-    if isinstance(result.get("required"), list):
-        result["required"] = [r for r in result["required"] if r not in hidden]
-        if not result["required"]:
+    if hidden and isinstance(props, dict):
+        result["properties"] = {k: v for k, v in props.items() if k not in hidden}
+    if hidden and isinstance(result.get("required"), list):
+        required = [r for r in result["required"] if r not in hidden]
+        if required:
+            result["required"] = required
+        else:
             result.pop("required")
     return result
 
@@ -92,7 +97,9 @@ class ToolsetResolver:
         auth_registry: Optional[AuthStrategyRegistry] = None,
         connections: Optional[ConnectionLookupPort] = None,
         policy_reader: Optional[Any] = None,
+        cache: Optional[ToolsetCache] = None,
     ) -> None:
+        self._cache = cache
         self._lifecycle = lifecycle
         self._integrations = integration_repo
         self._tools = tool_repo
@@ -183,7 +190,20 @@ class ToolsetResolver:
 
     # ------------------------------------------------------------------- toolset
     async def resolve_toolset(self, principal: PrincipalContext, agent_id: Optional[str] = None) -> Toolset:
+        """The listed toolset. Served from a short-TTL cache; the project's lifecycle is still checked on every call."""
         project = await self._lifecycle.get_active(principal.project_id)
+        if self._cache is None:
+            return await self._compute_toolset(project, principal)
+        key = self._cache.key(project.id, principal.subject.key, principal.agent_id)
+        cached = self._cache.get(key)
+        if cached is not None:
+            return Toolset(cached.version, list(cached.tools), list(cached.excluded), list(cached.auth_required))
+        generation = self._cache.generation(project.id)
+        toolset = await self._compute_toolset(project, principal)
+        self._cache.put(key, toolset, generation)
+        return Toolset(toolset.version, list(toolset.tools), list(toolset.excluded), list(toolset.auth_required))
+
+    async def _compute_toolset(self, project: Any, principal: PrincipalContext) -> Toolset:
         end_user_external = principal.subject.external_id if principal.subject.type == SubjectType.END_USER else None
         bindings = await self._bindings.list_for_resolution(project.id, principal.agent_id, end_user_external)
 

@@ -13,10 +13,10 @@ from fastapi import Depends
 from app.core.config import settings as app_settings
 from app.core.crypto import CryptoService, get_crypto_service
 from app.core.outbound import OutboundUrlGuard, get_outbound_url_guard
-from app.core.tools.events import InProcessEventBus, McpListChanged, McpSessionsInvalidated, get_event_bus
+from app.core.tools.events import InProcessEventBus, McpListChanged, McpSessionsInvalidated, ToolsetChanged, get_event_bus
 from app.core.tools.registry import AdapterRegistry, AuthStrategyRegistry
 from app.core.tools.ports import OAuthFlowPort
-from app.core.tools.resilience import CircuitBreaker, IdempotencyStore, KeyedLocks, SlidingWindowRateLimiter
+from app.core.tools.resilience import CircuitBreaker, ConcurrencyLimiter, IdempotencyStore, KeyedLocks, SlidingWindowRateLimiter
 from app.core.tools.signing import TokenSigner
 from app.integrations.adapters import McpAdapter, NativeAdapter
 from app.integrations.auth import build_default_auth_registry
@@ -62,6 +62,7 @@ from app.services.tools.policy_reader import PolicyCache, PolicyReader
 from app.services.tools.principal import ApprovalService, PrincipalResolver
 from app.services.tools.purge import ToolCascadePurger
 from app.services.tools.toolset import ToolsetResolver
+from app.services.tools.toolset_cache import ToolsetCache
 from app.services.tools.tool_service import ToolCatalogService, ToolSettingService
 
 
@@ -77,7 +78,13 @@ class SharedToolState:
     locks: KeyedLocks
     mcp_pool: McpSessionPool = field(default_factory=McpSessionPool)
     policy_cache: PolicyCache = field(default_factory=PolicyCache)
+    toolset_cache: ToolsetCache = field(default_factory=ToolsetCache)
+    concurrency: ConcurrencyLimiter = field(default_factory=ConcurrencyLimiter)
     catalog_sync: Optional[CatalogSyncSubscriber] = None
+
+    def __post_init__(self) -> None:
+        # Every shared state wires its own cache to its own bus, exactly once.
+        self.events.subscribe(ToolsetChanged, self.toolset_cache.on_toolset_changed)
 
 
 _shared: Optional[SharedToolState] = None
@@ -196,13 +203,16 @@ def build_tools_container(
     toolset = ToolsetResolver(
         lifecycle, integration_repo, tool_repo, setting_repo, binding_repo, adapters,
         auth_registry=auth_registry, connections=connections, policy_reader=policy_reader,
+        cache=shared.toolset_cache,
     )
     end_users = EndUserService(lifecycle, end_user_repo, signer, audit, events, invocation_repo, connections=connections)
     principals = PrincipalResolver(end_users)
     approvals = ApprovalService(signer, end_users, audit)
     stages = build_stages(
         toolset, end_users, signer, shared.limiter, shared.breaker, shared.idempotency, credentials, adapters, health,
-        policy_reader=policy_reader,
+        policy_reader=policy_reader, concurrency=shared.concurrency,
+        default_concurrency=app_settings.TOOL_MAX_CONCURRENT_CALLS,
+        concurrency_wait_seconds=app_settings.TOOL_CONCURRENCY_WAIT_SECONDS,
     )
     gateway = ToolExecutionGateway(stages, InvocationRecorder(invocation_repo, audit, policy_reader))
     apps = McpAppService(

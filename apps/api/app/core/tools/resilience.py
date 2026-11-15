@@ -123,3 +123,38 @@ class KeyedLocks:
             existing = asyncio.Lock()
             self._locks[key] = existing
         return existing
+
+
+class ConcurrencyLimiter:
+    """
+    Bounds in-flight calls per key (SRS-07 NFR-P5) so one slow upstream cannot occupy every worker.
+
+    A call waits up to ``wait_seconds`` for a slot and is then refused (the caller reports a retryable
+    ``rate_limited``). A changed limit takes effect for new calls; calls already running release the semaphore they hold.
+    """
+
+    def __init__(self) -> None:
+        self._semaphores: Dict[str, tuple[int, asyncio.Semaphore]] = {}
+
+    def _semaphore(self, key: str, limit: int) -> asyncio.Semaphore:
+        current = self._semaphores.get(key)
+        if current is None or current[0] != limit:
+            current = (limit, asyncio.Semaphore(limit))
+            self._semaphores[key] = current
+        return current[1]
+
+    async def acquire(self, key: str, limit: int, wait_seconds: float) -> Optional[asyncio.Semaphore]:
+        """Returns the held semaphore (pass it to ``release``) or ``None`` if no slot freed up in time."""
+        semaphore = self._semaphore(key, limit)
+        try:
+            await asyncio.wait_for(semaphore.acquire(), timeout=wait_seconds)
+        except TimeoutError:
+            return None
+        return semaphore
+
+    @staticmethod
+    def release(semaphore: asyncio.Semaphore) -> None:
+        semaphore.release()
+
+    def forget(self, key: str) -> None:
+        self._semaphores.pop(key, None)

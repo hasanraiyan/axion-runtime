@@ -160,7 +160,12 @@ class McpAdapter:
             not isinstance(allowed, list) or not all(isinstance(h, str) and h for h in allowed)
         ):
             raise BadRequestError("allowed_hosts must be a list of host patterns")
+        concurrent = config.get("max_concurrent_calls")
+        if concurrent is not None and (not isinstance(concurrent, int) or isinstance(concurrent, bool) or not 1 <= concurrent <= 256):
+            raise BadRequestError("max_concurrent_calls must be an integer between 1 and 256")
         normalized: Dict[str, Any] = {"url": url.strip(), "transport": transport, "request_timeout_seconds": timeout}
+        if concurrent is not None:
+            normalized["max_concurrent_calls"] = concurrent
         if allowed:
             normalized["allowed_hosts"] = allowed
         return normalized

@@ -27,7 +27,7 @@ from app.core.tools.errors import (
 )
 from app.core.tools.ports import ToolExecutor, supports
 from app.core.tools.registry import AdapterRegistry
-from app.core.tools.resilience import CircuitBreaker, IdempotencyStore, SlidingWindowRateLimiter
+from app.core.tools.resilience import CircuitBreaker, ConcurrencyLimiter, IdempotencyStore, SlidingWindowRateLimiter
 from app.core.tools.signing import TokenSigner, arguments_hash
 from app.core.tools.types import ContentBlock, InvocationResult, RawToolResult, SubjectType
 from app.models.tool import ApprovalPolicy
@@ -353,16 +353,30 @@ class CredentialStage:
         return None
 
 
+def concurrency_limit(tool: Any, default: int) -> int:
+    """The per-integration in-flight cap: the integration's valid ``max_concurrent_calls``, else the process default."""
+    configured = (tool.config or {}).get("max_concurrent_calls")
+    if isinstance(configured, int) and not isinstance(configured, bool) and 1 <= configured <= 256:
+        return configured
+    return default
+
+
 class ExecuteStage:
     def __init__(
         self,
         adapters: AdapterRegistry,
         breaker: CircuitBreaker,
         health: IntegrationHealthService,
+        concurrency: Optional[ConcurrencyLimiter] = None,
+        default_concurrency: int = 16,
+        concurrency_wait_seconds: float = 2.0,
     ) -> None:
         self._adapters = adapters
         self._breaker = breaker
         self._health = health
+        self._concurrency = concurrency
+        self._default_concurrency = default_concurrency
+        self._concurrency_wait = concurrency_wait_seconds
 
     async def run(self, state: InvocationState) -> Optional[InvocationResult]:
         context = state.context
@@ -384,6 +398,14 @@ class ExecuteStage:
 
         timeout = min(request.timeout_override_seconds or tool.timeout_seconds, 300)
         key = tool.integration_id
+        slot = None
+        if self._concurrency is not None:
+            slot = await self._concurrency.acquire(key, concurrency_limit(tool, self._default_concurrency), self._concurrency_wait)
+            if slot is None:
+                return _fail(
+                    InvocationStatus.RATE_LIMITED, "integration_busy",
+                    "The integration is handling too many calls right now; retry shortly", retryable=True,
+                )
         try:
             async with asyncio.timeout(timeout):
                 raw = await adapter.execute(integration, tool, state.arguments, state.credentials, timeout)
@@ -407,6 +429,9 @@ class ExecuteStage:
         except Exception:
             logger.exception("Adapter failure for %s", tool.tool_key)
             return await self._failure(integration, key, InvocationStatus.UPSTREAM_ERROR, "adapter_error", "The tool failed unexpectedly", True)
+        finally:
+            if slot is not None:
+                ConcurrencyLimiter.release(slot)
 
         self._breaker.record_success(key)
         await self._health.mark_recovered(integration)
@@ -477,6 +502,9 @@ def build_stages(
     adapters: AdapterRegistry,
     health: IntegrationHealthService,
     policy_reader: Optional[Any] = None,
+    concurrency: Optional[ConcurrencyLimiter] = None,
+    default_concurrency: int = 16,
+    concurrency_wait_seconds: float = 2.0,
 ) -> List[Any]:
     """The default ordered pipeline."""
     return [
@@ -490,6 +518,6 @@ def build_stages(
         CircuitStage(breaker),
         IdempotencyStage(idempotency),
         CredentialStage(credentials),
-        ExecuteStage(adapters, breaker, health),
+        ExecuteStage(adapters, breaker, health, concurrency, default_concurrency, concurrency_wait_seconds),
         NormalizeStage(),
     ]

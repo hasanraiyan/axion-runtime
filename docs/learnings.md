@@ -432,6 +432,29 @@ integration" was the same key.
 **Fix.** Tests that need distinct identities set `PydanticObjectId()` explicitly. Production is unaffected (documents are
 inserted before use), but any code keyed on `id` must never be exercised with unsaved documents.
 
+### 28. Cache only what is safe to be stale, and wire invalidation where the state is built
+
+**Context.** Cold toolset resolution for 500 tools took ~100 ms, but profiling showed ~90% was `deepcopy` in the in-memory
+fakes (`model_copy(deep=True)`) and per-tool `copy.deepcopy` in `visible_schema`. Real latency is database-bound, so the
+lever is a cache, not micro-optimisation.
+
+**Decisions.** `ToolsetCache` (`app/services/tools/toolset_cache.py`) caches *listings* only; `resolve_one` for invocation
+never reads it, so a stale entry can show a tool the gateway then refuses but can never authorise a call. A per-project
+generation counter stops a build that raced an invalidation from storing stale data. The project lifecycle is still
+checked on every call, so an archive is not masked. `visible_schema` copies only the containers it edits.
+
+**Pitfall.** The cache subscribes to `ToolsetChanged` in `SharedToolState.__post_init__`, not in
+`get_shared_tool_state()`: the test harness builds its own state, and wiring only the global one left tests with a stale
+cache. `ConnectionService` must also publish `ToolsetChanged` (connect, revoke, suspend, resume), otherwise a cached
+listing keeps showing `auth_required` after the user connects.
+
+**Concurrency cap.** `ConcurrencyLimiter` semaphores are released in a `finally` around the adapter call; the slot-leak
+mutation is covered by `test_the_slot_is_released_when_the_call_fails`. `max_concurrent_calls` is validated in the MCP
+adapter's `validate_config` (normalisation drops unknown keys, so an unvalidated key would silently vanish).
+
+**Verification.** `tests/test_tools_performance.py`; 13 mutants killed. Performance tests measure logic and cache against
+in-memory repositories, not database or network latency.
+
 ---
 
 ## Bugs found and fixed (commit `5ea80d9`)

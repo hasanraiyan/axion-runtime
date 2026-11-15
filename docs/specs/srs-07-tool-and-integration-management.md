@@ -1385,7 +1385,8 @@ tokens, block and erasure; project-purge cascade; secret-deletion guard.
 | Hosted connect page | Axion-hosted consent page | the link redirects straight to the provider; no Axion page | UI is deferred; the provider's consent screen is shown |
 | Per-user discovery | with a connected user's credentials | with the calling admin's **own** connection | An admin connects their own account, then runs discovery |
 | Revoked state | `connections.status = revoked` | the record is deleted | Deleting removes the credential outright; the audit log keeps the history |
-| Toolset cache (NFR-P1) | 30 s TTL cache | not implemented | Resolution is DB-bound; measure before caching |
+| Toolset cache (NFR-P1) | 30 s TTL cache | process-wide cache of *listings* only (30 s TTL, per project/subject/agent), invalidated by `ToolsetChanged`; invocation never uses it | Multi-process deployments see another process's change within the TTL; the project lifecycle is checked on every call |
+| Concurrency cap (NFR-P5) | per-integration cap, default 16 | per-integration, per-process semaphore (`TOOL_MAX_CONCURRENT_CALLS`, per integration `config.max_concurrent_calls`); a bounded wait then a retryable `integration_busy` | The cap is per process, not cluster-wide |
 | Session pool (FR-18, FR-81) | pooled per subject | pooled per credential fingerprint (per-user credentials imply per-subject) | `connect` has no subject parameter; the fingerprint gives the same isolation |
 | `list_changed` for per-user integrations | automatic re-discovery | marked `catalog_stale` for an admin to refresh | Discovery must use one person's credentials and tools may differ per user |
 
@@ -1437,6 +1438,7 @@ operations; the web UI and hosted pages. End users cannot register their own MCP
 | Version | Date | Description |
 |---|---|---|
 | 1.0.0 | 2026-11-15 | Initial draft based on analysis of the Agent Marketplace backend and Axion MOD-01/02/03/06 |
+| 1.5.0 | 2026-11-15 | Toolset listing cache and per-integration concurrency cap; performance targets asserted by tests (logic and cache, not DB latency) |
 | 1.4.0 | 2026-11-15 | Phase 2 slice C implemented (MCP session pool, list_changed handling); MCP side complete |
 | 1.3.0 | 2026-11-15 | Phase 2 slice B implemented (MCP resources, prompts, and MCP Apps) |
 | 1.2.0 | 2026-11-15 | Phase 2 slice A implemented (OAuth, per-user connections); implementation status rewritten |

@@ -24,7 +24,7 @@ from app.core.protocols.tool_repositories import (
 )
 from app.core.tools.errors import OAuthFlowFailed, OAuthInvalidClient, OAuthInvalidGrant, UpstreamError
 from app.core.tools.oauth import TokenSet
-from app.core.tools.events import McpSessionsInvalidated
+from app.core.tools.events import McpSessionsInvalidated, ToolsetChanged
 from app.core.tools.ports import AuditPort, DomainEventPort, OAuthFlowPort, TokenCipherPort
 from app.core.tools.resilience import KeyedLocks
 from app.core.tools.types import ResolvedCredentials, Subject, SubjectType
@@ -136,6 +136,7 @@ class ConnectionService:
         return connection
 
     async def _after_store(self, project_id: str, integration: Integration, subject: Subject, connection: IntegrationConnection) -> None:
+        await self._toolset_changed(project_id, "connection_stored")
         await self._audit.record(
             project_id,
             subject.id or "project",
@@ -196,6 +197,11 @@ class ConnectionService:
         """Close pooled MCP sessions that were opened with credentials that no longer exist or are no longer allowed."""
         if self._events is not None:
             await self._events.publish(McpSessionsInvalidated(str(project_id), str(integration_id), reason))
+            await self._events.publish(ToolsetChanged(str(project_id), reason))  # auth_required status in cached listings
+
+    async def _toolset_changed(self, project_id: Any, reason: str) -> None:
+        if self._events is not None:
+            await self._events.publish(ToolsetChanged(str(project_id), reason))
 
     async def _remove(self, project_id: Any, connection: IntegrationConnection, actor_id: str, reason: str) -> None:
         await self._revoke_upstream(str(project_id), connection)
@@ -260,9 +266,11 @@ class ConnectionService:
         )
 
     async def resume_subject(self, project_id: str, end_user_id: str) -> int:
-        return await self._connections.set_status_for_subject(
+        resumed = await self._connections.set_status_for_subject(
             project_id, ConnectionSubjectType.END_USER, end_user_id, ConnectionStatus.SUSPENDED, ConnectionStatus.ACTIVE
         )
+        await self._toolset_changed(project_id, "end_user_resumed")
+        return resumed
 
     async def erase_subject(self, project_id: str, end_user_id: str) -> int:
         """Right to erasure: revoke upstream where possible, then delete the tokens synchronously."""
