@@ -46,6 +46,16 @@ class ProjectAuditAction(str, Enum):
     CREDENTIAL_REVOKED = "credential.revoked"
     CREDENTIAL_DELETED = "credential.deleted"
     CREDENTIAL_PURGED = "credential.purged"
+    PROVIDER_CREATED = "provider.created"
+    PROVIDER_UPDATED = "provider.updated"
+    PROVIDER_HEALTHCHECK = "provider.healthcheck"
+    PROVIDER_DELETED = "provider.deleted"
+    PROVIDER_PURGED = "provider.purged"
+    MODEL_CREATED = "model.created"
+    MODEL_UPDATED = "model.updated"
+    MODEL_DELETED = "model.deleted"
+    MODEL_PURGED = "model.purged"
+    ROUTING_FALLBACK = "routing.fallback"
 
 
 class ProjectSettings(BaseModel):

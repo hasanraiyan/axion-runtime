@@ -50,6 +50,23 @@ from app.repositories.secret_repository import (
     ProjectSecretRepository,
     get_secret_repository,
 )
+from app.core.protocols.repositories import (
+    IProjectModelRepository,
+    IProjectProviderRepository,
+    IProjectRoutingPolicyRepository,
+)
+from app.repositories.project_provider_repository import (
+    ProjectProviderRepository,
+    get_project_provider_repository,
+)
+from app.repositories.project_model_repository import (
+    ProjectModelRepository,
+    get_project_model_repository,
+)
+from app.repositories.project_routing_policy_repository import (
+    ProjectRoutingPolicyRepository,
+    get_project_routing_policy_repository,
+)
 from app.schemas.project import (
     ProjectCreateRequest,
     ProjectResponse,
@@ -72,6 +89,9 @@ class ProjectService:
         audit_repo: Optional[ProjectAuditRepository] = None,
         secret_repo: Optional[ProjectSecretRepository] = None,
         credential_repo: Optional[ProjectCredentialRepository] = None,
+        provider_repo: Optional[IProjectProviderRepository] = None,
+        model_repo: Optional[IProjectModelRepository] = None,
+        routing_policy_repo: Optional[IProjectRoutingPolicyRepository] = None,
         mongo_client: Optional[AsyncMongoClient] = None,
     ) -> None:
         self.project_repo = project_repo if project_repo is not None else get_project_repository()
@@ -79,6 +99,9 @@ class ProjectService:
         self.audit_repo = audit_repo if audit_repo is not None else get_project_audit_repository()
         self.secret_repo = secret_repo
         self.credential_repo = credential_repo
+        self.provider_repo = provider_repo
+        self.model_repo = model_repo
+        self.routing_policy_repo = routing_policy_repo
         self.mongo_client = mongo_client
 
     def _get_client(self) -> Optional[AsyncMongoClient]:
@@ -752,7 +775,7 @@ class ProjectService:
             additional_updates={"deleted_at": now},
         )
 
-        # 2. Cascade delete project_members, child secrets, and credentials
+        # 2. Cascade delete project_members, child secrets, credentials, models, providers, routing policies
         deleted_members = await self.member_repo.delete_by_project_id(project.id)
         if self.secret_repo is not None:
             await self.secret_repo.purge_by_project(project.id)
@@ -768,6 +791,36 @@ class ProjectService:
                         "deleted_credentials_count": deleted_credentials,
                     },
                 )
+
+        # FR-10: Cascading purge of models, providers, and routing policies
+        if self.model_repo is not None:
+            deleted_models = await self.model_repo.purge_by_project(project.id)
+            if deleted_models > 0:
+                await self.audit_repo.log_event(
+                    project_id=project.id,
+                    actor_id=user_id,
+                    action=ProjectAuditAction.MODEL_PURGED,
+                    payload={
+                        "purged_at": now.isoformat(),
+                        "deleted_models_count": deleted_models,
+                    },
+                )
+
+        if self.provider_repo is not None:
+            deleted_providers = await self.provider_repo.purge_by_project(project.id)
+            if deleted_providers > 0:
+                await self.audit_repo.log_event(
+                    project_id=project.id,
+                    actor_id=user_id,
+                    action=ProjectAuditAction.PROVIDER_PURGED,
+                    payload={
+                        "purged_at": now.isoformat(),
+                        "deleted_providers_count": deleted_providers,
+                    },
+                )
+
+        if self.routing_policy_repo is not None:
+            await self.routing_policy_repo.purge_by_project(project.id)
 
         # 3. Emit PROJECT_PURGED audit log
         await self.audit_repo.log_event(
@@ -794,6 +847,9 @@ def get_project_service(
     audit_repo: ProjectAuditRepository = Depends(get_project_audit_repository),
     secret_repo: ProjectSecretRepository = Depends(get_secret_repository),
     credential_repo: ProjectCredentialRepository = Depends(get_credential_repository),
+    provider_repo: ProjectProviderRepository = Depends(get_project_provider_repository),
+    model_repo: ProjectModelRepository = Depends(get_project_model_repository),
+    routing_policy_repo: ProjectRoutingPolicyRepository = Depends(get_project_routing_policy_repository),
 ) -> ProjectService:
     """Dependency injection provider for ProjectService."""
     return ProjectService(
@@ -802,4 +858,7 @@ def get_project_service(
         audit_repo=audit_repo,
         secret_repo=secret_repo,
         credential_repo=credential_repo,
+        provider_repo=provider_repo,
+        model_repo=model_repo,
+        routing_policy_repo=routing_policy_repo,
     )

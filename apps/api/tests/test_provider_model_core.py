@@ -56,7 +56,7 @@ from tests.fakes.fake_project_model_repository import FakeProjectModelRepository
 from tests.fakes.fake_project_routing_policy_repository import FakeProjectRoutingPolicyRepository
 
 
-@pytest.fixture
+@pytest.fixture(autouse=True)
 async def mock_beanie_db():
     db = MagicMock()
     db.name = "axion_test"
