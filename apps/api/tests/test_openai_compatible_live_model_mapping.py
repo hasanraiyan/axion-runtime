@@ -132,6 +132,52 @@ def test_explicit_limit_keys_win_over_vendor_specific_ones():
     assert model.max_output_tokens == 4096
 
 
+def test_openrouter_reasoning_block_counts_as_reasoning_support():
+    """OpenRouter states reasoning with a `reasoning` object, not a sampling param."""
+    model = infer_openai_compatible_model(
+        {
+            "id": "rekaai/reka-edge",
+            "context_length": 65536,
+            "supported_parameters": ["max_tokens", "temperature"],
+            "reasoning": {"mandatory": False, "default_enabled": True},
+        }
+    )
+
+    assert model.supports_reasoning is True
+    # Still a real answer for the other capabilities, because params were listed.
+    assert model.supports_tools is False
+
+
+def test_openrouter_default_parameters_supply_temperature():
+    model = infer_openai_compatible_model(
+        {
+            "id": "z-ai/glm-5.3-flashx",
+            "context_length": 200000,
+            "supported_parameters": ["temperature"],
+            "default_parameters": {"temperature": 0.7, "top_p": 0.95},
+        }
+    )
+
+    assert model.default_temperature == 0.7
+
+
+def test_top_level_temperature_wins_over_default_parameters():
+    model = infer_openai_compatible_model(
+        {"id": "x", "temperature": 1, "default_parameters": {"temperature": 0.2}}
+    )
+
+    assert model.default_temperature == 1.0
+
+
+def test_zero_temperature_is_kept():
+    """0.0 is a real default, not a missing value."""
+    model = infer_openai_compatible_model(
+        {"id": "x", "default_parameters": {"temperature": 0.0}}
+    )
+
+    assert model.default_temperature == 0.0
+
+
 @pytest.mark.parametrize(
     "entry",
     [

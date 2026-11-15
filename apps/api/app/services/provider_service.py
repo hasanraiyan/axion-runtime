@@ -213,6 +213,14 @@ def _first_int(item: Dict[str, Any], *keys: str) -> Optional[int]:
     return None
 
 
+def _first_float(item: Dict[str, Any], *keys: str) -> Optional[float]:
+    for key in keys:
+        value = _as_float(item.get(key))
+        if value is not None:
+            return value
+    return None
+
+
 _OPENAI_COMPAT_TOOL_PARAMS = {"tools", "tool_choice", "parallel_tool_calls"}
 _OPENAI_COMPAT_JSON_PARAMS = {"response_format", "structured_outputs", "json_mode"}
 _OPENAI_COMPAT_REASONING_PARAMS = {"reasoning", "include_reasoning", "reasoning_effort"}
@@ -225,27 +233,41 @@ def infer_openai_compatible_model(item: Dict[str, Any]) -> DiscoveredModelInfo:
     OpenAI's own endpoint returns only `id`/`object`/`created`/`owned_by` (plus
     `shutdown_date`), so limits and capabilities stay `None` — there is nothing
     to copy. OpenRouter adds `context_length`, `top_provider.max_completion_tokens`,
-    `architecture.input_modalities` and `supported_parameters`; vLLM adds
-    `max_model_len`. Those are consumed when present.
+    `default_parameters.temperature`, `architecture.input_modalities`,
+    `supported_parameters` and a `reasoning` block; vLLM adds `max_model_len`.
+    Those are consumed when present.
     """
     model_id = str(item.get("id") or item.get("name") or "").removeprefix("models/")
 
     top_provider = item.get("top_provider") if isinstance(item.get("top_provider"), dict) else {}
     architecture = item.get("architecture") if isinstance(item.get("architecture"), dict) else {}
+    default_parameters = (
+        item.get("default_parameters") if isinstance(item.get("default_parameters"), dict) else {}
+    )
     supported_params = {str(p).lower() for p in (item.get("supported_parameters") or [])}
     input_modalities = {str(m).lower() for m in (architecture.get("input_modalities") or [])}
 
     max_input = _first_int(item, "max_input_tokens", "context_length", "max_model_len", "max_context_length")
-    max_output = _first_int(
-        item, "max_output_tokens", "max_completion_tokens", "outputTokenLimit"
-    ) or _first_int(top_provider, "max_completion_tokens")
+    max_output = _first_int(item, "max_output_tokens", "max_completion_tokens", "outputTokenLimit")
+    if max_output is None:
+        max_output = _first_int(top_provider, "max_completion_tokens")
 
-    # A capability is only reported when the server lists supported parameters:
-    # absent list = unknown, not "unsupported".
-    if supported_params:
+    temperature = _first_float(item, "default_temperature", "temperature")
+    if temperature is None:
+        temperature = _first_float(default_parameters, "temperature")
+
+    # A capability is only reported when the server describes it: absent lists
+    # mean "unknown", never "unsupported".
+    reasoning_info = item.get("reasoning")
+    if supported_params or isinstance(reasoning_info, dict):
         supports_tools: Optional[bool] = bool(supported_params & _OPENAI_COMPAT_TOOL_PARAMS)
         supports_json_mode: Optional[bool] = bool(supported_params & _OPENAI_COMPAT_JSON_PARAMS)
-        supports_reasoning: Optional[bool] = bool(supported_params & _OPENAI_COMPAT_REASONING_PARAMS)
+        # OpenRouter describes reasoning with a `reasoning` object instead of a
+        # sampling parameter, so either source counts as evidence.
+        supports_reasoning: Optional[bool] = (
+            bool(supported_params & _OPENAI_COMPAT_REASONING_PARAMS)
+            or isinstance(reasoning_info, dict)
+        )
     else:
         supports_tools = supports_json_mode = supports_reasoning = None
 
@@ -261,7 +283,7 @@ def infer_openai_compatible_model(item: Dict[str, Any]) -> DiscoveredModelInfo:
         created_at_upstream=_as_timestamp(item.get("created") or item.get("created_at")),
         max_input_tokens=max_input,
         max_output_tokens=max_output,
-        default_temperature=_as_float(item.get("default_temperature", item.get("temperature"))),
+        default_temperature=temperature,
         max_temperature=_as_float(item.get("maxTemperature")),
         supports_tools=supports_tools,
         supports_vision=supports_vision,
