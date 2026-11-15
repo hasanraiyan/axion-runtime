@@ -841,6 +841,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/projects/{project_id}/tools/bulk": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Enable, disable, or set the approval policy of many tools
+         * @description Reports the outcome per tool. Enabling approves each tool's current definition; drifted tools are skipped, never silently approved.
+         */
+        post: operations["bulk_update_tools"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/projects/{project_id}/tools/{tool_key}": {
         parameters: {
             query?: never;
@@ -2063,6 +2083,24 @@ export interface components {
             success: true;
             /** @description Response payload */
             data: components["schemas"]["SecretValueResponse"];
+            /**
+             * Message
+             * @description Status message
+             * @default Operation completed successfully
+             */
+            message: string;
+        };
+        /** ApiResponse[ToolBulkResponse] */
+        ApiResponse_ToolBulkResponse_: {
+            /**
+             * Success
+             * @description Always true for successful responses
+             * @default true
+             * @constant
+             */
+            success: true;
+            /** @description Response payload */
+            data: components["schemas"]["ToolBulkResponse"];
             /**
              * Message
              * @description Status message
@@ -4728,6 +4766,52 @@ export interface components {
              */
             credential: string;
         };
+        /**
+         * ToolBulkAction
+         * @enum {string}
+         */
+        ToolBulkAction: "enable" | "disable" | "set_approval_policy";
+        /** ToolBulkItemResult */
+        ToolBulkItemResult: {
+            /** Tool Key */
+            tool_key: string;
+            /**
+             * Outcome
+             * @description updated | skipped | failed
+             */
+            outcome: string;
+            /** Reason */
+            reason?: string | null;
+        };
+        /**
+         * ToolBulkRequest
+         * @description Apply one action to many tools: an explicit list, or every tool of one integration (optionally read-only only).
+         */
+        ToolBulkRequest: {
+            action: components["schemas"]["ToolBulkAction"];
+            /** Tool Keys */
+            tool_keys?: string[] | null;
+            /** Integration Id */
+            integration_id?: string | null;
+            /**
+             * Read Only Only
+             * @description With integration_id: only tools annotated read-only
+             * @default false
+             */
+            read_only_only: boolean;
+            approval_policy?: components["schemas"]["ApprovalPolicy"] | null;
+        };
+        /** ToolBulkResponse */
+        ToolBulkResponse: {
+            /** Updated */
+            updated: number;
+            /** Skipped */
+            skipped: number;
+            /** Failed */
+            failed: number;
+            /** Results */
+            results: components["schemas"]["ToolBulkItemResult"][];
+        };
         /** ToolPolicyResponse */
         ToolPolicyResponse: {
             /** Allowed Return Origins */
@@ -4736,6 +4820,11 @@ export interface components {
             end_user_connect_enabled: boolean;
             /** Connect Link Ttl Seconds */
             connect_link_ttl_seconds: number;
+            default_approval_policy: components["schemas"]["ApprovalPolicy"];
+            /** Invocation Content Retention Days */
+            invocation_content_retention_days: number;
+            /** End User Default Rate Limit Per Minute */
+            end_user_default_rate_limit_per_minute: number | null;
             /** Revision */
             revision: number;
         };
@@ -4749,6 +4838,11 @@ export interface components {
             end_user_connect_enabled?: boolean | null;
             /** Connect Link Ttl Seconds */
             connect_link_ttl_seconds?: number | null;
+            default_approval_policy?: components["schemas"]["ApprovalPolicy"] | null;
+            /** Invocation Content Retention Days */
+            invocation_content_retention_days?: number | null;
+            /** End User Default Rate Limit Per Minute */
+            end_user_default_rate_limit_per_minute?: number | null;
         };
         /** ToolResponse */
         ToolResponse: {
@@ -8601,6 +8695,80 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PaginatedResponse_ToolResponse_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    bulk_update_tools: {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string | null;
+            };
+            path: {
+                /** @description Project id or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ToolBulkRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_ToolBulkResponse_"];
                 };
             };
             /** @description Unauthorized */

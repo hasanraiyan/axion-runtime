@@ -6382,6 +6382,122 @@
         }
       }
     },
+    "/api/v1/projects/{project_id}/tools/bulk": {
+      "post": {
+        "tags": [
+          "Tools"
+        ],
+        "summary": "Enable, disable, or set the approval policy of many tools",
+        "description": "Reports the outcome per tool. Enabling approves each tool's current definition; drifted tools are skipped, never silently approved.",
+        "operationId": "bulk_update_tools",
+        "security": [
+          {
+            "AxionApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Project id or slug",
+              "title": "Project Id"
+            },
+            "description": "Project id or slug"
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ToolBulkRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_ToolBulkResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/projects/{project_id}/tools/{tool_key}": {
       "get": {
         "tags": [
@@ -11495,6 +11611,32 @@
           "data"
         ],
         "title": "ApiResponse[SecretValueResponse]"
+      },
+      "ApiResponse_ToolBulkResponse_": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "const": true,
+            "title": "Success",
+            "description": "Always true for successful responses",
+            "default": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/ToolBulkResponse",
+            "description": "Response payload"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Status message",
+            "default": "Operation completed successfully"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "ApiResponse[ToolBulkResponse]"
       },
       "ApiResponse_ToolPolicyResponse_": {
         "properties": {
@@ -17677,6 +17819,132 @@
         ],
         "title": "StaticCredentialRequest"
       },
+      "ToolBulkAction": {
+        "type": "string",
+        "enum": [
+          "enable",
+          "disable",
+          "set_approval_policy"
+        ],
+        "title": "ToolBulkAction"
+      },
+      "ToolBulkItemResult": {
+        "properties": {
+          "tool_key": {
+            "type": "string",
+            "title": "Tool Key"
+          },
+          "outcome": {
+            "type": "string",
+            "title": "Outcome",
+            "description": "updated | skipped | failed"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "tool_key",
+          "outcome"
+        ],
+        "title": "ToolBulkItemResult"
+      },
+      "ToolBulkRequest": {
+        "properties": {
+          "action": {
+            "$ref": "#/components/schemas/ToolBulkAction"
+          },
+          "tool_keys": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array",
+                "maxItems": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tool Keys"
+          },
+          "integration_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Integration Id"
+          },
+          "read_only_only": {
+            "type": "boolean",
+            "title": "Read Only Only",
+            "description": "With integration_id: only tools annotated read-only",
+            "default": false
+          },
+          "approval_policy": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ApprovalPolicy"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "action"
+        ],
+        "title": "ToolBulkRequest",
+        "description": "Apply one action to many tools: an explicit list, or every tool of one integration (optionally read-only only)."
+      },
+      "ToolBulkResponse": {
+        "properties": {
+          "updated": {
+            "type": "integer",
+            "title": "Updated"
+          },
+          "skipped": {
+            "type": "integer",
+            "title": "Skipped"
+          },
+          "failed": {
+            "type": "integer",
+            "title": "Failed"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/ToolBulkItemResult"
+            },
+            "type": "array",
+            "title": "Results"
+          }
+        },
+        "type": "object",
+        "required": [
+          "updated",
+          "skipped",
+          "failed",
+          "results"
+        ],
+        "title": "ToolBulkResponse"
+      },
       "ToolPolicyResponse": {
         "properties": {
           "allowed_return_origins": {
@@ -17694,6 +17962,24 @@
             "type": "integer",
             "title": "Connect Link Ttl Seconds"
           },
+          "default_approval_policy": {
+            "$ref": "#/components/schemas/ApprovalPolicy"
+          },
+          "invocation_content_retention_days": {
+            "type": "integer",
+            "title": "Invocation Content Retention Days"
+          },
+          "end_user_default_rate_limit_per_minute": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End User Default Rate Limit Per Minute"
+          },
           "revision": {
             "type": "integer",
             "title": "Revision"
@@ -17704,6 +17990,9 @@
           "allowed_return_origins",
           "end_user_connect_enabled",
           "connect_link_ttl_seconds",
+          "default_approval_policy",
+          "invocation_content_retention_days",
+          "end_user_default_rate_limit_per_minute",
           "revision"
         ],
         "title": "ToolPolicyResponse"
@@ -17753,6 +18042,41 @@
               }
             ],
             "title": "Connect Link Ttl Seconds"
+          },
+          "default_approval_policy": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ApprovalPolicy"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "invocation_content_retention_days": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 365.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Invocation Content Retention Days"
+          },
+          "end_user_default_rate_limit_per_minute": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End User Default Rate Limit Per Minute"
           }
         },
         "type": "object",
