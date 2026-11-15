@@ -6,12 +6,16 @@ secrets into in-memory ``ResolvedCredentials``; they never persist or log plaint
 from __future__ import annotations
 
 import base64
+import hashlib
 import re
-from typing import List
+from typing import List, Optional
+from urllib.parse import urlsplit
 
 from app.core.exceptions import BadRequestError
-from app.core.tools.ports import SecretReaderPort
+from app.core.tools.errors import OAuthFlowFailed, OAuthInvalidClient, UpstreamAuthError, UpstreamError
+from app.core.tools.ports import ClientCredentialsPort, SecretReaderPort
 from app.core.tools.registry import AuthStrategyRegistry
+from app.core.tools.token_cache import TokenCache
 from app.core.tools.types import ResolvedCredentials
 from app.models.integration import AuthProfile, AuthType, CredentialMode
 from app.core.secret_templates import SecretTemplateParser
@@ -50,7 +54,17 @@ def _validate_header_name(name: str) -> str:
     return name
 
 
-class NoAuthStrategy:
+class _Local:
+    """Defaults for strategies that make no network calls and cache nothing."""
+
+    def target_urls(self, profile: AuthProfile) -> List[str]:
+        return []
+
+    def forget(self, project_id: str, profile: AuthProfile) -> None:
+        return None
+
+
+class NoAuthStrategy(_Local):
     auth_type = AuthType.NONE
     uses_connection = False
     static_kind = None
@@ -68,7 +82,7 @@ class NoAuthStrategy:
         return ResolvedCredentials()
 
 
-class ApiKeyStrategy:
+class ApiKeyStrategy(_Local):
     auth_type = AuthType.API_KEY
     uses_connection = False
     static_kind = 'api_key'
@@ -98,7 +112,7 @@ class ApiKeyStrategy:
         return ResolvedCredentials(headers={name: value})
 
 
-class BearerStrategy:
+class BearerStrategy(_Local):
     auth_type = AuthType.BEARER
     uses_connection = False
     static_kind = 'bearer'
@@ -118,7 +132,7 @@ class BearerStrategy:
         return ResolvedCredentials(headers={"Authorization": f"Bearer {token}"})
 
 
-class BasicStrategy:
+class BasicStrategy(_Local):
     auth_type = AuthType.BASIC
     uses_connection = False
     static_kind = None
@@ -143,7 +157,7 @@ class BasicStrategy:
         return ResolvedCredentials(headers={"Authorization": f"Basic {base64.b64encode(raw).decode('ascii')}"})
 
 
-class CustomHeadersStrategy:
+class CustomHeadersStrategy(_Local):
     auth_type = AuthType.CUSTOM_HEADERS
     uses_connection = False
     static_kind = None
@@ -184,7 +198,7 @@ class CustomHeadersStrategy:
         return sorted(names)
 
 
-class OAuthAuthorizationCodeStrategy:
+class OAuthAuthorizationCodeStrategy(_Local):
     """OAuth 2.1 authorization code + PKCE (MCP). Tokens live in a stored connection, never in the profile."""
 
     auth_type = AuthType.OAUTH_AUTHORIZATION_CODE
@@ -215,15 +229,122 @@ class OAuthAuthorizationCodeStrategy:
         raise BadRequestError("OAuth credentials come from a stored connection")
 
 
-def build_default_auth_registry() -> AuthStrategyRegistry:
+CLIENT_CREDENTIALS_AUTH_METHODS = ("client_secret_basic", "client_secret_post")
+
+
+class OAuthClientCredentialsStrategy:
+    """
+    OAuth 2.0 client credentials (machine-to-machine). The client secret is a MOD-02 secret; the token endpoint is
+    explicit (there is no user to redirect, so nothing is discovered) and is checked by the Outbound Guard when the
+    integration is saved. Tokens are cached in memory only and never persisted. Always ``project_shared``: a client
+    credential identifies the project's application, not a person.
+    """
+
+    auth_type = AuthType.OAUTH_CLIENT_CREDENTIALS
+    uses_connection = False
+    static_kind = None
+
+    def __init__(self, flow: ClientCredentialsPort, cache: Optional[TokenCache] = None) -> None:
+        self._flow = flow
+        self._cache = cache if cache is not None else TokenCache()
+
+    # ---------------------------------------------------------------- validation
+    def validate(self, profile: AuthProfile) -> None:
+        if profile.credential_mode != CredentialMode.PROJECT_SHARED:
+            raise BadRequestError("oauth_client_credentials identifies the project's application and must use project_shared")
+        _require_secret(profile, "oauth_client_credentials (client secret)")
+        oauth = profile.oauth or {}
+        unknown = set(oauth) - {"client_id", "token_endpoint", "scopes", "resource", "token_endpoint_auth_method"}
+        if unknown:
+            raise BadRequestError(f"Unsupported oauth setting: {sorted(unknown)[0]}")
+        client_id = oauth.get("client_id")
+        if not isinstance(client_id, str) or not client_id or len(client_id) > 500:
+            raise BadRequestError("oauth.client_id is required")
+        self._token_endpoint(oauth)
+        scopes = oauth.get("scopes", [])
+        if not isinstance(scopes, list) or len(scopes) > 50 or not all(isinstance(x, str) and 0 < len(x) <= 200 for x in scopes):
+            raise BadRequestError("oauth.scopes must be a list of up to 50 scope strings")
+        resource = oauth.get("resource")
+        if resource is not None:
+            parts = urlsplit(resource) if isinstance(resource, str) else None
+            if parts is None or parts.scheme not in ("http", "https") or not parts.netloc or len(resource) > 2000:
+                raise BadRequestError("oauth.resource must be an absolute http(s) URL")
+        method = oauth.get("token_endpoint_auth_method", "client_secret_basic")
+        if method not in CLIENT_CREDENTIALS_AUTH_METHODS:
+            raise BadRequestError(f"oauth.token_endpoint_auth_method must be one of {', '.join(CLIENT_CREDENTIALS_AUTH_METHODS)}")
+
+    @staticmethod
+    def _token_endpoint(oauth: dict) -> str:
+        endpoint = oauth.get("token_endpoint")
+        parts = urlsplit(endpoint) if isinstance(endpoint, str) else None
+        if parts is None or parts.scheme != "https" or not parts.hostname or parts.username or parts.fragment or len(endpoint) > 2000:
+            raise BadRequestError("oauth.token_endpoint is required and must be an https URL")
+        return endpoint
+
+    def secret_ids(self, profile: AuthProfile) -> List[str]:
+        return [str(profile.secret_id)] if profile.secret_id else []
+
+    def secret_names(self, profile: AuthProfile) -> List[str]:
+        return []
+
+    def target_urls(self, profile: AuthProfile) -> List[str]:
+        return [self._token_endpoint(profile.oauth or {})]
+
+    # --------------------------------------------------------------------- tokens
+    @staticmethod
+    def _key(project_id: str, profile: AuthProfile) -> tuple:
+        oauth = profile.oauth or {}
+        return (
+            project_id,
+            str(profile.secret_id),
+            oauth.get("client_id"),
+            oauth.get("token_endpoint"),
+            tuple(sorted(oauth.get("scopes", []))),
+            oauth.get("resource"),
+            oauth.get("token_endpoint_auth_method", "client_secret_basic"),
+        )
+
+    def forget(self, project_id: str, profile: AuthProfile) -> None:
+        self._cache.invalidate(self._key(project_id, profile))
+
+    async def build(self, project_id: str, profile: AuthProfile, secrets: SecretReaderPort) -> ResolvedCredentials:
+        oauth = profile.oauth or {}
+        client_secret = await secrets.read(project_id, str(profile.secret_id))
+        fingerprint = hashlib.sha256(client_secret.encode("utf-8")).hexdigest()
+
+        async def fetch():
+            try:
+                return await self._flow.client_credentials(
+                    self._token_endpoint(oauth),
+                    oauth["client_id"],
+                    client_secret,
+                    oauth.get("token_endpoint_auth_method", "client_secret_basic"),
+                    list(oauth.get("scopes", [])),
+                    oauth.get("resource"),
+                )
+            except OAuthInvalidClient as exc:
+                raise UpstreamAuthError("The authorization server rejected the OAuth client credentials") from exc
+            except OAuthFlowFailed as exc:
+                raise UpstreamError(str(exc)) from exc
+
+        token = await self._cache.get(self._key(project_id, profile), fingerprint, fetch)
+        return ResolvedCredentials(headers={"Authorization": f"Bearer {token}"})
+
+
+def build_default_auth_registry(
+    flow: Optional[ClientCredentialsPort] = None, token_cache: Optional[TokenCache] = None
+) -> AuthStrategyRegistry:
     registry = AuthStrategyRegistry()
-    for strategy in (
+    strategies = [
         NoAuthStrategy(),
         ApiKeyStrategy(),
         BearerStrategy(),
         BasicStrategy(),
         CustomHeadersStrategy(),
         OAuthAuthorizationCodeStrategy(),
-    ):
+    ]
+    if flow is not None:  # machine-to-machine OAuth needs a way to reach the token endpoint
+        strategies.append(OAuthClientCredentialsStrategy(flow, token_cache))
+    for strategy in strategies:
         registry.register(strategy)
     return registry

@@ -90,10 +90,17 @@ class DiscoveryService:
             raise BadRequestError(
                 "Connect an account for this integration first: per-user integrations are discovered with a connected user's credentials"
             ) from None
+        except UpstreamAuthError as exc:
+            await self._fail(integration, "The OAuth client credentials were rejected")
+            raise UpstreamFailureError("The upstream rejected the credentials", code="UPSTREAM_AUTH_FAILED") from exc
+        except UpstreamError as exc:
+            await self._fail(integration, str(exc))
+            raise UpstreamFailureError(f"Discovery failed: {str(exc)[:200]}") from exc
 
         try:
             discovered = await adapter.discover(integration, credentials)
         except UpstreamAuthError as exc:
+            self._credentials.forget(integration)
             await self._fail(integration, "Upstream rejected the credentials")
             raise UpstreamFailureError("The upstream rejected the credentials", code="UPSTREAM_AUTH_FAILED") from exc
         except UpstreamError as exc:

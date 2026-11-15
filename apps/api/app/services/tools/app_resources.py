@@ -163,6 +163,8 @@ class McpAppService:
             err = BadRequestError("Connect an account for this integration first")
             err.code = "AUTH_REQUIRED"
             raise err from None
+        except UpstreamError as exc:
+            raise self._upstream(exc) from exc
 
     @staticmethod
     def _upstream(exc: UpstreamError) -> UpstreamFailureError:

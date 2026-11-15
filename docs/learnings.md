@@ -472,6 +472,24 @@ bypass the Outbound Guard (covered by `test_the_outbound_guard_still_governs_the
 
 **Verification.** `tests/test_mcp_real_sockets.py`; 10 mutants killed after tightening the test above.
 
+### 30. OAuth client credentials: cache tokens in memory, and beware falsy containers
+
+**Design.** `OAuthClientCredentialsStrategy` (`app/integrations/auth.py`) builds a Bearer header from a token fetched
+through `ClientCredentialsPort` and held in `TokenCache` (`app/core/tools/token_cache.py`): single flight per key,
+60 s skew, 300 s assumed life when `expires_in` is absent, never persisted. The cache key excludes the secret and each
+entry stores a digest of it, so rotating the secret invalidates the token at once. A 401 from the upstream calls
+`CredentialBuilder.forget`, so a revoked token is not reused. The strategy's own URLs (`target_urls`) go through the
+Outbound Guard on save *without* the MCP `allowed_hosts` list, because the token endpoint is normally another host.
+
+**Pitfall.** `cache or TokenCache()` silently replaced an injected cache: `TokenCache` defines `__len__`, so an empty
+one is falsy. Use `is not None` for injected collaborators that are containers.
+
+**Behaviour to know.** After the upstream rejects a token the integration is marked `error` (existing gateway rule), so
+calls report `tool_unavailable` until an admin re-tests it; the re-test then fetches a fresh token.
+
+**Verification.** `tests/test_oauth_client_credentials.py` (real SDK server + authorization server); 18 mutants, one
+equivalent survivor (a too-short token is refetched either way).
+
 ---
 
 ## Bugs found and fixed (commit `5ea80d9`)

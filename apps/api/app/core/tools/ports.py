@@ -131,6 +131,14 @@ class AuthStrategy(Protocol):
         """MOD-02 secret *names* referenced through ``{{secrets.NAME}}`` templates."""
         ...
 
+    def target_urls(self, profile: AuthProfile) -> List[str]:
+        """URLs the strategy itself calls (e.g. a token endpoint); each is checked by the Outbound Guard on save."""
+        ...
+
+    def forget(self, project_id: str, profile: AuthProfile) -> None:
+        """Drop any cached credential material (called when the upstream rejected it)."""
+        ...
+
     async def build(
         self, project_id: str, profile: AuthProfile, secrets: SecretReaderPort
     ) -> ResolvedCredentials: ...
@@ -228,6 +236,20 @@ class OAuthFlowPort(Protocol):
         client_secret: Optional[str],
         auth_method: str,
     ) -> None: ...
+
+
+class ClientCredentialsPort(Protocol):
+    """The OAuth 2.0 client credentials grant (RFC 6749 4.4) for machine-to-machine integrations (ISP: one method)."""
+
+    async def client_credentials(
+        self,
+        token_endpoint: str,
+        client_id: str,
+        client_secret: str,
+        auth_method: str,
+        scopes: List[str],
+        resource: Optional[str],
+    ) -> TokenSet: ...
 
 
 class TokenCipherPort(Protocol):

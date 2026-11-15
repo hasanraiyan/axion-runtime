@@ -335,6 +335,12 @@ class CredentialStage:
                 "The user must connect their account for this integration before the tool can run",
                 extra={"integration": context.integration.slug, "connect_available": False},
             )
+        except UpstreamAuthError:
+            return _fail(
+                InvocationStatus.UPSTREAM_ERROR,
+                "upstream_auth_failed",
+                "The integration's credentials were rejected; an administrator must fix this",
+            )
         except UpstreamError:
             # E.g. the token endpoint is briefly unreachable. The grant is intact, so this is retryable and is
             # deliberately not counted against the integration's circuit breaker (the integration itself is fine).
@@ -370,7 +376,9 @@ class ExecuteStage:
         concurrency: Optional[ConcurrencyLimiter] = None,
         default_concurrency: int = 16,
         concurrency_wait_seconds: float = 2.0,
+        credentials: Optional[CredentialBuilder] = None,
     ) -> None:
+        self._credentials = credentials
         self._adapters = adapters
         self._breaker = breaker
         self._health = health
@@ -412,6 +420,8 @@ class ExecuteStage:
         except (UpstreamTimeout, TimeoutError):
             return await self._failure(integration, key, InvocationStatus.TIMEOUT, "upstream_timeout", "The tool timed out", True)
         except UpstreamAuthError:
+            if self._credentials is not None:
+                self._credentials.forget(integration)  # a revoked token must not be reused until it expires
             await self._health.mark_error(integration, "Upstream rejected the credentials")
             return _fail(
                 InvocationStatus.UPSTREAM_ERROR,
@@ -518,6 +528,6 @@ def build_stages(
         CircuitStage(breaker),
         IdempotencyStage(idempotency),
         CredentialStage(credentials),
-        ExecuteStage(adapters, breaker, health, concurrency, default_concurrency, concurrency_wait_seconds),
+        ExecuteStage(adapters, breaker, health, concurrency, default_concurrency, concurrency_wait_seconds, credentials),
         NormalizeStage(),
     ]

@@ -16,6 +16,7 @@ from app.core.outbound import OutboundUrlGuard, get_outbound_url_guard
 from app.core.tools.events import InProcessEventBus, McpListChanged, McpSessionsInvalidated, ToolsetChanged, get_event_bus
 from app.core.tools.registry import AdapterRegistry, AuthStrategyRegistry
 from app.core.tools.ports import OAuthFlowPort
+from app.core.tools.token_cache import TokenCache
 from app.core.tools.resilience import CircuitBreaker, ConcurrencyLimiter, IdempotencyStore, KeyedLocks, SlidingWindowRateLimiter
 from app.core.tools.signing import TokenSigner
 from app.integrations.adapters import McpAdapter, NativeAdapter
@@ -80,6 +81,7 @@ class SharedToolState:
     policy_cache: PolicyCache = field(default_factory=PolicyCache)
     toolset_cache: ToolsetCache = field(default_factory=ToolsetCache)
     concurrency: ConcurrencyLimiter = field(default_factory=ConcurrencyLimiter)
+    token_cache: TokenCache = field(default_factory=TokenCache)
     catalog_sync: Optional[CatalogSyncSubscriber] = None
 
     def __post_init__(self) -> None:
@@ -176,11 +178,11 @@ def build_tools_container(
     adapters = AdapterRegistry()
     adapters.register(NativeAdapter(shared.native))
     adapters.register(McpAdapter(connector or _default_connector(guard, shared)))
-    auth_registry = build_default_auth_registry()
+    oauth_flow = oauth or OAuthFlowClient(guard)
+    auth_registry = build_default_auth_registry(oauth_flow, shared.token_cache)
 
     secret_reader = ProjectSecretReader(secret_repo, crypto)
     cipher = TokenCipher(crypto)
-    oauth_flow = oauth or OAuthFlowClient(guard)
     audit_port = audit
     connections = ConnectionService(
         lifecycle, connection_repo, integration_repo, oauth_client_repo, cipher, oauth_flow, audit_port, events=events

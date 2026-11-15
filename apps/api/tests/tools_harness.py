@@ -89,6 +89,7 @@ class ScriptedAdapter:
             AuthType.CUSTOM_HEADERS,
             AuthType.BASIC,
             AuthType.OAUTH_AUTHORIZATION_CODE,
+            AuthType.OAUTH_CLIENT_CREDENTIALS,
         }
 
     def target_urls(self, config: Dict[str, Any]) -> List[str]:

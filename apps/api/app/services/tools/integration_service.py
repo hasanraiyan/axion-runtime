@@ -92,6 +92,8 @@ class IntegrationService:
         allowed = adapter.allowed_hosts(normalized)
         for url in adapter.target_urls(normalized):
             await self._guard.check(url, allowed_hosts=allowed)
+        for url in strategy.target_urls(profile):  # e.g. an OAuth token endpoint, which is on a different host
+            await self._guard.check(url)
 
         return normalized, referenced
 

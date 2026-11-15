@@ -8,6 +8,7 @@ from beanie import PydanticObjectId
 from bson import ObjectId
 
 from app.core.exceptions import BadRequestError, NotFoundError
+from app.core.tools.errors import UpstreamAuthError, UpstreamError
 from app.core.protocols.tool_repositories import IIntegrationRepository
 from app.core.tools.events import ToolsetChanged
 from app.core.tools.ports import AuditPort, DomainEventPort, HealthProber, supports
@@ -71,6 +72,12 @@ class IntegrationHealthService:
                 ),
             )
             status = integration.status if per_user else IntegrationStatus.NEEDS_AUTH
+        except UpstreamAuthError:
+            result = ProbeResult(healthy=False, status="auth_failed", message="The OAuth client credentials were rejected")
+            status = _STATUS_FOR_PROBE.get(result.status, IntegrationStatus.ERROR)
+        except UpstreamError as exc:
+            result = ProbeResult(healthy=False, status="unreachable", message=str(exc)[:300])
+            status = _STATUS_FOR_PROBE.get(result.status, IntegrationStatus.ERROR)
         else:
             status = _STATUS_FOR_PROBE.get(result.status, IntegrationStatus.ERROR)
 

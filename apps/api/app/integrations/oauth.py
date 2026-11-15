@@ -236,6 +236,22 @@ class OAuthFlowClient:
             auth_method,
         )
 
+    async def client_credentials(
+        self,
+        token_endpoint: str,
+        client_id: str,
+        client_secret: str,
+        auth_method: str,
+        scopes: List[str],
+        resource: Optional[str],
+    ) -> TokenSet:
+        form: Dict[str, str] = {"grant_type": "client_credentials"}
+        if scopes:
+            form["scope"] = " ".join(scopes)
+        if resource:
+            form["resource"] = resource
+        return await self._token_request(token_endpoint, form, client_id, client_secret, auth_method)
+
     async def revoke(
         self,
         revocation_endpoint: Optional[str],

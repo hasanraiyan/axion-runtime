@@ -45,3 +45,7 @@ class CredentialBuilder:
                 raise AuthRequired(integration)
             return await self._connections.credentials_for(integration, subject)
         return await strategy.build(str(integration.project_id), profile, self._secrets)
+
+    def forget(self, integration: Integration) -> None:
+        """The upstream rejected this integration's credentials: drop anything cached for it."""
+        self._registry.get(integration.auth_profile.auth_type).forget(str(integration.project_id), integration.auth_profile)

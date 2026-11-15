@@ -36,10 +36,15 @@ class OAuthMcpServer:
         self.advertise_iss = False
         self.iss_value = HOST
         self.clients: Dict[str, Dict[str, Any]] = {}
+        self.confidential_clients: Dict[str, str] = {}  # client_id -> secret, for the client_credentials grant
+        self.cc_token_ttl: Optional[int] = None  # expires_in for client_credentials tokens (None = access_ttl)
+        self.cc_omit_expires = False
+        self.cc_delay = 0.0
+        self.cc_requests: List[Dict[str, Any]] = []  # form + how the client authenticated
         self.codes: Dict[str, Dict[str, Any]] = {}
         self.access: Dict[str, Dict[str, Any]] = {}
         self.refresh: Dict[str, Dict[str, Any]] = {}
-        self.counters = {"registrations": 0, "token": 0, "refresh": 0, "revocations": 0, "authorize": 0}
+        self.counters = {"registrations": 0, "token": 0, "refresh": 0, "revocations": 0, "authorize": 0, "client_credentials": 0}
         self.mcp_requests: List[Dict[str, Any]] = []  # {"user": ..., "token": ...} per authenticated MCP request
         self.rejected_mcp = 0
         self._seq = 0
@@ -129,7 +134,7 @@ class OAuthMcpServer:
         self.refresh[refresh] = {"user": user, "client_id": client_id, "scope": scope, "used": False, "revoked": False}
         return {"access_token": access, "token_type": "Bearer", "expires_in": self.access_ttl, "refresh_token": refresh, "scope": scope}
 
-    async def _token(self, receive, send) -> None:
+    async def _token(self, receive, send, headers: Optional[Dict[str, str]] = None) -> None:
         form = {k: v[0] for k, v in parse_qs((await self._body(receive)).decode()).items()}
         self.counters["token"] += 1
         grant = form.get("grant_type")
@@ -156,7 +161,30 @@ class OAuthMcpServer:
                 return await self._json(send, 400, {"error": "invalid_grant"})
             record["used"] = True  # rotating refresh tokens
             return await self._json(send, 200, self._issue(record["user"], record["client_id"], record["scope"]))
+        if grant == "client_credentials":
+            return await self._client_credentials(form, headers or {}, send)
         await self._json(send, 400, {"error": "unsupported_grant_type"})
+
+    async def _client_credentials(self, form: Dict[str, str], headers: Dict[str, str], send) -> None:
+        self.counters["client_credentials"] += 1
+        if self.cc_delay:
+            await asyncio.sleep(self.cc_delay)
+        method = "client_secret_post"
+        client_id, secret = form.get("client_id"), form.get("client_secret")
+        authorization = headers.get("authorization", "")
+        if authorization.startswith("Basic "):
+            method = "client_secret_basic"
+            client_id, _, secret = base64.b64decode(authorization[6:]).decode().partition(":")
+        self.cc_requests.append({"form": dict(form), "method": method, "client_id": client_id})
+        if client_id not in self.confidential_clients or self.confidential_clients[client_id] != secret:
+            return await self._json(send, 401, {"error": "invalid_client"})
+        token = self._next("cc")
+        ttl = self.cc_token_ttl if self.cc_token_ttl is not None else self.access_ttl
+        self.access[token] = {"user": f"client:{client_id}", "expires": time.time() + ttl, "revoked": False}
+        payload: Dict[str, Any] = {"access_token": token, "token_type": "Bearer", "scope": form.get("scope", "")}
+        if not self.cc_omit_expires:
+            payload["expires_in"] = ttl
+        await self._json(send, 200, payload)
 
     async def _revoke(self, receive, send) -> None:
         form = {k: v[0] for k, v in parse_qs((await self._body(receive)).decode()).items()}
@@ -188,7 +216,7 @@ class OAuthMcpServer:
         if path == "/authorize" and method == "GET":
             return await self._authorize(query, send)
         if path == "/token" and method == "POST":
-            return await self._token(receive, send)
+            return await self._token(receive, send, {k.decode().lower(): v.decode() for k, v in scope["headers"]})
         if path == "/revoke" and method == "POST":
             return await self._revoke(receive, send)
         if path.startswith("/mcp"):
