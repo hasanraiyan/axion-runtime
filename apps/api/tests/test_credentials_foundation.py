@@ -51,6 +51,44 @@ def test_project_credential_model_metadata():
         assert exp in index_names
 
 
+def test_credential_partial_index_filters_use_supported_operators():
+    """Regression: `expires_at: {"$ne": None}` makes init_beanie fail with
+    CannotCreateIndex (code 67), which aborts startup index creation for *all*
+    models. Partial filters must only use operators MongoDB supports."""
+    allowed_operators = {"$eq", "$exists", "$gt", "$gte", "$lt", "$lte", "$type", "$and", "$or", "$in"}
+
+    def collect_operators(node):
+        found = set()
+        if isinstance(node, dict):
+            for key, value in node.items():
+                if isinstance(key, str) and key.startswith("$"):
+                    found.add(key)
+                found |= collect_operators(value)
+        elif isinstance(node, list):
+            for child in node:
+                found |= collect_operators(child)
+        return found
+
+    filters = {}
+    for idx in ProjectCredential.Settings.indexes:
+        document = idx.document
+        partial = document.get("partialFilterExpression")
+        if partial is not None:
+            filters[document["name"]] = partial
+
+    assert filters, "expected at least one partial index on ProjectCredential"
+    for name, partial in filters.items():
+        operators = set(collect_operators(partial))
+        unsupported = operators - allowed_operators
+        assert not unsupported, f"index {name} uses unsupported partial filter operators: {unsupported}"
+
+    expiration = filters["idx_credentials_active_expiration"]
+    assert expiration.get("status") == "active"
+    # $ne compiles to $not, which MongoDB rejects inside partialFilterExpression.
+    assert "$ne" not in repr(expiration)
+    assert "$not" not in repr(expiration)
+
+
 def test_credential_domain_exceptions():
     err1 = InvalidCredentialError()
     assert err1.status_code == 401

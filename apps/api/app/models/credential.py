@@ -146,10 +146,15 @@ class ProjectCredential(BaseDocument):
                 [("project_id", ASCENDING), ("created_at", DESCENDING)],
                 name="idx_credentials_project_created",
             ),
-            # 4. Expiration sweeper index
+            # 4. Expiration sweeper index. Partial filters only accept equality,
+            # $exists/$type, range and $and/$or/$in; `expires_at: {"$ne": None}` is
+            # rejected by the server (CannotCreateIndex, code 67). Filtering on the
+            # leading `status` key keeps the sweeper query
+            # `{status: "active", expires_at: {"$lte": now}}` index-only usable while
+            # still pruning revoked/expired credentials from the index.
             IndexModel(
                 [("status", ASCENDING), ("expires_at", ASCENDING)],
-                partialFilterExpression={"expires_at": {"$ne": None}, "status": "active"},
+                partialFilterExpression={"status": "active"},
                 name="idx_credentials_active_expiration",
             ),
         ]

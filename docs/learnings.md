@@ -158,6 +158,41 @@ the stock supervisor showed it cannot recover reliably; (c) `dev.py` on port 800
 the real app on a file touch, logged a new `Started server process [N]`, reused the port
 with no `WinError 10048`, and `/api/v1/health` stayed `200`.
 
+### 12. `partialFilterExpression` cannot express "field is not null", and one bad index kills every index
+
+**Symptom.** Startup logged
+`MongoDB connection could not be established: Error in specification { partialFilterExpression: { expires_at: { $ne: null }, ... } } :: caused by :: Expression not supported in partial index: $not / expires_at $eq null`,
+`code 67 CannotCreateIndex`, and the API came up with DB endpoints dead. No traceback, no
+crash — just one warning line.
+
+**Root cause.** MongoDB rewrites `{"expires_at": {"$ne": None}}` into
+`$not: {expires_at: {$eq: null}}`, and `$not` is not in the allowed partial-filter operator
+set (`$eq`, `$exists`, `$gt/$gte/$lt/$lte`, `$type`, `$and`, `$or`, `$in`). Because
+`util_models` index creation runs inside `init_beanie` (`app/db/client.py::init_db`), the
+failure aborts initialization for **all** models, so `users`, `projects`, etc. also lose
+their indexes until the offending specification is fixed.
+
+**Fix.** `app/models/credential.py::idx_credentials_active_expiration` now filters on the
+leading `status` key only: `partialFilterExpression={"status": "active"}`. The sweeper query
+`{status: "active", expires_at: {"$lte": now}}` still gets an `IXSCAN` on the compound key
+and the filter prunes revoked/expired credentials automatically.
+
+**Why not `$type: "date"` or `$exists: true`?** Probed against the local MongoDB 9.0:
+`{"expires_at": {"$type": "date"}}` builds successfully but the planner refuses to use that
+index for `expires_at: {"$lte": ...}` (`index_used=False`, no rejected plans) — it is a
+silent no-op index. `{"$exists": True}` is usable, but Beanie always writes
+`expires_at: null`, so every document satisfies it and the filter does nothing.
+
+**If the index already exists elsewhere** with different options under the same name,
+`init_beanie` now fails with `IndexOptionsConflict` (code 85). Drop it once
+(`db.project_credentials.dropIndex("idx_credentials_active_expiration")`) and restart;
+the previous build never succeeded, so there should be nothing to drop.
+
+**Verified.** `apps/api/tests/test_credentials_foundation.py::test_credential_partial_index_filters_use_supported_operators`
+walks every `partialFilterExpression` on `ProjectCredential` and fails on any operator
+outside the allowed set (`$ne`/`$not` regression). Startup was re-run against the local
+MongoDB and the collection's indexes were created without warnings.
+
 ---
 
 ## Bugs found and fixed (commit `5ea80d9`)

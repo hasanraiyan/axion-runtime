@@ -545,9 +545,12 @@ class ProjectCredential(BaseDocument):
                 name="idx_credentials_project_created",
             ),
             # 4. Expiration sweeper index
+            # NOTE: partialFilterExpression cannot express "expires_at != null"
+            # ($ne compiles to $not -> CannotCreateIndex, code 67), so filter on the
+            # leading `status` key only.
             IndexModel(
                 [("status", ASCENDING), ("expires_at", ASCENDING)],
-                partialFilterExpression={"expires_at": {"$ne": None}, "status": "active"},
+                partialFilterExpression={"status": "active"},
                 name="idx_credentials_active_expiration",
             ),
         ]
