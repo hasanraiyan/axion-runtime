@@ -1,8 +1,6 @@
-import asyncio
 import base64
-import inspect
 import os
-from typing import Any, Generator, Optional, Union
+from typing import Optional, Union
 
 from cryptography.exceptions import InvalidTag
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
@@ -11,19 +9,6 @@ from pydantic import SecretStr
 from app.core.crypto.envelope import EncryptedEnvelope
 from app.core.crypto.provider import KeyProvider, LocalMasterKeyProvider
 from app.core.exceptions import CryptographicIntegrityError
-
-
-class AwaitableStr(str):
-    """
-    A string subclass that can be evaluated synchronously as a normal str
-    or awaited asynchronously in coroutines.
-    """
-
-    def __await__(self) -> Generator[Any, None, str]:
-        async def _coro() -> str:
-            return str(self)
-
-        return _coro().__await__()
 
 
 class CryptoService:
@@ -53,7 +38,7 @@ class CryptoService:
             "utf-8"
         )
 
-    def encrypt_secret(
+    async def encrypt_secret(
         self,
         plaintext: Union[str, SecretStr],
         project_id: str,
@@ -65,7 +50,7 @@ class CryptoService:
         using the active KEK provider.
         Binds mathematically to (project_id, environment, name) via canonical AAD.
 
-        Returns EncryptedEnvelope (can be used directly or awaited).
+        Returns EncryptedEnvelope.
         """
         # Extract string value if wrapped in SecretStr
         if isinstance(plaintext, SecretStr):
@@ -96,19 +81,7 @@ class CryptoService:
             raise CryptographicIntegrityError(f"AES-256-GCM encryption failed: {exc}") from exc
 
         # 4. Wrap DEK with KEK via KeyProvider (RFC 3394)
-        wrap_result = self.key_provider.wrap_key(dek)
-        if inspect.iscoroutine(wrap_result):
-            # In case a purely async custom provider is passed in sync context
-            try:
-                loop = asyncio.get_running_loop()
-                # Running inside existing loop
-                import concurrent.futures
-                with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
-                    wrapped_dek, kek_id = pool.submit(asyncio.run, wrap_result).result()
-            except RuntimeError:
-                wrapped_dek, kek_id = asyncio.run(wrap_result)
-        else:
-            wrapped_dek, kek_id = wrap_result
+        wrapped_dek, kek_id = await self.key_provider.wrap_key(dek)
 
         # 5. Return EncryptedEnvelope with base64 encoded fields
         return EncryptedEnvelope(
@@ -120,19 +93,19 @@ class CryptoService:
             kek_id=kek_id,
         )
 
-    def decrypt_secret(
+    async def decrypt_secret(
         self,
         envelope: Union[EncryptedEnvelope, dict],
         project_id: str,
         environment: str,
         name: str,
-    ) -> AwaitableStr:
+    ) -> str:
         """
         Decrypts an encrypted envelope using AES-256-GCM after unwrapping the DEK
         and verifying canonical AAD binding.
         Raises CryptographicIntegrityError if AAD or tag verification fails.
 
-        Returns AwaitableStr (can be used directly as str or awaited).
+        Returns plaintext string.
         """
         # Parse into EncryptedEnvelope if a dictionary is provided
         if isinstance(envelope, dict):
@@ -175,17 +148,7 @@ class CryptoService:
             )
 
         # 3. Unwrap DEK using KEK provider
-        unwrap_result = self.key_provider.unwrap_key(wrapped_dek, envelope_obj.kek_id)
-        if inspect.iscoroutine(unwrap_result):
-            try:
-                loop = asyncio.get_running_loop()
-                import concurrent.futures
-                with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
-                    dek = pool.submit(asyncio.run, unwrap_result).result()
-            except RuntimeError:
-                dek = asyncio.run(unwrap_result)
-        else:
-            dek = unwrap_result
+        dek = await self.key_provider.unwrap_key(wrapped_dek, envelope_obj.kek_id)
 
         if len(dek) != 32:
             raise CryptographicIntegrityError(
@@ -215,7 +178,7 @@ class CryptoService:
                 f"Decrypted plaintext is not valid UTF-8: {exc}"
             ) from exc
 
-        return AwaitableStr(plaintext)
+        return plaintext
 
 
 _default_crypto_service: Optional[CryptoService] = None

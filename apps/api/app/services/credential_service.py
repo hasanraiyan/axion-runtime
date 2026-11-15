@@ -18,6 +18,15 @@ from app.core.exceptions import (
     ProjectDeletedError,
     ProjectPurgedError,
 )
+from app.core.protocols.crypto import (
+    DefaultEnvironmentPrefixStrategy,
+    EnvironmentPrefixStrategy,
+)
+from app.core.protocols.repositories import (
+    ICredentialRepository,
+    IProjectAuditRepository,
+    IProjectRepository,
+)
 from app.models.credential import CredentialStatus, ProjectCredential
 from app.models.project import (
     Project,
@@ -53,37 +62,60 @@ def _ensure_utc(dt: Optional[datetime]) -> Optional[datetime]:
     return dt.astimezone(timezone.utc)
 
 
+class CredentialKeyGenerator:
+    """
+    Dedicated generator for 256-bit CSPRNG API keys, SHA-256 hashes,
+    and non-sensitive preview hints using an EnvironmentPrefixStrategy.
+    """
+
+    def __init__(self, prefix_strategy: Optional[EnvironmentPrefixStrategy] = None) -> None:
+        self.prefix_strategy: EnvironmentPrefixStrategy = prefix_strategy or DefaultEnvironmentPrefixStrategy()
+
+    def generate(self, environment: str) -> Tuple[str, str, str]:
+        """
+        Generate (raw_key, key_hash, masked_key).
+        Prefix is determined by the configured EnvironmentPrefixStrategy.
+        """
+        prefix = self.prefix_strategy.get_prefix(environment)
+        entropy = secrets.token_urlsafe(32)  # 256-bit entropy, 43 url-safe base64 chars
+        raw_key = f"{prefix}{entropy}"
+        key_hash = hashlib.sha256(raw_key.encode("utf-8")).hexdigest()
+        masked_key = f"{prefix}{entropy[:4]}...{entropy[-4:]}"
+        return raw_key, key_hash, masked_key
+
+
 def generate_api_key(environment: str) -> Tuple[str, str, str]:
     """
+    Backward-compatible helper delegating to CredentialKeyGenerator.
     Generate a 256-bit CSPRNG API key, SHA-256 hash, and masked preview hint.
-    Prefix:
-    - 'axion_live_' for 'production'
-    - 'axion_test_' for non-production tiers ('staging', 'development', 'test')
     """
-    prefix = "axion_live_" if environment.lower() == "production" else "axion_test_"
-    entropy = secrets.token_urlsafe(32)  # 256-bit entropy, 43 url-safe base64 chars
-    raw_key = f"{prefix}{entropy}"
-    key_hash = hashlib.sha256(raw_key.encode("utf-8")).hexdigest()
-    masked_key = f"{prefix}{entropy[:4]}...{entropy[-4:]}"
-    return raw_key, key_hash, masked_key
+    return CredentialKeyGenerator().generate(environment)
 
 
 class ProjectCredentialService:
     """
     Domain service orchestrating credential lifecycle, zero-plaintext storage,
     optimistic concurrency control (OCC), and immutable audit log dispatch.
-    Decoupled from HTTP transports.
+    Decoupled from HTTP transports and concrete repository implementations.
     """
 
     def __init__(
         self,
-        credential_repo: Optional[ProjectCredentialRepository] = None,
-        project_repo: Optional[ProjectRepository] = None,
-        audit_repo: Optional[ProjectAuditRepository] = None,
+        credential_repo: Optional[ICredentialRepository] = None,
+        project_repo: Optional[IProjectRepository] = None,
+        audit_repo: Optional[IProjectAuditRepository] = None,
+        key_generator: Optional[CredentialKeyGenerator] = None,
     ) -> None:
-        self.credential_repo = credential_repo if credential_repo is not None else get_credential_repository()
-        self.project_repo = project_repo if project_repo is not None else get_project_repository()
-        self.audit_repo = audit_repo if audit_repo is not None else get_project_audit_repository()
+        self.credential_repo: ICredentialRepository = (
+            credential_repo if credential_repo is not None else get_credential_repository()
+        )
+        self.project_repo: IProjectRepository = (
+            project_repo if project_repo is not None else get_project_repository()
+        )
+        self.audit_repo: IProjectAuditRepository = (
+            audit_repo if audit_repo is not None else get_project_audit_repository()
+        )
+        self.key_generator: CredentialKeyGenerator = key_generator or CredentialKeyGenerator()
 
     async def _get_active_project(
         self,
@@ -131,8 +163,8 @@ class ProjectCredentialService:
             raise BadRequestError("Expiration timestamp must be in the future")
 
         env = request.environment.strip() if request.environment else "production"
-        raw_key, key_hash, masked_key = generate_api_key(env)
-        prefix = "axion_live_" if env.lower() == "production" else "axion_test_"
+        raw_key, key_hash, masked_key = self.key_generator.generate(env)
+        prefix = self.key_generator.prefix_strategy.get_prefix(env)
 
         credential = ProjectCredential(
             project_id=project.id,

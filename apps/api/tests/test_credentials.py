@@ -58,7 +58,7 @@ from app.models.project import (
     ProjectStatus,
 )
 from app.models.user import UserRole
-from app.repositories.credential_repository import (
+from tests.fakes.credential_repository import (
     InMemoryProjectCredentialRepository,
 )
 from app.schemas.auth import AuthenticatedActor, AuthenticatedUser

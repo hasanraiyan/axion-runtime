@@ -3,7 +3,6 @@ Runtime Secret Resolver providing batch in-memory decryption for agent workers,
 sandboxes, workflow nodes, and template interpolation for {{secrets.VAR_NAME}}.
 """
 from datetime import datetime, timezone
-import inspect
 import re
 from typing import Any, Dict, List, Optional, Union
 from beanie import PydanticObjectId
@@ -16,6 +15,11 @@ from app.core.exceptions import (
     ProjectArchivedError,
     ProjectDeletedError,
     ProjectPurgedError,
+)
+from app.core.protocols.repositories import (
+    IProjectAuditRepository,
+    IProjectRepository,
+    ISecretRepository,
 )
 from app.models.project import Project, ProjectAuditAction, ProjectStatus
 from app.repositories.project_audit_repository import (
@@ -33,11 +37,30 @@ from app.repositories.secret_repository import (
 from app.schemas.secret import SecretBatchResolveResponse
 
 
-async def _maybe_await(val: Any) -> Any:
-    """Helper to evaluate both synchronous returns and awaitable objects."""
-    if inspect.isawaitable(val):
-        return await val
-    return val
+class SecretTemplateParser:
+    """
+    Dedicated parser for extracting placeholders and interpolating secrets
+    into {{secrets.VAR_NAME}} configuration templates.
+    """
+
+    PLACEHOLDER_REGEX = re.compile(r"\{\{\s*secrets\.([A-Z0-9_]+)\s*\}\}")
+
+    @classmethod
+    def extract_placeholders(cls, template_str: str) -> List[str]:
+        """Extract all unique {{secrets.VAR_NAME}} variable names from a template string."""
+        matches = cls.PLACEHOLDER_REGEX.findall(template_str)
+        return sorted(list(set(matches)))
+
+    @classmethod
+    def interpolate(cls, template_str: str, secrets_map: Dict[str, str]) -> str:
+        """
+        Replace {{secrets.VAR_NAME}} placeholders with their decrypted values.
+        If a key is missing from secrets_map, leaves the placeholder untouched.
+        """
+        return cls.PLACEHOLDER_REGEX.sub(
+            lambda m: secrets_map.get(m.group(1), m.group(0)),
+            template_str,
+        )
 
 
 class RuntimeSecretResolver:
@@ -48,15 +71,17 @@ class RuntimeSecretResolver:
 
     def __init__(
         self,
-        secret_repo: Optional[ProjectSecretRepository] = None,
-        project_repo: Optional[ProjectRepository] = None,
-        audit_repo: Optional[ProjectAuditRepository] = None,
+        secret_repo: Optional[ISecretRepository] = None,
+        project_repo: Optional[IProjectRepository] = None,
+        audit_repo: Optional[IProjectAuditRepository] = None,
         crypto_service: Optional[CryptoService] = None,
+        template_parser: Optional[SecretTemplateParser] = None,
     ) -> None:
-        self.secret_repo = secret_repo if secret_repo is not None else get_secret_repository()
-        self.project_repo = project_repo if project_repo is not None else get_project_repository()
-        self.audit_repo = audit_repo if audit_repo is not None else get_project_audit_repository()
+        self.secret_repo: ISecretRepository = secret_repo if secret_repo is not None else get_secret_repository()
+        self.project_repo: IProjectRepository = project_repo if project_repo is not None else get_project_repository()
+        self.audit_repo: IProjectAuditRepository = audit_repo if audit_repo is not None else get_project_audit_repository()
         self.crypto_service = crypto_service if crypto_service is not None else get_crypto_service()
+        self.template_parser = template_parser or SecretTemplateParser()
 
     async def _get_active_project(
         self,
@@ -115,13 +140,11 @@ class RuntimeSecretResolver:
                     continue
 
             # In-memory AES-256-GCM decryption
-            plaintext = await _maybe_await(
-                self.crypto_service.decrypt_secret(
-                    secret.envelope,
-                    str(project.id),
-                    secret.environment,
-                    secret.name,
-                )
+            plaintext = await self.crypto_service.decrypt_secret(
+                secret.envelope,
+                str(project.id),
+                secret.environment,
+                secret.name,
             )
             resolved[secret.name] = plaintext
 
@@ -147,23 +170,13 @@ class RuntimeSecretResolver:
 
     @staticmethod
     def extract_template_placeholders(template_str: str) -> List[str]:
-        """
-        Extract all {{secrets.VAR_NAME}} variable names from a template string.
-        """
-        matches = re.findall(r"\{\{\s*secrets\.([A-Z0-9_]+)\s*\}\}", template_str)
-        return sorted(list(set(matches)))
+        """Extract all {{secrets.VAR_NAME}} variable names from a template string."""
+        return SecretTemplateParser.extract_placeholders(template_str)
 
     @staticmethod
     def interpolate_templates(template_str: str, secrets_map: Dict[str, str]) -> str:
-        """
-        Replace {{secrets.VAR_NAME}} placeholders with their decrypted values.
-        If a key is missing from secrets_map, leaves the placeholder untouched.
-        """
-        return re.sub(
-            r"\{\{\s*secrets\.([A-Z0-9_]+)\s*\}\}",
-            lambda m: secrets_map.get(m.group(1), m.group(0)),
-            template_str,
-        )
+        """Replace {{secrets.VAR_NAME}} placeholders with their decrypted values."""
+        return SecretTemplateParser.interpolate(template_str, secrets_map)
 
     async def resolve_and_interpolate(
         self,

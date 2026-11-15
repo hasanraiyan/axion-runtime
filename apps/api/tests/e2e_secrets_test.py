@@ -282,7 +282,7 @@ def run_e2e_test(base_url: str, token: str, project_id: Optional[str] = None):
 
     # Summary
     print(f"\n{BOLD}{GREEN}========================================================")
-    print(f" ALL 13 END-TO-END VERIFICATION STEPS PASSED SUCCESSFULLY! ")
+    print(" ALL 13 END-TO-END VERIFICATION STEPS PASSED SUCCESSFULLY! ")
     print(f"========================================================{RESET}\n")
 
 

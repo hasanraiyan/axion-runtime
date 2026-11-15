@@ -1,6 +1,6 @@
 import pytest
 from datetime import datetime, timezone, timedelta
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 from beanie import init_beanie
 from bson import ObjectId
 
@@ -10,17 +10,13 @@ from app.core.exceptions import (
     ForbiddenError,
     InvalidStateTransitionError,
     NotFoundError,
-    ProjectArchivedError,
-    ProjectDeletedError,
     ProjectPurgedError,
 )
 from app.models.project import (
     Project,
-    ProjectAuditAction,
     ProjectAuditLog,
     ProjectMember,
     ProjectRole,
-    ProjectSettings,
     ProjectStatus,
 )
 from app.models.user import User

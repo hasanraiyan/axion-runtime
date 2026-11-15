@@ -1,6 +1,6 @@
 import base64
 from abc import ABC, abstractmethod
-from typing import Any, Generator, Optional, Tuple
+from typing import Optional, Tuple
 
 from cryptography.hazmat.primitives.keywrap import (
     InvalidUnwrap,
@@ -10,26 +10,6 @@ from cryptography.hazmat.primitives.keywrap import (
 
 from app.core.config import settings
 from app.core.exceptions import ConfigurationError, CryptographicIntegrityError
-
-
-class AwaitableTuple(tuple):
-    """A tuple that can be evaluated synchronously or awaited asynchronously."""
-
-    def __await__(self) -> Generator[Any, None, Tuple[Any, ...]]:
-        async def _coro() -> Tuple[Any, ...]:
-            return tuple(self)
-
-        return _coro().__await__()
-
-
-class AwaitableBytes(bytes):
-    """Bytes that can be evaluated synchronously or awaited asynchronously."""
-
-    def __await__(self) -> Generator[Any, None, bytes]:
-        async def _coro() -> bytes:
-            return bytes(self)
-
-        return _coro().__await__()
 
 
 class KeyProvider(ABC):
@@ -90,10 +70,10 @@ class LocalMasterKeyProvider(KeyProvider):
 
         self._kek_bytes = decoded
 
-    def wrap_key(self, dek: bytes, key_id: Optional[str] = None) -> AwaitableTuple:
+    async def wrap_key(self, dek: bytes, key_id: Optional[str] = None) -> Tuple[bytes, str]:
         """
         Wraps a 256-bit DEK using RFC 3394 AES Key Wrap.
-        Returns AwaitableTuple of (wrapped_dek_bytes, kek_id).
+        Returns (wrapped_dek_bytes, kek_id).
         """
         target_kek_id = key_id or self.kek_id
         if target_kek_id != self.kek_id:
@@ -114,12 +94,12 @@ class LocalMasterKeyProvider(KeyProvider):
         except Exception as exc:
             raise CryptographicIntegrityError(f"Failed to wrap DEK: {exc}") from exc
 
-        return AwaitableTuple((wrapped, self.kek_id))
+        return wrapped, self.kek_id
 
-    def unwrap_key(self, wrapped_dek: bytes, key_id: str) -> AwaitableBytes:
+    async def unwrap_key(self, wrapped_dek: bytes, key_id: str) -> bytes:
         """
         Unwraps a wrapped DEK using RFC 3394 AES Key Wrap.
-        Returns AwaitableBytes of the plaintext DEK.
+        Returns the plaintext DEK bytes.
         """
         if key_id != self.kek_id:
             raise CryptographicIntegrityError(
@@ -138,4 +118,4 @@ class LocalMasterKeyProvider(KeyProvider):
         except Exception as exc:
             raise CryptographicIntegrityError(f"Failed to unwrap DEK: {exc}") from exc
 
-        return AwaitableBytes(unwrapped)
+        return unwrapped

@@ -8,10 +8,7 @@ from app.core.crypto import CryptoService, EncryptedEnvelope
 from app.core.exceptions import (
     ConflictError,
     CryptographicIntegrityError,
-    NotFoundError,
     ProjectArchivedError,
-    ProjectDeletedError,
-    ProjectPurgedError,
 )
 from app.models.project import Project, ProjectAuditAction, ProjectStatus
 from app.models.secret import ProjectSecret

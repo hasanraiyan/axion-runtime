@@ -3,7 +3,6 @@ from unittest.mock import AsyncMock, MagicMock
 from beanie import init_beanie
 from bson import ObjectId
 import pytest
-from fastapi.testclient import TestClient
 
 from app.api.deps import (
     get_current_user,
@@ -15,7 +14,6 @@ from app.api.deps import (
 from app.core.exceptions import (
     ConflictError,
     CryptographicIntegrityError,
-    NotFoundError,
     ProjectArchivedError,
 )
 from app.main import app

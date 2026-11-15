@@ -3,7 +3,6 @@ Project Secret Service implementing core domain business rules, in-place OCC rep
 lifecycle guards, privileged reveal, and immutable audit logging.
 """
 from datetime import datetime, timezone
-import inspect
 from typing import Any, Dict, List, Optional, Tuple, Union
 from beanie import PydanticObjectId
 from bson import ObjectId
@@ -43,13 +42,6 @@ from app.schemas.secret import (
     SecretUpdateRequest,
     SecretValueResponse,
 )
-
-
-async def _maybe_await(val: Any) -> Any:
-    """Helper to evaluate both synchronous returns and awaitable objects."""
-    if inspect.isawaitable(val):
-        return await val
-    return val
 
 
 class ProjectSecretService:
@@ -115,13 +107,11 @@ class ProjectSecretService:
             raise ConflictError(f"Secret '{request.name}' already exists in environment '{env}'")
 
         # Encrypt value with fresh 256-bit DEK, nonce, and canonical AAD
-        envelope = await _maybe_await(
-            self.crypto_service.encrypt_secret(
-                request.value.get_secret_value(),
-                str(project.id),
-                env,
-                request.name,
-            )
+        envelope = await self.crypto_service.encrypt_secret(
+            request.value.get_secret_value(),
+            str(project.id),
+            env,
+            request.name,
         )
 
         secret = ProjectSecret(
@@ -235,13 +225,11 @@ class ProjectSecretService:
         value_replaced = False
         if request.value is not None:
             value_replaced = True
-            new_envelope = await _maybe_await(
-                self.crypto_service.encrypt_secret(
-                    request.value.get_secret_value(),
-                    str(project.id),
-                    secret.environment,
-                    secret.name,
-                )
+            new_envelope = await self.crypto_service.encrypt_secret(
+                request.value.get_secret_value(),
+                str(project.id),
+                secret.environment,
+                secret.name,
             )
             update_dict["envelope"] = new_envelope
             update_dict["last_rotated_at"] = datetime.now(timezone.utc)
@@ -285,13 +273,11 @@ class ProjectSecretService:
         if not secret:
             raise NotFoundError(f"Secret '{secret_id}' not found")
 
-        new_envelope = await _maybe_await(
-            self.crypto_service.encrypt_secret(
-                request.new_value.get_secret_value(),
-                str(project.id),
-                secret.environment,
-                secret.name,
-            )
+        new_envelope = await self.crypto_service.encrypt_secret(
+            request.new_value.get_secret_value(),
+            str(project.id),
+            secret.environment,
+            secret.name,
         )
 
         now = datetime.now(timezone.utc)
@@ -400,13 +386,11 @@ class ProjectSecretService:
         if not secret:
             raise NotFoundError(f"Secret '{secret_id}' not found")
 
-        plaintext = await _maybe_await(
-            self.crypto_service.decrypt_secret(
-                secret.envelope,
-                str(project.id),
-                secret.environment,
-                secret.name,
-            )
+        plaintext = await self.crypto_service.decrypt_secret(
+            secret.envelope,
+            str(project.id),
+            secret.environment,
+            secret.name,
         )
 
         audit_payload: Dict[str, Any] = {

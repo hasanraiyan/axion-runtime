@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import List, Optional
 from beanie import PydanticObjectId
 from pymongo import ASCENDING, DESCENDING, IndexModel
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from app.core.crypto.envelope import EncryptedEnvelope
 from app.db.base import BaseDocument

@@ -1,7 +1,7 @@
 import logging
 import re
 import time
-from typing import Any, Optional
+from typing import Any
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.requests import Request
 from starlette.responses import Response

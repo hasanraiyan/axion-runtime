@@ -1,5 +1,7 @@
 from app.services.credential_service import (
+    CredentialKeyGenerator,
     ProjectCredentialService,
+    generate_api_key,
     get_credential_service,
 )
 from app.services.health_service import HealthService
@@ -17,6 +19,7 @@ from app.services.project_service import (
 )
 from app.services.runtime_secret_resolver import (
     RuntimeSecretResolver,
+    SecretTemplateParser,
     get_runtime_secret_resolver,
 )
 from app.services.secret_service import (
@@ -38,7 +41,10 @@ __all__ = [
     "ProjectSecretService",
     "get_secret_service",
     "ProjectCredentialService",
+    "CredentialKeyGenerator",
+    "generate_api_key",
     "get_credential_service",
     "RuntimeSecretResolver",
+    "SecretTemplateParser",
     "get_runtime_secret_resolver",
 ]
