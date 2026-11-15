@@ -200,13 +200,19 @@ MongoDB and the collection's indexes were created without warnings.
 was discovered, its limits were frozen forever. Users could not tell which numbers were
 the provider's and which were ours.
 
-**Ground truth.** `apps/api/debug/upstream/*.json` now keeps the untouched upstream body
-(`app/core/upstream_dump.py`, written by `_fetch_upstream_model_catalog`). The captured
-Google `GET /v1beta/models` response shows what the API really states per model:
+**Ground truth.** `apps/api/sandbox/live_models.py` is a standalone probe (no DB, no Clerk)
+that calls a provider's model endpoint and saves the untouched JSON under `sandbox/out/`
+(`--normalize` also records what our mapper extracts). The captured Google
+`GET /v1beta/models` response shows what the API really states per model:
 `inputTokenLimit`, `outputTokenLimit`, `temperature`, `maxTemperature`, `thinking`,
 `supportedGenerationMethods`. Google reports `gemini-2.5-flash` as 1,048,576 in / 65,536 out,
 temperature 1 (range 0-2), `thinking: true`; `gemini-embedding-001` as 2,048 in and
 `outputTokenLimit: 1`, which is **not** a generation cap.
+
+The same probe against OpenAI's `GET /v1/models` returns only
+`id`/`object`/`created`/`owned_by`/`shutdown_date` — no limits, no temperature, no
+capabilities. So `provider_type=openai` legitimately yields `NULL` for all of them; any
+non-null value there would be fabricated.
 
 **Fix.**
 1. `infer_gemini_model()` (`app/services/provider_service.py`) maps only those fields:
@@ -214,7 +220,13 @@ temperature 1 (range 0-2), `thinking: true`; `gemini-embedding-001` as 2,048 in 
    `supports_streaming`, `maxTemperature` → `max_temperature`, and drops the bogus output
    cap for `embedContent` entries. Tools/vision/JSON-mode stay `None` because `models.list`
    never reports them.
-2. `discover_models` overwrites every attribute upstream states (a corrected limit now
+2. `infer_openai_compatible_model()` handles every other provider type. It reads only what
+   the server publishes: OpenAI itself states nothing, while OpenRouter adds
+   `context_length`, `top_provider.max_completion_tokens`, `architecture.input_modalities`
+   and `supported_parameters`, and vLLM adds `max_model_len`. Capabilities are derived from
+   `supported_parameters` / `input_modalities` and stay `None` when those lists are absent
+   (absent list = unknown, not "unsupported").
+3. `discover_models` overwrites every attribute upstream states (a corrected limit now
    replaces a stale/fabricated one) and stores `NULL` for what upstream omits.
    `ProjectModel.supports_*`/`default_temperature` and the corresponding API schemas are
    `Optional` so "unknown" survives the round-trip instead of becoming `True`/`0.7`.
@@ -222,6 +234,9 @@ temperature 1 (range 0-2), `thinking: true`; `gemini-embedding-001` as 2,048 in 
 **Verified.** `tests/test_gemini_live_model_mapping.py` runs against a trimmed copy of the
 captured payload (`tests/fixtures/gemini_models_live.json`) and asserts the real numbers,
 the embedding suppression, and that no capability is invented;
+`tests/test_openai_compatible_live_model_mapping.py` asserts that a real OpenAI entry
+(`id`/`object`/`created`/`owned_by`/`shutdown_date`) maps to all-`NULL` limits, and that
+OpenRouter/vLLM/Anthropic extras are consumed when present;
 `test_rediscovery_overwrites_stale_limits_and_capabilities` proves a second discovery
 replaces 1,000,000/8,192 with 1,048,576/65,536.
 

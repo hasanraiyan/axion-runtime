@@ -82,6 +82,9 @@ def infer_model_capabilities(
     max_temperature: Optional[float] = None,
     model_type: Optional[ModelType] = None,
     supports_streaming: Optional[bool] = None,
+    supports_tools: Optional[bool] = None,
+    supports_vision: Optional[bool] = None,
+    supports_json_mode: Optional[bool] = None,
     supports_reasoning: Optional[bool] = None,
 ) -> DiscoveredModelInfo:
     """
@@ -105,9 +108,9 @@ def infer_model_capabilities(
         created_at_upstream=created_at_upstream,
         model_type=model_type,
         supports_streaming=supports_streaming,
-        supports_tools=None,
-        supports_vision=None,
-        supports_json_mode=None,
+        supports_tools=supports_tools,
+        supports_vision=supports_vision,
+        supports_json_mode=supports_json_mode,
         supports_reasoning=supports_reasoning,
         max_input_tokens=max_input_tokens,
         max_output_tokens=max_output_tokens,
@@ -184,6 +187,85 @@ def infer_gemini_model(item: Dict[str, Any]) -> DiscoveredModelInfo:
         supports_streaming=(
             True if "generatecontent" in methods else (False if is_embedding else None)
         ),
+        supports_reasoning=supports_reasoning,
+    )
+
+
+def _as_timestamp(value: Any) -> Optional[int]:
+    """Unix seconds from an int/float, or from an ISO-8601 string (Anthropic style)."""
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, (int, float)):
+        return int(value)
+    if isinstance(value, str):
+        try:
+            return int(datetime.fromisoformat(value.replace("Z", "+00:00")).timestamp())
+        except ValueError:
+            return None
+    return None
+
+
+def _first_int(item: Dict[str, Any], *keys: str) -> Optional[int]:
+    for key in keys:
+        value = _as_int(item.get(key))
+        if value is not None:
+            return value
+    return None
+
+
+_OPENAI_COMPAT_TOOL_PARAMS = {"tools", "tool_choice", "parallel_tool_calls"}
+_OPENAI_COMPAT_JSON_PARAMS = {"response_format", "structured_outputs", "json_mode"}
+_OPENAI_COMPAT_REASONING_PARAMS = {"reasoning", "include_reasoning", "reasoning_effort"}
+
+
+def infer_openai_compatible_model(item: Dict[str, Any]) -> DiscoveredModelInfo:
+    """
+    Map one `/v1/models` entry, whatever extra fields that server happens to add.
+
+    OpenAI's own endpoint returns only `id`/`object`/`created`/`owned_by` (plus
+    `shutdown_date`), so limits and capabilities stay `None` — there is nothing
+    to copy. OpenRouter adds `context_length`, `top_provider.max_completion_tokens`,
+    `architecture.input_modalities` and `supported_parameters`; vLLM adds
+    `max_model_len`. Those are consumed when present.
+    """
+    model_id = str(item.get("id") or item.get("name") or "").removeprefix("models/")
+
+    top_provider = item.get("top_provider") if isinstance(item.get("top_provider"), dict) else {}
+    architecture = item.get("architecture") if isinstance(item.get("architecture"), dict) else {}
+    supported_params = {str(p).lower() for p in (item.get("supported_parameters") or [])}
+    input_modalities = {str(m).lower() for m in (architecture.get("input_modalities") or [])}
+
+    max_input = _first_int(item, "max_input_tokens", "context_length", "max_model_len", "max_context_length")
+    max_output = _first_int(
+        item, "max_output_tokens", "max_completion_tokens", "outputTokenLimit"
+    ) or _first_int(top_provider, "max_completion_tokens")
+
+    # A capability is only reported when the server lists supported parameters:
+    # absent list = unknown, not "unsupported".
+    if supported_params:
+        supports_tools: Optional[bool] = bool(supported_params & _OPENAI_COMPAT_TOOL_PARAMS)
+        supports_json_mode: Optional[bool] = bool(supported_params & _OPENAI_COMPAT_JSON_PARAMS)
+        supports_reasoning: Optional[bool] = bool(supported_params & _OPENAI_COMPAT_REASONING_PARAMS)
+    else:
+        supports_tools = supports_json_mode = supports_reasoning = None
+
+    supports_vision: Optional[bool] = None
+    if input_modalities:
+        supports_vision = "image" in input_modalities
+
+    return infer_model_capabilities(
+        model_id=model_id,
+        display_name=item.get("display_name") or item.get("displayName") or model_id,
+        description=item.get("description"),
+        owned_by=item.get("owned_by") or item.get("ownedBy"),
+        created_at_upstream=_as_timestamp(item.get("created") or item.get("created_at")),
+        max_input_tokens=max_input,
+        max_output_tokens=max_output,
+        default_temperature=_as_float(item.get("default_temperature", item.get("temperature"))),
+        max_temperature=_as_float(item.get("maxTemperature")),
+        supports_tools=supports_tools,
+        supports_vision=supports_vision,
+        supports_json_mode=supports_json_mode,
         supports_reasoning=supports_reasoning,
     )
 
@@ -672,37 +754,12 @@ class ProviderManagementService:
             model_id = item.get("id") or item.get("name")
             if not model_id:
                 continue
-            # Google Gemini format clean: 'models/gemini-1.5-pro' -> 'gemini-1.5-pro'
-            clean_id = model_id.removeprefix("models/") if isinstance(model_id, str) else str(model_id)
 
             if provider_type == ProviderType.GOOGLE_GENAI:
                 # Google documents limits/capabilities in the listing itself.
                 discovered.append(infer_gemini_model(item))
-                continue
-
-            display_name = item.get("displayName") or item.get("display_name") or clean_id
-            description = item.get("description")
-            owned_by = item.get("owned_by") or item.get("ownedBy")
-            created = item.get("created")
-
-            discovered.append(
-                infer_model_capabilities(
-                    model_id=clean_id,
-                    display_name=display_name,
-                    description=description,
-                    owned_by=str(owned_by) if owned_by is not None else None,
-                    created_at_upstream=_as_int(created),
-                    max_input_tokens=_as_int(
-                        item.get("max_input_tokens", item.get("inputTokenLimit"))
-                    ),
-                    max_output_tokens=_as_int(
-                        item.get("max_output_tokens", item.get("outputTokenLimit"))
-                    ),
-                    default_temperature=_as_float(
-                        item.get("default_temperature", item.get("temperature"))
-                    ),
-                )
-            )
+            else:
+                discovered.append(infer_openai_compatible_model(item))
 
         return discovered
 

@@ -1,17 +1,21 @@
 """Standalone live-model probe — paste a key, get the provider's real JSON back.
 
-Deliberately self-contained: no settings, no MongoDB, no Clerk, no imports from
-`app/`. Run it from a terminal whenever you need to know what a provider really
-reports for its models (token limits, temperature, capabilities) instead of
-guessing or trusting a second-hand copy.
+Deliberately self-contained: no settings, no MongoDB, no Clerk. Run it from a
+terminal whenever you need to know what a provider really reports for its models
+(token limits, temperature, capabilities) instead of guessing or trusting a
+second-hand copy.
 
     cd apps/api
     .\\.venv\\Scripts\\python.exe sandbox\\live_models.py
     .\\.venv\\Scripts\\python.exe sandbox\\live_models.py --provider google_genai --key AIza...
+    .\\.venv\\Scripts\\python.exe sandbox\\live_models.py --provider openai --normalize
 
 Edit the CONFIG block below, or pass --provider / --key / --base-url / --out.
 The raw response body is written as JSON under `sandbox/out/` (git-ignored);
 the API key itself is never written to the file and the query string is stripped.
+
+`--normalize` additionally records (and prints) what Axion's mapper would store
+for each model, so "why is this limit null?" can be answered from one file.
 
 SECURITY: this file is a scratchpad. Keep it out of commits (or blank out the
 key) before pushing anywhere public.
@@ -65,12 +69,77 @@ def redact_url(url: str) -> str:
     return urlunsplit((parts.scheme, parts.netloc, parts.path, "", ""))
 
 
+def normalize_models(provider: str, payload: Any) -> Optional[list]:
+    """Apply Axion's own mapper to the captured payload (opt-in via --normalize).
+
+    Imported lazily so the probe still runs if `app/` cannot be imported (e.g.
+    the script is copied somewhere else).
+    """
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    try:
+        from app.services.provider_service import (  # noqa: PLC0415
+            infer_gemini_model,
+            infer_openai_compatible_model,
+        )
+    except Exception as exc:  # pragma: no cover - diagnostics fallback
+        print(f"normalization unavailable: {type(exc).__name__}: {exc}")
+        return None
+
+    if isinstance(payload, dict):
+        entries = payload.get("data") or payload.get("models") or []
+    elif isinstance(payload, list):
+        entries = payload
+    else:
+        entries = []
+
+    mapper = infer_gemini_model if provider == "google_genai" else infer_openai_compatible_model
+    return [
+        mapper(item).model_dump(mode="json")
+        for item in entries
+        if isinstance(item, dict) and (item.get("id") or item.get("name"))
+    ]
+
+
+_CAP_COLUMNS = (
+    ("streaming", "strm"),
+    ("tools", "tool"),
+    ("vision", "vis"),
+    ("json_mode", "json"),
+    ("reasoning", "reas"),
+)
+
+
+def print_normalized(rows: list) -> None:
+    print()
+    header = (
+        f"{'model_id':38} {'model_type':16} {'in':>9} {'out':>7}  "
+        + " ".join(label for _, label in _CAP_COLUMNS)
+    )
+    print(header)
+    for row in rows:
+        marks = []
+        for name, _ in _CAP_COLUMNS:
+            value = row.get(f"supports_{name}")
+            marks.append("." if value is None else ("+" if value else "-"))
+        print(
+            f"{row['model_id'][:38]:38} {str(row.get('model_type') or '?'):16} "
+            f"{str(row.get('max_input_tokens') or '?'):>9} {str(row.get('max_output_tokens') or '?'):>7}  "
+            + " ".join(f"{mark:>{len(label)}}" for mark, (_, label) in zip(marks, _CAP_COLUMNS))
+        )
+    print("( '?' = not in payload so Axion stores NULL; capability marks: '.' unknown, '+' true, '-' false )")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Fetch a provider's live model list and save the raw JSON.")
     parser.add_argument("--provider", default=PROVIDER, help="openai | google_genai | anthropic | custom")
     parser.add_argument("--key", default=API_KEY, help="API key (defaults to the CONFIG block / PROBE_API_KEY)")
     parser.add_argument("--base-url", default=BASE_URL, help="Override the endpoint base (required for custom)")
     parser.add_argument("--out", default=None, help="Output file or directory (default: sandbox/out)")
+    parser.add_argument(
+        "--normalize",
+        action="store_true",
+        help="Also save/print what Axion's mapper extracts from this response",
+    )
     args = parser.parse_args()
 
     if not args.key or args.key == "PASTE-YOUR-API-KEY-HERE":
@@ -99,6 +168,10 @@ def main() -> int:
         "payload": payload,
     }
 
+    normalized = normalize_models(args.provider, payload) if args.normalize else None
+    if normalized is not None:
+        record["normalized"] = normalized
+
     if args.out:
         out = Path(args.out)
         target = out if out.suffix.lower() == ".json" else out / f"{args.provider}_live_models_{captured_at:%Y%m%dT%H%M%SZ}.json"
@@ -114,8 +187,10 @@ def main() -> int:
     elif isinstance(payload, list):
         models = payload
 
-    print(f"HTTP {response.status_code} — {len(models)} models")
+    print(f"HTTP {response.status_code} - {len(models)} models")
     print(f"saved: {target}")
+    if normalized is not None:
+        print_normalized(normalized)
     if response.status_code >= 400:
         print(json.dumps(payload, indent=2, ensure_ascii=False)[:2000])
         return 1
