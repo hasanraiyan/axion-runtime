@@ -9,7 +9,7 @@ from contextlib import asynccontextmanager
 from typing import Any, AsyncIterator, Dict, Optional
 
 import httpx2
-from mcp.server.mcpserver import MCPServer
+from mcp.server.mcpserver import Context, MCPServer
 from mcp.server.transport_security import TransportSecuritySettings
 from mcp.types import ToolAnnotations
 
@@ -21,7 +21,7 @@ APP_URI = "ui://charts/main"
 APP_HTML_V1 = "<html><body><h1>chart v1</h1></body></html>"
 
 
-def build_server(extras: bool = False) -> MCPServer:
+def build_server(extras: bool = False, announce: bool = False) -> MCPServer:
     server = MCPServer("axion-test-server")
     server.app_state = {
         "html": APP_HTML_V1,
@@ -57,6 +57,13 @@ def build_server(extras: bool = False) -> MCPServer:
     )
     def show_chart(series: str = "a") -> str:
         return f"chart:{series}"
+
+    if announce:
+
+        @server.tool(name="announce_change", description="Emit tools/list_changed to the connected client.")
+        async def announce_change(ctx: Context) -> str:
+            await ctx.session.send_tool_list_changed()
+            return "announced"
 
     if extras:
         state = server.app_state  # type: ignore[attr-defined]

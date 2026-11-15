@@ -9,11 +9,12 @@ all traffic. SDK and transport exceptions are mapped to the neutral ``Upstream*`
 from __future__ import annotations
 
 import logging
-from contextlib import AbstractAsyncContextManager, asynccontextmanager
+from contextlib import AbstractAsyncContextManager, AsyncExitStack, asynccontextmanager
 from typing import Any, AsyncIterator, Awaitable, Callable, Dict, List, Optional, Protocol
 
 import httpx2
 from mcp import ClientSession, types
+from mcp.client.sse import sse_client
 from mcp.client.streamable_http import streamable_http_client
 from mcp.shared.exceptions import MCPError
 
@@ -47,6 +48,7 @@ UI_EXTENSION = {"io.modelcontextprotocol/ui": {"mimeTypes": ["text/html;profile=
 
 class McpSessionPort(Protocol):
     server_info: Dict[str, Any]
+    transport: str
     capabilities: Dict[str, Any]
     protocol_version: Optional[str]
 
@@ -152,8 +154,16 @@ def map_sdk_exception(exc: BaseException, http_statuses: Optional[List[int]] = N
 
 # ------------------------------------------------------------------------------ session
 class SdkMcpSession:
-    def __init__(self, session: ClientSession, init: types.InitializeResult, timeout: float, http_statuses: Optional[List[int]] = None) -> None:
+    def __init__(
+        self,
+        session: ClientSession,
+        init: types.InitializeResult,
+        timeout: float,
+        http_statuses: Optional[List[int]] = None,
+        transport: str = "streamable_http",
+    ) -> None:
         self._session = session
+        self.transport = transport  # the transport actually used, after any creation-time fallback
         self._timeout = timeout
         # HTTP statuses seen on this session's connection; the pool uses them to classify failures the SDK hides.
         self.http_statuses: List[int] = http_statuses if http_statuses is not None else []
@@ -210,8 +220,28 @@ class SdkMcpSession:
         return dumped
 
 
+TRANSPORT_STREAMABLE = "streamable_http"
+TRANSPORT_SSE_LEGACY = "sse_legacy"
+TRANSPORT_AUTO = "auto"
+SUPPORTED_TRANSPORTS = (TRANSPORT_STREAMABLE, TRANSPORT_SSE_LEGACY, TRANSPORT_AUTO)
+# Statuses a server that only speaks the legacy HTTP+SSE transport returns to a Streamable HTTP POST (MCP spec,
+# "Backwards compatibility"). Auth, rate-limit, and server errors are never a reason to try another transport.
+SSE_FALLBACK_STATUSES = frozenset({400, 404, 405})
+
+
+def should_fall_back_to_sse(statuses: List[int]) -> bool:
+    refused = any(code in SSE_FALLBACK_STATUSES for code in statuses)
+    return refused and not any(code in (401, 403, 429) or code >= 500 for code in statuses)
+
+
 class SdkMcpConnector:
-    """Default ``McpConnectorPort``: official SDK over Streamable HTTP, guarded."""
+    """
+    Default ``McpConnectorPort``: official SDK over Streamable HTTP, or the legacy HTTP+SSE transport, guarded.
+
+    ``transport`` is ``streamable_http`` (default), ``sse_legacy``, or ``auto``. ``auto`` tries Streamable HTTP and falls
+    back to SSE **only while the connection is being created** and only for the statuses a legacy server returns; once a
+    session exists it is never switched. The transport actually used is exposed as ``session.transport``.
+    """
 
     def __init__(
         self,
@@ -226,43 +256,93 @@ class SdkMcpConnector:
         self._pin = pin_ips
         self._on_list_changed = on_list_changed
 
-    @asynccontextmanager
-    async def connect(
-        self, integration: Integration, credentials: ResolvedCredentials
-    ) -> AsyncIterator[McpSessionPort]:
+    def _client(
+        self,
+        integration: Integration,
+        credentials: ResolvedCredentials,
+        statuses: List[int],
+        timeout: httpx2.Timeout,
+        headers: Optional[Dict[str, Any]] = None,
+    ) -> httpx2.AsyncClient:
         config = integration.config
-        timeout = float(config.get("request_timeout_seconds", 30))
         transport = GuardedAsyncTransport(
             self._guard, allowed_hosts=config.get("allowed_hosts"), inner=self._inner, pin_ips=self._pin
         )
-        statuses: List[int] = []
 
         async def record_status(response: httpx2.Response) -> None:
             statuses.append(response.status_code)
 
-        client = httpx2.AsyncClient(
+        merged = {**(credentials.headers or {}), **(headers or {})}
+        return httpx2.AsyncClient(
             event_hooks={"response": [record_status]},
             transport=transport,
-            headers=credentials.headers or None,
+            headers=merged or None,
             params=credentials.query or None,
-            timeout=httpx2.Timeout(timeout),
+            timeout=timeout,
             follow_redirects=False,
         )
+
+    @asynccontextmanager
+    async def _open(
+        self, integration: Integration, credentials: ResolvedCredentials, transport_name: str, statuses: List[int]
+    ) -> AsyncIterator[SdkMcpSession]:
+        config = integration.config
+        timeout = float(config.get("request_timeout_seconds", 30))
         on_message = build_message_handler(integration, self._on_list_changed)
 
+        @asynccontextmanager
+        async def streams_for() -> AsyncIterator[Any]:
+            if transport_name == TRANSPORT_SSE_LEGACY:
+
+                def factory(
+                    headers: Optional[Dict[str, Any]] = None, timeout: Optional[httpx2.Timeout] = None, auth: Any = None
+                ) -> httpx2.AsyncClient:
+                    return self._client(integration, credentials, statuses, timeout or httpx2.Timeout(30.0), headers)
+
+                async with sse_client(config["url"], timeout=timeout, httpx_client_factory=factory) as streams:
+                    yield streams
+            else:
+                client = self._client(integration, credentials, statuses, httpx2.Timeout(timeout))
+                async with client:
+                    async with streamable_http_client(config["url"], http_client=client) as streams:
+                        yield streams
+
+        async with streams_for() as streams:
+            async with ClientSession(
+                streams[0],
+                streams[1],
+                read_timeout_seconds=timeout,
+                client_info=types.Implementation(name=CLIENT_NAME, version=CLIENT_VERSION),
+                extensions=UI_EXTENSION,
+                message_handler=on_message,
+            ) as session:
+                init = await session.initialize()
+                yield SdkMcpSession(session, init, timeout, statuses, transport=transport_name)
+
+    @asynccontextmanager
+    async def connect(
+        self, integration: Integration, credentials: ResolvedCredentials
+    ) -> AsyncIterator[McpSessionPort]:
+        configured = integration.config.get("transport", TRANSPORT_STREAMABLE)
+        first = TRANSPORT_SSE_LEGACY if configured == TRANSPORT_SSE_LEGACY else TRANSPORT_STREAMABLE
+        statuses: List[int] = []
         try:
-            async with client:
-                async with streamable_http_client(config["url"], http_client=client) as streams:
-                    async with ClientSession(
-                        streams[0],
-                        streams[1],
-                        read_timeout_seconds=timeout,
-                        client_info=types.Implementation(name=CLIENT_NAME, version=CLIENT_VERSION),
-                        extensions=UI_EXTENSION,
-                        message_handler=on_message,
-                    ) as session:
-                        init = await session.initialize()
-                        yield SdkMcpSession(session, init, timeout, statuses)
+            async with AsyncExitStack() as stack:
+                try:
+                    session = await stack.enter_async_context(self._open(integration, credentials, first, statuses))
+                except BaseException as exc:  # noqa: BLE001
+                    if (
+                        configured != TRANSPORT_AUTO
+                        or isinstance(exc, (KeyboardInterrupt, SystemExit))
+                        or not should_fall_back_to_sse(statuses)
+                    ):
+                        raise
+                    logger.info("Streamable HTTP was refused (%s); falling back to legacy SSE for this connection", statuses)
+                    statuses = []
+                    session = await stack.enter_async_context(
+                        self._open(integration, credentials, TRANSPORT_SSE_LEGACY, statuses)
+                    )
+                yield session
         except UpstreamError:
             raise
         except BaseException as exc:  # noqa: BLE001 - re-raised after mapping

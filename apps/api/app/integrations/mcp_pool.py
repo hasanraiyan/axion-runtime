@@ -215,6 +215,10 @@ class _PooledSession:
         return self._entry.session.server_info  # type: ignore[union-attr]
 
     @property
+    def transport(self) -> str:
+        return self._entry.session.transport  # type: ignore[union-attr]
+
+    @property
     def capabilities(self) -> Dict[str, Any]:
         return self._entry.session.capabilities  # type: ignore[union-attr]
 

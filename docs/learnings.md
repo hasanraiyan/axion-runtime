@@ -418,10 +418,12 @@ request, so a tool call can never run twice; caps fall back to an unpooled sessi
 ### 26. The standalone notification stream cannot be carried by an in-memory ASGI transport
 
 **Limitation.** `notifications/tools/list_changed` arrives on a long-lived SSE `GET`. `httpx2.ASGITransport` buffers a
-response until it completes, so that stream never delivers in-process, and a test cannot observe a real notification
-end to end. What is verified instead: the SDK's real notification types (`ToolListChangedNotification`, ...) through the
-real handler, and the subscriber through the whole container (discovery, drift, audit). Real delivery should be checked
-once against a live MCP server that emits `list_changed` before relying on it in production.
+response until it completes, so that stream never delivers in-process.
+
+**Resolved.** `tests/socket_server.py` runs the SDK server under uvicorn on a loopback port inside the test's event
+loop (`server.capture_signals` replaced by `nullcontext` so it does not touch signal handlers). Real delivery is now
+verified end to end for both transports in `tests/test_mcp_real_sockets.py`. The client guard must be built with
+`allow_private_networks=True, allow_insecure_http=True` in these tests only.
 
 ### 27. Unsaved Beanie documents all have `id = None`
 
@@ -454,6 +456,21 @@ adapter's `validate_config` (normalisation drops unknown keys, so an unvalidated
 
 **Verification.** `tests/test_tools_performance.py`; 13 mutants killed. Performance tests measure logic and cache against
 in-memory repositories, not database or network latency.
+
+### 29. Legacy SSE fallback: decide from HTTP statuses, never mid-session, and test the negative paths on the wire
+
+**Design.** `SdkMcpConnector` opens Streamable HTTP or `sse_client`; `auto` falls back only when the Streamable POST got
+400/404/405 and nothing in 401/403/429/5xx (`should_fall_back_to_sse`). The SDK hides HTTP statuses, so a response
+event hook records them per attempt. `AsyncExitStack` unwinds the failed attempt before the second one starts, and
+both are entered and exited in the same task (anyio task groups require this).
+
+**Pitfall found by mutation testing.** A Streamable POST and an SSE GET use the **same URL** when the server is
+mounted at one path, so asserting on paths could not tell a fallback attempt from the first attempt; the test now
+asserts on methods (a refused `auto` attempt must contain no GET). The SSE client builds its own httpx client through
+a factory, so the factory must apply the guarded transport, the credentials, and the status hook, otherwise SSE would
+bypass the Outbound Guard (covered by `test_the_outbound_guard_still_governs_the_legacy_transport`).
+
+**Verification.** `tests/test_mcp_real_sockets.py`; 10 mutants killed after tightening the test above.
 
 ---
 

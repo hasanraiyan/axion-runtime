@@ -150,8 +150,8 @@ class McpAdapter:
         if not isinstance(url, str) or not url.strip():
             raise BadRequestError("MCP integrations require a 'url'")
         transport = config.get("transport", "streamable_http")
-        if transport != "streamable_http":
-            raise BadRequestError("Only the 'streamable_http' MCP transport is supported")
+        if transport not in ("streamable_http", "sse_legacy", "auto"):
+            raise BadRequestError("transport must be 'streamable_http', 'sse_legacy', or 'auto'")
         timeout = config.get("request_timeout_seconds", 30)
         if not isinstance(timeout, int) or isinstance(timeout, bool) or not 1 <= timeout <= 120:
             raise BadRequestError("request_timeout_seconds must be an integer between 1 and 120")
@@ -263,6 +263,7 @@ class McpAdapter:
                     server_info={
                         "server": session.server_info,
                         "protocol_version": session.protocol_version,
+                        "transport": session.transport,
                         "capabilities": sorted(session.capabilities.keys()),
                     },
                 )

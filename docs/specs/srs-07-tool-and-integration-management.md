@@ -351,7 +351,7 @@ Collection: `project_integrations`
 | Type | Fields |
 |---|---|
 | `native` | `provider_key` (registry key), `settings` (validated against the provider's declared config schema) |
-| `mcp` | `url` (https required outside dev), `transport` (`streamable_http`, `sse_legacy`), `protocol_version` (negotiated), `server_info` (name, version), `capabilities` (negotiated: tools, resources, prompts, apps), `allowed_app_domains` (admin-approved CSP domains), `request_timeout_seconds`, `max_concurrent_calls` |
+| `mcp` | `url` (https required outside dev), `transport` (`streamable_http`, `sse_legacy`, `auto`), `protocol_version` (negotiated), `server_info` (name, version), `capabilities` (negotiated: tools, resources, prompts, apps), `allowed_app_domains` (admin-approved CSP domains), `request_timeout_seconds`, `max_concurrent_calls` |
 | `rest` | `base_url`, `spec_source` (`openapi_url`, `openapi_upload`, `manual`), `spec_hash`, `default_headers` (non-secret), `allowed_hosts`, `request_timeout_seconds`, `max_response_bytes` |
 | `custom` | `kind` (`webhook`, `registered`), for webhook: `endpoint_url`, `signing_secret_id` (`MOD-02`), `timestamp_tolerance_seconds`; for registered: `adapter_key` |
 
@@ -639,6 +639,7 @@ Collection: `project_tool_policies` — one document per project.
 
 #### FR-20: Transport Fallback
 - `streamable_http` is preferred. On failure during creation, the system may try legacy SSE once and records the working transport. Fallback never occurs mid-session.
+- Implemented: `transport` is `streamable_http` (default), `sse_legacy`, or `auto`. Only `auto` falls back, and only when the Streamable HTTP request was answered with 400, 404, or 405 and no 401, 403, 429, or 5xx was seen; auth, rate-limit, and server errors surface as errors. The transport actually used is reported as `transport` in the probe `server_info` and on the session.
 
 ### 6.D REST Integrations
 
@@ -1438,6 +1439,7 @@ operations; the web UI and hosted pages. End users cannot register their own MCP
 | Version | Date | Description |
 |---|---|---|
 | 1.0.0 | 2026-11-15 | Initial draft based on analysis of the Agent Marketplace backend and Axion MOD-01/02/03/06 |
+| 1.6.0 | 2026-11-15 | Legacy SSE transport and `auto` fallback (FR-20); real-socket test harness; real `list_changed` delivery verified |
 | 1.5.0 | 2026-11-15 | Toolset listing cache and per-integration concurrency cap; performance targets asserted by tests (logic and cache, not DB latency) |
 | 1.4.0 | 2026-11-15 | Phase 2 slice C implemented (MCP session pool, list_changed handling); MCP side complete |
 | 1.3.0 | 2026-11-15 | Phase 2 slice B implemented (MCP resources, prompts, and MCP Apps) |

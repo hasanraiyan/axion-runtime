@@ -1,8 +1,7 @@
 """
 list_changed handling and pool invalidation tests (SRS-07 FR-10, FR-18).
 
-The standalone notification stream is a long-lived SSE GET that an in-memory ASGI transport cannot carry, so delivery is
-tested with the *real SDK notification types* fed to the real handler; the subscriber is tested end to end against the
+Real delivery over sockets is covered in test_mcp_real_sockets.py; here the *real SDK notification types* are fed to the real handler; the subscriber is tested end to end against the
 full container (discovery, drift, audit).
 """
 import asyncio
