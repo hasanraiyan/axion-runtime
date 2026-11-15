@@ -73,6 +73,15 @@ class Settings(BaseSettings):
     # Rate Limiting
     RATE_LIMIT_PER_MINUTE: int = Field(default=100, description="Max requests per minute per IP")
 
+    # Outbound integration traffic (MOD-07 Outbound URL Guard)
+    OUTBOUND_ALLOW_PRIVATE_NETWORKS: bool = Field(
+        default=False,
+        description="Allow integrations to target private networks (explicit on-premises deployments only)",
+    )
+    OUTBOUND_ALLOW_INSECURE_HTTP: bool = Field(
+        default=False, description="Allow plain http integration targets (development only)"
+    )
+
     # Cryptographic Envelope Encryption (MOD-02)
     AXION_MASTER_ENCRYPTION_KEY: str = Field(
         default="",

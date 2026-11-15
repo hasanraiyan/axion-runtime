@@ -32,6 +32,11 @@ from app.models.project_routing_policy import (
     ProjectRoutingPolicy,
 )
 
+from app.models.integration import Integration, IntegrationStatus, IntegrationType  # noqa: E402
+from app.models.tool import ToolBinding, ToolDefinition, ToolSetting  # noqa: E402
+from app.models.end_user import ProjectEndUser  # noqa: E402
+from app.models.tool_invocation import ToolInvocation  # noqa: E402
+
 # Registry of all Beanie document models for initialization.
 DOCUMENT_MODELS: List[Type[Document]] = [
     User,
@@ -43,6 +48,12 @@ DOCUMENT_MODELS: List[Type[Document]] = [
     ProjectProvider,
     ProjectModel,
     ProjectRoutingPolicy,
+    Integration,
+    ToolDefinition,
+    ToolSetting,
+    ToolBinding,
+    ProjectEndUser,
+    ToolInvocation,
 ]
 
 __all__ = [
@@ -66,5 +77,13 @@ __all__ = [
     "ProjectModel",
     "ModelType",
     "ProjectRoutingPolicy",
+    "Integration",
+    "IntegrationType",
+    "IntegrationStatus",
+    "ToolDefinition",
+    "ToolSetting",
+    "ToolBinding",
+    "ProjectEndUser",
+    "ToolInvocation",
     "DOCUMENT_MODELS",
 ]

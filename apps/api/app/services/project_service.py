@@ -63,6 +63,8 @@ from app.repositories.project_model_repository import (
     ProjectModelRepository,
     get_project_model_repository,
 )
+from app.services.tools.providers import get_tool_cascade_purger
+from app.services.tools.purge import ToolCascadePurger
 from app.repositories.project_routing_policy_repository import (
     ProjectRoutingPolicyRepository,
     get_project_routing_policy_repository,
@@ -92,6 +94,7 @@ class ProjectService:
         provider_repo: Optional[IProjectProviderRepository] = None,
         model_repo: Optional[IProjectModelRepository] = None,
         routing_policy_repo: Optional[IProjectRoutingPolicyRepository] = None,
+        tool_cascade: Optional[Any] = None,
         mongo_client: Optional[AsyncMongoClient] = None,
     ) -> None:
         self.project_repo = project_repo if project_repo is not None else get_project_repository()
@@ -102,6 +105,7 @@ class ProjectService:
         self.provider_repo = provider_repo
         self.model_repo = model_repo
         self.routing_policy_repo = routing_policy_repo
+        self.tool_cascade = tool_cascade
         self.mongo_client = mongo_client
 
     def _get_client(self) -> Optional[AsyncMongoClient]:
@@ -822,6 +826,10 @@ class ProjectService:
         if self.routing_policy_repo is not None:
             await self.routing_policy_repo.purge_by_project(project.id)
 
+        # MOD-07: integrations, tools, bindings, end users, invocations
+        if self.tool_cascade is not None:
+            await self.tool_cascade.purge_project(project.id, user_id)
+
         # 3. Emit PROJECT_PURGED audit log
         await self.audit_repo.log_event(
             project_id=project.id,
@@ -850,6 +858,7 @@ def get_project_service(
     provider_repo: ProjectProviderRepository = Depends(get_project_provider_repository),
     model_repo: ProjectModelRepository = Depends(get_project_model_repository),
     routing_policy_repo: ProjectRoutingPolicyRepository = Depends(get_project_routing_policy_repository),
+    tool_cascade: ToolCascadePurger = Depends(get_tool_cascade_purger),
 ) -> ProjectService:
     """Dependency injection provider for ProjectService."""
     return ProjectService(
@@ -861,4 +870,5 @@ def get_project_service(
         provider_repo=provider_repo,
         model_repo=model_repo,
         routing_policy_repo=routing_policy_repo,
+        tool_cascade=tool_cascade,
     )

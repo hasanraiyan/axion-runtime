@@ -3,13 +3,13 @@ Runtime Secret Resolver providing batch in-memory decryption for agent workers,
 sandboxes, workflow nodes, and template interpolation for {{secrets.VAR_NAME}}.
 """
 from datetime import datetime, timezone
-import re
 from typing import Any, Dict, List, Optional, Union
 from beanie import PydanticObjectId
 from bson import ObjectId
 from fastapi import Depends
 
 from app.core.crypto import CryptoService, get_crypto_service
+from app.core.secret_templates import SecretTemplateParser  # noqa: F401  (re-exported for existing imports)
 from app.core.exceptions import (
     NotFoundError,
     ProjectArchivedError,
@@ -35,32 +35,6 @@ from app.repositories.secret_repository import (
     get_secret_repository,
 )
 from app.schemas.secret import SecretBatchResolveResponse
-
-
-class SecretTemplateParser:
-    """
-    Dedicated parser for extracting placeholders and interpolating secrets
-    into {{secrets.VAR_NAME}} configuration templates.
-    """
-
-    PLACEHOLDER_REGEX = re.compile(r"\{\{\s*secrets\.([A-Z0-9_]+)\s*\}\}")
-
-    @classmethod
-    def extract_placeholders(cls, template_str: str) -> List[str]:
-        """Extract all unique {{secrets.VAR_NAME}} variable names from a template string."""
-        matches = cls.PLACEHOLDER_REGEX.findall(template_str)
-        return sorted(list(set(matches)))
-
-    @classmethod
-    def interpolate(cls, template_str: str, secrets_map: Dict[str, str]) -> str:
-        """
-        Replace {{secrets.VAR_NAME}} placeholders with their decrypted values.
-        If a key is missing from secrets_map, leaves the placeholder untouched.
-        """
-        return cls.PLACEHOLDER_REGEX.sub(
-            lambda m: secrets_map.get(m.group(1), m.group(0)),
-            template_str,
-        )
 
 
 class RuntimeSecretResolver:

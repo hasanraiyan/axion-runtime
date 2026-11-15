@@ -298,10 +298,73 @@ class ModelRevisionConflictError(ConflictError):
 class SecretInUseError(ConflictError):
     def __init__(self, secret_id: str, count: int = 1, details: Optional[List[Dict[str, Any]]] = None):
         super().__init__(
-            message=f"Cannot delete secret '{secret_id}': referenced by {count} active provider(s)",
+            message=f"Cannot delete secret '{secret_id}': referenced by {count} active provider(s) or integration(s)",
             details=details,
         )
         self.code = "SECRET_IN_USE"
 
 
 
+
+
+# ==============================================================================
+# Tool & Integration Domain Exceptions (SRS-07)
+# ==============================================================================
+
+
+class UrlBlockedError(BadRequestError):
+    """
+    Raised by the Outbound URL Guard (SRS-07 FR-40). The client-facing message is
+    deliberately generic so internal network topology is never disclosed; the
+    specific ``reason`` is available to logs and administrators only.
+    """
+
+    def __init__(self, reason: str = "blocked", details: Optional[List[Dict[str, Any]]] = None):
+        super().__init__(message="The target URL is not permitted", details=details)
+        self.code = "URL_BLOCKED"
+        self.reason = reason
+
+
+class DuplicateIntegrationSlugError(ConflictError):
+    def __init__(self, slug: str, details: Optional[List[Dict[str, Any]]] = None):
+        super().__init__(message=f"Integration with slug '{slug}' already exists in this project", details=details)
+        self.code = "INTEGRATION_SLUG_EXISTS"
+
+
+class DuplicateIntegrationNameError(ConflictError):
+    def __init__(self, name: str, details: Optional[List[Dict[str, Any]]] = None):
+        super().__init__(message=f"Integration with name '{name}' already exists in this project", details=details)
+        self.code = "INTEGRATION_NAME_EXISTS"
+
+
+class RevisionConflictError(ConflictError):
+    """Generic OCC conflict for SRS-07 entities."""
+
+    def __init__(self, message: str = "Update conflict: concurrent modification detected", details=None):
+        super().__init__(message=message, details=details)
+        self.code = "REVISION_CONFLICT"
+
+
+class IntegrationStateError(ConflictError):
+    def __init__(self, message: str, details=None):
+        super().__init__(message=message, details=details)
+        self.code = "STATE_TRANSITION_INVALID"
+
+
+class EndUserBlockedError(ForbiddenError):
+    def __init__(self, message: str = "End user is blocked"):
+        super().__init__(message=message)
+        self.code = "END_USER_BLOCKED"
+
+
+class UpstreamFailureError(AppException):
+    """An integration's upstream failed during an administrative operation (test/discovery)."""
+
+    def __init__(self, message: str, code: str = "UPSTREAM_ERROR", details: Optional[List[Dict[str, Any]]] = None):
+        super().__init__(message=message, code=code, status_code=status.HTTP_502_BAD_GATEWAY, details=details)
+
+
+class ToolDriftPendingError(ConflictError):
+    def __init__(self, tool_key: str):
+        super().__init__(message=f"Tool '{tool_key}' changed upstream and must be approved first")
+        self.code = "TOOL_DRIFT_PENDING"

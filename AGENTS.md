@@ -98,8 +98,14 @@ app/middleware        -> request id, logging, rate limiting, CORS, security head
 
 - Collections: `users`, `projects`, `project_members`, `project_audit_logs`,
   `project_secrets`.
+- MOD-07 (tools & integrations): `project_integrations`, `project_tools` (discovery-owned definitions),
+  `project_tool_settings` (admin-owned, keyed by `tool_key`), `tool_bindings`, `project_end_users`,
+  `tool_invocations` (30-day TTL). See `docs/specs/srs-07-tool-and-integration-management.md`.
 - Unique indexes: project `slug`; member `(project_id, user_id)`; secret
   `(project_id, environment, name)` with `is_deleted: False`.
+- MOD-07 layering: services depend on ports (`app/core/tools`), never on `app/repositories`, `app/integrations`,
+  the MCP SDK, or HTTP libraries; only `app/services/tools/providers.py` wires concretes. Never branch on
+  integration/auth type outside the registries. `tests/test_tools_architecture.py` enforces this.
 - Before dropping/altering a collection, check `docs/learnings.md` for migration context.
 
 ## Memory protocol

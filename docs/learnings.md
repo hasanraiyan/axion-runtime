@@ -254,6 +254,79 @@ OpenRouter/vLLM/Anthropic extras are consumed when present;
 `test_rediscovery_overwrites_stale_limits_and_capabilities` proves a second discovery
 replaces 1,000,000/8,192 with 1,048,576/65,536.
 
+### 14. The MCP SDK 2.x hides HTTP status codes and uses `httpx2`
+
+**Symptom.** A 401 from an MCP server surfaced as `MCPError(-32603, "Server returned an error response")`, so a
+bad credential looked identical to an outage (wrong integration status, wrong retry advice).
+
+**Root cause.** `mcp` 2.x builds on `httpx2` (not `httpx`), takes an `httpx2.AsyncClient`, renamed `FastMCP` to
+`MCPServer`, and converts HTTP failures into JSON-RPC errors without the status.
+
+**Fix.** `app/integrations/mcp_client.py` attaches a response event hook to the client, records statuses, and
+maps them (`401/403` -> `UpstreamAuthError`, `429` -> `UpstreamRateLimited`, `404` -> session expired). The
+Outbound Guard is an `httpx2.AsyncBaseTransport` (`guarded_transport.py`), so every request the SDK makes,
+including redirect hops it follows itself, is validated and sent to the pinned IP.
+
+**Verified.** `tests/test_mcp_adapter_sdk.py` runs a real SDK server in-process over `httpx2.ASGITransport`
+(no sockets), including wrong-token, private-DNS, and metadata-IP cases.
+
+### 15. Beanie initialization leaks across tests through the base classes
+
+**Symptom.** Unrelated tests (`test_auth.py`) started failing only when a test using `init_beanie` ran earlier:
+`GET /auth/me` returned role `admin` instead of `user`.
+
+**Root cause.** `init_beanie` stamps `_document_settings` on every class in the MRO, including `BaseDocument` and
+`Document`. Resetting only the concrete model leaves the stamp, so `User` still looked initialized (against a mock
+DB whose `count_documents` is 0, making the first user an admin) instead of falling back as "DB offline".
+
+**Fix.** The `tool_models` fixture in `tests/conftest.py` saves and restores `_document_settings` for the whole
+hierarchy. Any new fixture that calls `init_beanie` must do the same.
+
+### 16. `anyio` task groups cannot span a pytest-asyncio fixture
+
+**Symptom.** `RuntimeError: Attempted to exit cancel scope in a different task than it was entered in` from
+fixtures wrapping an MCP server.
+
+**Root cause.** The SDK server's lifespan is an `anyio` task group; pytest-asyncio runs fixture setup and teardown
+in different tasks.
+
+**Fix.** Open such servers inside the test body (`CaseFactory.open()` in `tests/test_adapter_contract.py`,
+`running_transport()` in `tests/mcp_test_server.py`), never in a yielding fixture.
+
+### 17. Overlapping safety checks hide untested rules (found by mutation testing)
+
+**Symptom.** Deleting the `per_user` credential guard, or the "drift" state check, left the whole suite green.
+
+**Root cause.** Another earlier check (Gate 1 `auth_required`, hash-mismatch `drift`) already blocked the same
+case, so the later one was never the deciding check in any test.
+
+**Fix.** Each rule now has a unit test that exercises it alone (`tests/test_tools_core.py`). A throwaway mutation
+script (16 security-critical mutants: locked args, deny precedence, end-user gate, per-user fallback, token
+purpose, approval binding, drift, validation, default-deny, block re-check, dry run, redaction, erasure, breaker,
+app-only visibility) now reports zero survivors. Re-run it after changing `access.py`, `gateway_stages.py`,
+`credentials.py`, or `signing.py`.
+
+### 18. OpenAPI/generated artifacts drift silently from the code
+
+**Symptom.** `apps/api/openapi.json` and `packages/api-client/src/generated/schema.ts` described
+46 operations while the app served 76: every MOD-07 router (`integrations`, `tools`,
+`tool_runtime`, `end_users`) and `GET /projects/{id}/me` were missing. The spec also had one
+security scheme while the app accepted three credentials.
+
+**Root cause.** `openapi.json` is a committed artifact produced by
+`python -m app.utils.export_openapi`; adding routers does not regenerate it. The end-user token
+was read with a plain `Header(alias="X-Axion-End-User-Token")`, so FastAPI emitted it as an
+ordinary parameter and the operation looked public.
+
+**Fix.** Declare every credential as a named FastAPI scheme in `app/api/deps.py`
+(`ClerkSession`, `AxionApiKey`, `EndUserSession`), reference them with `Security(...)` (not
+`Depends(...)`, not a raw `Header`), and run `pnpm generate:api` after contract changes — it now
+also refreshes `docs/api-routes.md`. `tests/test_openapi_security.py` fails if any operation
+other than `/health` and `/api/v1/health` lacks a security requirement.
+
+**Still open.** `apps/web` does not depend on `@platform/api-client` at all, so the generated
+types/client have no consumers yet.
+
 ---
 
 ## Bugs found and fixed (commit `5ea80d9`)
@@ -342,7 +415,8 @@ cd apps/api
 ## Data model notes
 
 - Collections: `users`, `projects`, `project_members`, `project_audit_logs`,
-  `project_secrets`.
+  `project_secrets`. MOD-07 adds `project_integrations`, `project_tools`,
+  `project_tool_settings`, `tool_bindings`, `project_end_users`, `tool_invocations`.
 - Unique indexes: project slug; `(project_id, user_id)` on members;
   `(project_id, environment, name)` on secrets filtered to `is_deleted: False`.
 - Secrets store only an `EncryptedEnvelope` (AES-256-GCM + RFC 3394 wrapped DEK); the

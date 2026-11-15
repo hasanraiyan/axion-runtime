@@ -97,16 +97,28 @@ from app.services.model_routing_service import (
 )
 from app.services.user_service import UserService, get_user_service
 
-# Native FastAPI security scheme
+# Native FastAPI security schemes. Declaring them here (and referencing them with
+# Security(...)) is what makes the Swagger "Authorize" button work in /docs and
+# what tells generated clients that a request needs credentials.
 security = HTTPBearer(
     auto_error=False,
+    scheme_name="ClerkSession",
+    bearerFormat="JWT",
     description="Clerk Bearer JWT session token",
 )
 
 api_key_header_scheme = APIKeyHeader(
     name="X-Axion-Api-Key",
     auto_error=False,
+    scheme_name="AxionApiKey",
     description="Axion Project API Key (e.g. axion_live_...)",
+)
+
+end_user_token_scheme = APIKeyHeader(
+    name="X-Axion-End-User-Token",
+    auto_error=False,
+    scheme_name="EndUserSession",
+    description="End-user session token minted by POST /projects/{project_id}/end-users/{external_id}/sessions",
 )
 
 
@@ -141,7 +153,7 @@ def get_credential_rate_limiter() -> CredentialRateLimiter:
 
 
 async def get_current_user(
-    credentials: Annotated[Optional[HTTPAuthorizationCredentials], Depends(security)],
+    credentials: Annotated[Optional[HTTPAuthorizationCredentials], Security(security)],
     user_service: Annotated[UserService, Depends(get_user_service)],
 ) -> AuthenticatedUser:
     """
@@ -183,7 +195,7 @@ async def get_current_user(
 
 
 async def get_optional_user(
-    credentials: Annotated[Optional[HTTPAuthorizationCredentials], Depends(security)],
+    credentials: Annotated[Optional[HTTPAuthorizationCredentials], Security(security)],
 ) -> Optional[AuthenticatedUser]:
     """
     FastAPI security dependency for endpoints that allow both guest and authenticated user access.

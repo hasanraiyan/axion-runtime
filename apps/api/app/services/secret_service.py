@@ -28,6 +28,7 @@ from app.repositories.project_audit_repository import (
     ProjectAuditRepository,
     get_project_audit_repository,
 )
+from app.repositories.integration_repository import IntegrationRepository, get_integration_repository
 from app.repositories.project_provider_repository import (
     ProjectProviderRepository,
     get_project_provider_repository,
@@ -64,12 +65,14 @@ class ProjectSecretService:
         audit_repo: Optional[ProjectAuditRepository] = None,
         crypto_service: Optional[CryptoService] = None,
         provider_repo: Optional[IProjectProviderRepository] = None,
+        integration_repo: Optional[Any] = None,
     ) -> None:
         self.secret_repo = secret_repo if secret_repo is not None else get_secret_repository()
         self.project_repo = project_repo if project_repo is not None else get_project_repository()
         self.audit_repo = audit_repo if audit_repo is not None else get_project_audit_repository()
         self.crypto_service = crypto_service if crypto_service is not None else get_crypto_service()
         self.provider_repo = provider_repo if provider_repo is not None else get_project_provider_repository()
+        self.integration_repo = integration_repo
 
     async def _get_active_project(
         self,
@@ -337,6 +340,10 @@ class ProjectSecretService:
             active_count = await self.provider_repo.count_by_secret_id(secret.id, include_deleted=False)
             if active_count > 0:
                 raise SecretInUseError(secret_id=str(secret.id), count=active_count)
+        if self.integration_repo is not None:
+            referencing = await self.integration_repo.find_referencing_secret(project.id, secret.id)
+            if referencing:
+                raise SecretInUseError(secret_id=str(secret.id), count=len(referencing))
 
         success = await self.secret_repo.soft_delete(secret_id, project.id)
 
@@ -374,6 +381,10 @@ class ProjectSecretService:
             active_count = await self.provider_repo.count_by_secret_id(secret.id, include_deleted=False)
             if active_count > 0:
                 raise SecretInUseError(secret_id=str(secret.id), count=active_count)
+        if self.integration_repo is not None:
+            referencing = await self.integration_repo.find_referencing_secret(project.id, secret.id)
+            if referencing:
+                raise SecretInUseError(secret_id=str(secret.id), count=len(referencing))
 
         purged = await self.secret_repo.purge(secret_id, project.id)
 
@@ -450,6 +461,7 @@ def get_secret_service(
     audit_repo: ProjectAuditRepository = Depends(get_project_audit_repository),
     crypto_service: CryptoService = Depends(get_crypto_service),
     provider_repo: ProjectProviderRepository = Depends(get_project_provider_repository),
+    integration_repo: IntegrationRepository = Depends(get_integration_repository),
 ) -> ProjectSecretService:
     """FastAPI dependency provider for ProjectSecretService."""
     return ProjectSecretService(
@@ -458,4 +470,5 @@ def get_secret_service(
         audit_repo=audit_repo,
         crypto_service=crypto_service,
         provider_repo=provider_repo,
+        integration_repo=integration_repo,
     )
