@@ -209,10 +209,24 @@ that calls a provider's model endpoint and saves the untouched JSON under `sandb
 temperature 1 (range 0-2), `thinking: true`; `gemini-embedding-001` as 2,048 in and
 `outputTokenLimit: 1`, which is **not** a generation cap.
 
-The same probe against OpenAI's `GET /v1/models` returns only
+**OpenAI publishes nothing.** The same probe against OpenAI's `GET /v1/models` returns only
 `id`/`object`/`created`/`owned_by`/`shutdown_date` — no limits, no temperature, no
-capabilities. So `provider_type=openai` legitimately yields `NULL` for all of them; any
-non-null value there would be fabricated.
+capabilities. So `provider_type=openai` legitimately yields `NULL` for all of them at every
+token count; any non-null value there would be fabricated.
+
+**Upstream field mapping (OpenAI-compatible `/v1/models`)**: `created`/`created_at` →
+`created_at_upstream` (ISO-8601 accepted); `max_input_tokens`/`context_length`/`max_model_len`/
+`max_context_length` → `max_input_tokens`; `max_output_tokens`/`max_completion_tokens`/
+`top_provider.max_completion_tokens` → `max_output_tokens`; `temperature`/`default_temperature`/
+`default_parameters.temperature` → `default_temperature`; `architecture.input_modalities` →
+`supports_vision`; `supported_parameters` (+ OpenRouter's `reasoning` block) →
+`supports_tools`/`supports_json_mode`/`supports_reasoning` (a capability is `null` when the
+server publishes neither). Streaming is never inferred from a `/v1/models` payload.
+
+**Verified against live OpenRouter** (435 models, `--provider openrouter`): 435/435 context
+lengths, 429/435 completion caps, 93 default temperatures, and tool/vision/JSON/reasoning flags
+where the listings state them; `supports_streaming` stays `null` because nothing in the payload
+claims it.
 
 **Fix.**
 1. `infer_gemini_model()` (`app/services/provider_service.py`) maps only those fields:
