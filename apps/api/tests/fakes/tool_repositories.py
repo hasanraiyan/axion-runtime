@@ -87,10 +87,24 @@ class FakeSecretRepository:
 
 
 class FakeCrypto:
-    """Decrypts to ``plain:<name>`` so tests can assert the credential reached the wire."""
+    """
+    MOD-02 project secrets decrypt to ``plain:<name>`` so tests can assert the credential reached the wire.
+    Everything else (connection tokens) goes through the REAL AES-256-GCM envelope service, so AAD binding
+    to (project, integration, subject) is genuinely exercised.
+    """
+
+    def __init__(self) -> None:
+        from app.core.crypto import CryptoService
+
+        self._real = CryptoService()
 
     async def decrypt_secret(self, envelope: Any, project_id: str, environment: str, name: str) -> str:
-        return f"plain:{name}"
+        if isinstance(envelope, dict) and envelope.get("fake"):
+            return f"plain:{name}"
+        return await self._real.decrypt_secret(envelope, project_id, environment, name)
+
+    async def encrypt_secret(self, plaintext: Any, project_id: str, environment: str, name: str) -> Any:
+        return await self._real.encrypt_secret(plaintext, project_id, environment, name)
 
 
 class FakeAuditRepository:
@@ -424,3 +438,198 @@ class FakeToolInvocationRepository:
 
 def make_project(status: ProjectStatus = ProjectStatus.ACTIVE, slug: str = "acme") -> Project:
     return Project(name="Acme", slug=slug, owner_id="user_owner", status=status)
+
+
+# ----------------------------------------------------------------------------- phase 2 fakes
+from app.models.connection import (  # noqa: E402
+    ConnectionStatus,
+    ConnectSession,
+    ConnectSessionStatus,
+    IntegrationConnection,
+    IntegrationOAuthClient,
+    ProjectToolPolicy,
+)
+
+
+class FakeConnectionRepository:
+    def __init__(self) -> None:
+        self.items: Dict[str, IntegrationConnection] = {}
+
+    async def save_credentials(self, project_id, integration_id, subject_type, subject_id, subject_key, kind, access_envelope, refresh_envelope, expires_at, granted_scopes, external_account):
+        existing = next((c for c in self.items.values() if _s(c.integration_id) == _s(integration_id) and c.subject_key == subject_key), None)
+        if existing is None:
+            doc = IntegrationConnection(
+                project_id=project_id, integration_id=integration_id, subject_type=subject_type, subject_id=subject_id,
+                subject_key=subject_key, credential_kind=kind, access_envelope=access_envelope, refresh_envelope=refresh_envelope,
+                expires_at=expires_at, granted_scopes=granted_scopes, external_account=external_account,
+            )
+            _new_id(doc)
+            self.items[_s(doc.id)] = doc
+            return doc.model_copy(deep=True)
+        existing.credential_kind, existing.access_envelope, existing.refresh_envelope = kind, access_envelope, refresh_envelope
+        existing.expires_at, existing.granted_scopes, existing.external_account = expires_at, granted_scopes, external_account
+        existing.status, existing.last_error = ConnectionStatus.ACTIVE, None
+        existing.revision += 1
+        return existing.model_copy(deep=True)
+
+    async def get(self, integration_id, subject_key):
+        doc = next((c for c in self.items.values() if _s(c.integration_id) == _s(integration_id) and c.subject_key == subject_key), None)
+        return doc.model_copy(deep=True) if doc else None
+
+    async def get_by_id(self, connection_id, project_id):
+        doc = self.items.get(_s(connection_id))
+        return doc.model_copy(deep=True) if doc and _s(doc.project_id) == _s(project_id) else None
+
+    async def list_by_integration(self, project_id, integration_id, skip=0, limit=50):
+        rows = [c for c in self.items.values() if _s(c.project_id) == _s(project_id) and _s(c.integration_id) == _s(integration_id)]
+        return [c.model_copy(deep=True) for c in rows[skip : skip + limit]], len(rows)
+
+    async def list_for_subject(self, project_id, subject_type, subject_id):
+        return [
+            c.model_copy(deep=True)
+            for c in self.items.values()
+            if _s(c.project_id) == _s(project_id) and c.subject_type == subject_type and c.subject_id == subject_id
+        ]
+
+    async def update_with_revision(self, connection_id, expected_revision, update_dict):
+        doc = self.items.get(_s(connection_id))
+        if doc is None:
+            raise NotFoundError("Connection not found")
+        if doc.revision != expected_revision:
+            raise RevisionConflictError()
+        for key, value in update_dict.items():
+            setattr(doc, key, value)
+        doc.revision += 1
+        return doc.model_copy(deep=True)
+
+    async def set_status(self, connection_id, status, error=None):
+        doc = self.items.get(_s(connection_id))
+        if doc is not None:
+            doc.status = status
+            if error is not None:
+                doc.last_error = error
+
+    async def touch_used(self, connection_id):
+        doc = self.items.get(_s(connection_id))
+        if doc is not None:
+            doc.last_used_at = datetime.now(timezone.utc)
+
+    async def delete(self, connection_id):
+        return self.items.pop(_s(connection_id), None) is not None
+
+    async def set_status_for_subject(self, project_id, subject_type, subject_id, from_status, to_status):
+        count = 0
+        for c in self.items.values():
+            if _s(c.project_id) == _s(project_id) and c.subject_type == subject_type and c.subject_id == subject_id and c.status == from_status:
+                c.status = to_status
+                count += 1
+        return count
+
+    async def delete_by_subject(self, project_id, subject_type, subject_id):
+        keys = [k for k, c in self.items.items() if _s(c.project_id) == _s(project_id) and c.subject_type == subject_type and c.subject_id == subject_id]
+        for k in keys:
+            del self.items[k]
+        return len(keys)
+
+    async def delete_by_project_id(self, project_id):
+        keys = [k for k, c in self.items.items() if _s(c.project_id) == _s(project_id)]
+        for k in keys:
+            del self.items[k]
+        return len(keys)
+
+
+class FakeConnectSessionRepository:
+    def __init__(self) -> None:
+        self.items: Dict[str, ConnectSession] = {}
+
+    async def create(self, document):
+        _new_id(document)
+        self.items[_s(document.id)] = document.model_copy(deep=True)
+        return document
+
+    async def get_by_token_hash(self, token_hash):
+        doc = next((d for d in self.items.values() if d.token_hash == token_hash), None)
+        return doc.model_copy(deep=True) if doc else None
+
+    async def get_by_state_hash(self, state_hash):
+        doc = next((d for d in self.items.values() if d.state_hash == state_hash), None)
+        return doc.model_copy(deep=True) if doc else None
+
+    async def mark_started(self, session_id, state_hash, verifier_envelope):
+        doc = self.items.get(_s(session_id))
+        expires = doc.expires_at if doc and doc.expires_at.tzinfo else (doc.expires_at.replace(tzinfo=timezone.utc) if doc else None)
+        if doc is None or doc.status != ConnectSessionStatus.PENDING or expires <= datetime.now(timezone.utc):
+            return None
+        doc.status, doc.state_hash, doc.pkce_verifier_envelope = ConnectSessionStatus.STARTED, state_hash, verifier_envelope
+        return doc.model_copy(deep=True)
+
+    async def finish(self, session_id, status, error=None):
+        doc = self.items.get(_s(session_id))
+        if doc is None or doc.status != ConnectSessionStatus.STARTED:
+            return None
+        doc.status, doc.error, doc.consumed_at = status, error, datetime.now(timezone.utc)
+        return doc.model_copy(deep=True)
+
+    async def mark_failed(self, session_id, error):
+        doc = self.items.get(_s(session_id))
+        if doc is not None:
+            doc.status, doc.error = ConnectSessionStatus.FAILED, error
+
+    async def delete_by_project_id(self, project_id):
+        keys = [k for k, d in self.items.items() if _s(d.project_id) == _s(project_id)]
+        for k in keys:
+            del self.items[k]
+        return len(keys)
+
+
+class FakeOAuthClientRepository:
+    def __init__(self) -> None:
+        self.items: Dict[str, IntegrationOAuthClient] = {}
+
+    async def get_by_integration(self, integration_id):
+        doc = self.items.get(_s(integration_id))
+        return doc.model_copy(deep=True) if doc else None
+
+    async def save(self, document):
+        _new_id(document)
+        self.items[_s(document.integration_id)] = document.model_copy(deep=True)
+        return document
+
+    async def delete_by_integration(self, integration_id):
+        return 1 if self.items.pop(_s(integration_id), None) else 0
+
+    async def delete_by_project_id(self, project_id):
+        keys = [k for k, d in self.items.items() if _s(d.project_id) == _s(project_id)]
+        for k in keys:
+            del self.items[k]
+        return len(keys)
+
+
+class FakeToolPolicyRepository:
+    def __init__(self) -> None:
+        self.items: Dict[str, ProjectToolPolicy] = {}
+
+    async def get(self, project_id):
+        doc = self.items.get(_s(project_id))
+        return doc.model_copy(deep=True) if doc else None
+
+    async def get_or_create(self, project_id):
+        if _s(project_id) not in self.items:
+            doc = ProjectToolPolicy(project_id=project_id)
+            _new_id(doc)
+            self.items[_s(project_id)] = doc
+        return self.items[_s(project_id)].model_copy(deep=True)
+
+    async def update_with_revision(self, project_id, expected_revision, update_dict):
+        doc = self.items.get(_s(project_id))
+        if doc is None:
+            raise NotFoundError("Tool policy not found")
+        if doc.revision != expected_revision:
+            raise RevisionConflictError()
+        for key, value in update_dict.items():
+            setattr(doc, key, value)
+        doc.revision += 1
+        return doc.model_copy(deep=True)
+
+    async def delete_by_project_id(self, project_id):
+        return 1 if self.items.pop(_s(project_id), None) else 0

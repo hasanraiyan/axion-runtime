@@ -10,7 +10,7 @@ from app.core.config import settings
 from app.core.exceptions import BadRequestError
 from app.core.outbound import OutboundUrlGuard
 from app.core.tools.events import InProcessEventBus
-from app.core.tools.resilience import CircuitBreaker, IdempotencyStore, SlidingWindowRateLimiter
+from app.core.tools.resilience import CircuitBreaker, IdempotencyStore, KeyedLocks, SlidingWindowRateLimiter
 from app.core.tools.signing import TokenSigner
 from app.core.tools.types import (
     Actor,
@@ -31,7 +31,11 @@ from app.models.project import Project
 from app.services.tools.providers import SharedToolState, ToolsContainer, build_tools_container
 from tests.fakes.tool_repositories import (
     FakeAuditRepository,
+    FakeConnectionRepository,
+    FakeConnectSessionRepository,
     FakeCrypto,
+    FakeOAuthClientRepository,
+    FakeToolPolicyRepository,
     FakeEndUserRepository,
     FakeIntegrationRepository,
     FakeProjectRepository,
@@ -66,6 +70,7 @@ class ScriptedAdapter:
         self.raise_on_execute: Optional[BaseException] = None
         self.raise_on_discover: Optional[BaseException] = None
         self.probe_result = ProbeResult(healthy=True, latency_ms=1)
+        self.probe_handler: Optional[Callable[[ResolvedCredentials], ProbeResult]] = None
         self.seen_credentials: List[ResolvedCredentials] = []
         self.sleep: float = 0.0
 
@@ -75,7 +80,14 @@ class ScriptedAdapter:
         return {"kind": "scripted"}
 
     def supported_auth_types(self) -> Set[AuthType]:
-        return {AuthType.NONE, AuthType.API_KEY, AuthType.BEARER, AuthType.CUSTOM_HEADERS, AuthType.BASIC}
+        return {
+            AuthType.NONE,
+            AuthType.API_KEY,
+            AuthType.BEARER,
+            AuthType.CUSTOM_HEADERS,
+            AuthType.BASIC,
+            AuthType.OAUTH_AUTHORIZATION_CODE,
+        }
 
     def target_urls(self, config: Dict[str, Any]) -> List[str]:
         return []
@@ -106,6 +118,8 @@ class ScriptedAdapter:
 
     async def probe(self, integration: Integration, credentials: ResolvedCredentials) -> ProbeResult:
         self.seen_credentials.append(credentials)
+        if self.probe_handler is not None:
+            return self.probe_handler(credentials)
         return self.probe_result
 
 
@@ -139,6 +153,10 @@ class Harness:
     end_users: FakeEndUserRepository
     invocations: FakeToolInvocationRepository
     shared: SharedToolState
+    connections_repo: FakeConnectionRepository
+    sessions: FakeConnectSessionRepository
+    oauth_clients: FakeOAuthClientRepository
+    policies: FakeToolPolicyRepository
     clock: List[float] = field(default_factory=lambda: [0.0])
 
     @property
@@ -157,7 +175,7 @@ class Harness:
         )
 
 
-def make_harness(connector: Any = None, project: Optional[Project] = None) -> Harness:
+def make_harness(connector: Any = None, project: Optional[Project] = None, oauth: Any = None) -> Harness:
     projects = FakeProjectRepository()
     proj = projects.add(project or make_project())
     secrets, audit = FakeSecretRepository(), FakeAuditRepository()
@@ -170,7 +188,9 @@ def make_harness(connector: Any = None, project: Optional[Project] = None) -> Ha
         idempotency=IdempotencyStore(),
         events=InProcessEventBus(),
         native=build_default_native_registry(),
+        locks=KeyedLocks(),
     )
+    conn_repo, sessions, oauth_clients, policies = FakeConnectionRepository(), FakeConnectSessionRepository(), FakeOAuthClientRepository(), FakeToolPolicyRepository()
     container = build_tools_container(
         project_repo=projects,
         secret_repo=secrets,
@@ -186,7 +206,16 @@ def make_harness(connector: Any = None, project: Optional[Project] = None) -> Ha
         shared=shared,
         signer=TokenSigner(settings.AXION_MASTER_ENCRYPTION_KEY),
         connector=connector,
+        connection_repo=conn_repo,
+        session_repo=sessions,
+        oauth_client_repo=oauth_clients,
+        policy_repo=policies,
+        oauth=oauth,
+        public_base_url="https://api.axion.test",
     )
     scripted = ScriptedAdapter()
     container.adapters.register(scripted)
-    return Harness(container, proj, scripted, projects, secrets, audit, integrations, tools_repo, settings_repo, bindings, end_users, invocations, shared)
+    return Harness(
+        container, proj, scripted, projects, secrets, audit, integrations, tools_repo, settings_repo, bindings, end_users,
+        invocations, shared, conn_repo, sessions, oauth_clients, policies,
+    )

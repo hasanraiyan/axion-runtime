@@ -71,7 +71,9 @@ class DiscoveryService:
         self._audit = audit
         self._events = events
 
-    async def discover(self, project_id: IdLike, integration_id: IdLike, actor_id: str) -> DiscoverySummary:
+    async def discover(
+        self, project_id: IdLike, integration_id: IdLike, actor_id: str, subject: Optional[Subject] = None
+    ) -> DiscoverySummary:
         project = await self._lifecycle.get_active(project_id)
         integration = await self._integrations.get_by_id_and_project(integration_id, project.id)
         if integration is None:
@@ -81,10 +83,10 @@ class DiscoveryService:
             raise BadRequestError("This integration type does not support tool discovery")
 
         try:
-            credentials = await self._credentials.resolve(integration, Subject(SubjectType.PROJECT))
+            credentials = await self._credentials.resolve(integration, subject or Subject(SubjectType.PROJECT))
         except AuthRequired:
             raise BadRequestError(
-                "Per-user integrations are discovered with a connected user's credentials, which are not available yet"
+                "Connect an account for this integration first: per-user integrations are discovered with a connected user's credentials"
             ) from None
 
         try:

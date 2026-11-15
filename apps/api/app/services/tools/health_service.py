@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import Dict, Union
+from typing import Dict, Optional, Union
 
 from beanie import PydanticObjectId
 from bson import ObjectId
@@ -13,7 +13,7 @@ from app.core.tools.events import ToolsetChanged
 from app.core.tools.ports import AuditPort, DomainEventPort, HealthProber, supports
 from app.core.tools.registry import AdapterRegistry
 from app.core.tools.types import ProbeResult, Subject, SubjectType
-from app.models.integration import Integration, IntegrationStatus
+from app.models.integration import CredentialMode, Integration, IntegrationStatus
 from app.models.project import ProjectAuditAction
 from app.services.tools.common import ProjectLifecycle
 from app.services.tools.credentials import AuthRequired, CredentialBuilder
@@ -45,7 +45,9 @@ class IntegrationHealthService:
         self._audit = audit
         self._events = events
 
-    async def test(self, project_id: IdLike, integration_id: IdLike, actor_id: str) -> tuple[Integration, ProbeResult]:
+    async def test(
+        self, project_id: IdLike, integration_id: IdLike, actor_id: str, subject: Optional[Subject] = None
+    ) -> tuple[Integration, ProbeResult]:
         project = await self._lifecycle.get_active(project_id)
         integration = await self._integrations.get_by_id_and_project(integration_id, project.id)
         if integration is None:
@@ -55,11 +57,20 @@ class IntegrationHealthService:
             raise BadRequestError("This integration type does not support connection tests")
 
         try:
-            credentials = await self._credentials.resolve(integration, Subject(SubjectType.PROJECT))
+            credentials = await self._credentials.resolve(integration, subject or Subject(SubjectType.PROJECT))
             result = await adapter.probe(integration, credentials)
         except AuthRequired:
-            result = ProbeResult(healthy=True, status="healthy", message="Per-user integration; no shared credential to test")
-            status = integration.status
+            per_user = integration.auth_profile.credential_mode == CredentialMode.PER_USER
+            result = ProbeResult(
+                healthy=False,
+                status="auth_required",
+                message=(
+                    "Connect your own account to test this per-user integration"
+                    if per_user
+                    else "Connect this integration before testing it"
+                ),
+            )
+            status = integration.status if per_user else IntegrationStatus.NEEDS_AUTH
         else:
             status = _STATUS_FOR_PROBE.get(result.status, IntegrationStatus.ERROR)
 

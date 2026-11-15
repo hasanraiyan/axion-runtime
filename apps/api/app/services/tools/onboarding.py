@@ -43,6 +43,16 @@ class IntegrationOnboardingService:
         self._health = health
         self._discovery = discovery
 
+    async def verify(self, project_id: IdLike, integration_id: IdLike, actor_id: str) -> OnboardingResult:
+        """Test and discover an existing integration (used after a project connection is made)."""
+        integration, probe = await self._health.test(project_id, integration_id, actor_id)
+        result = OnboardingResult(integration=integration, probe=probe)
+        if probe.healthy:
+            result.discovery = await self._discovery.discover(project_id, integration_id, actor_id)
+        else:
+            result.warning = probe.message
+        return result
+
     async def create_and_verify(
         self, project_id: IdLike, request: IntegrationCreateRequest, actor_id: str
     ) -> OnboardingResult:
@@ -50,7 +60,7 @@ class IntegrationOnboardingService:
         result = OnboardingResult(integration=integration)
 
         if integration.auth_profile.credential_mode == CredentialMode.PER_USER:
-            result.warning = "Per-user integrations are verified when a user connects"
+            result.warning = "Connect your own account, then run discovery, to make this per-user integration available"
             return result
 
         try:

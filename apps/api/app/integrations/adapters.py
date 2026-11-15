@@ -163,7 +163,14 @@ class McpAdapter:
         return normalized
 
     def supported_auth_types(self) -> Set[AuthType]:
-        return {AuthType.NONE, AuthType.API_KEY, AuthType.BEARER, AuthType.BASIC, AuthType.CUSTOM_HEADERS}
+        return {
+            AuthType.NONE,
+            AuthType.API_KEY,
+            AuthType.BEARER,
+            AuthType.BASIC,
+            AuthType.CUSTOM_HEADERS,
+            AuthType.OAUTH_AUTHORIZATION_CODE,
+        }
 
     def target_urls(self, config: Dict[str, Any]) -> List[str]:
         return [config["url"]]

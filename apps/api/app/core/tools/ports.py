@@ -93,6 +93,8 @@ class SecretReaderPort(Protocol):
 @runtime_checkable
 class AuthStrategy(Protocol):
     auth_type: AuthType
+    uses_connection: bool  # True when credentials live in a stored per-subject connection (e.g. OAuth)
+    static_kind: Optional[str]  # 'api_key' / 'bearer' when a user can supply one static secret per subject
 
     def validate(self, profile: AuthProfile) -> None:
         """Raise ``BadRequestError`` if the profile is malformed for this auth type."""
@@ -146,3 +148,96 @@ class ToolExecutionPort(Protocol):
     """What the runtime depends on to run a tool."""
 
     async def invoke(self, request: InvocationRequest) -> InvocationResult: ...
+
+
+# ----------------------------------------------------------------------------
+# Phase 2: OAuth and connections
+# ----------------------------------------------------------------------------
+from app.core.crypto.envelope import EncryptedEnvelope  # noqa: E402
+from app.core.tools.oauth import DiscoveredOAuth, RegisteredClient, TokenSet  # noqa: E402
+
+
+class OAuthFlowPort(Protocol):
+    """OAuth 2.1 + PKCE steps for MCP servers (SRS-07 FR-25). The default implementation uses the MCP SDK."""
+
+    async def discover(self, resource_url: str, allowed_hosts: Optional[List[str]] = None) -> DiscoveredOAuth: ...
+
+    async def register_client(self, discovered: DiscoveredOAuth, redirect_uri: str, client_name: str) -> RegisteredClient: ...
+
+    def authorization_url(
+        self,
+        discovered_authorization_endpoint: str,
+        client_id: str,
+        redirect_uri: str,
+        state: str,
+        code_verifier: str,
+        scopes: List[str],
+        resource: str,
+    ) -> str: ...
+
+    async def exchange_code(
+        self,
+        token_endpoint: str,
+        code: str,
+        redirect_uri: str,
+        code_verifier: str,
+        client_id: str,
+        client_secret: Optional[str],
+        auth_method: str,
+        resource: str,
+    ) -> TokenSet: ...
+
+    async def refresh(
+        self,
+        token_endpoint: str,
+        refresh_token: str,
+        client_id: str,
+        client_secret: Optional[str],
+        auth_method: str,
+        resource: str,
+    ) -> TokenSet: ...
+
+    async def revoke(
+        self,
+        revocation_endpoint: Optional[str],
+        token: str,
+        client_id: str,
+        client_secret: Optional[str],
+        auth_method: str,
+    ) -> None: ...
+
+
+class TokenCipherPort(Protocol):
+    """Envelope encryption bound to (project, integration, subject) so ciphertext cannot be moved."""
+
+    async def seal(self, project_id: str, integration_id: str, subject_key: str, label: str, plaintext: str) -> EncryptedEnvelope: ...
+
+    async def open(self, project_id: str, integration_id: str, subject_key: str, label: str, envelope: EncryptedEnvelope) -> str: ...
+
+
+class ConnectionCredentialPort(Protocol):
+    """Resolve stored per-subject credentials. Has no any-subject overload (FR-75)."""
+
+    async def credentials_for(self, integration: Integration, subject: Subject) -> ResolvedCredentials: ...
+
+
+class IntegrationConnectionsPort(Protocol):
+    """What IntegrationService needs when an integration's credentials stop being valid (SRS-07 FR-06, 5.1.2)."""
+
+    async def revoke_all(self, project_id: str, integration_id: str, actor_id: str, reason: str) -> int: ...
+
+
+class EndUserConnectionPort(Protocol):
+    """What EndUserService needs from connections when a user is blocked, unblocked, or erased."""
+
+    async def suspend_subject(self, project_id: str, end_user_id: str) -> int: ...
+
+    async def resume_subject(self, project_id: str, end_user_id: str) -> int: ...
+
+    async def erase_subject(self, project_id: str, end_user_id: str) -> int: ...
+
+
+class ConnectionLookupPort(Protocol):
+    """Which integrations does a subject currently have a working connection for? (Gate 2 input)"""
+
+    async def active_integration_ids(self, project_id: object, subject: Subject) -> set[str]: ...

@@ -7,7 +7,13 @@ end-user session token was read with ``Header(...)`` instead of a security schem
 """
 from fastapi.testclient import TestClient
 
-PUBLIC_OPERATIONS = {("get", "/health"), ("get", "/api/v1/health")}
+PUBLIC_OPERATIONS = {
+    ("get", "/health"),
+    ("get", "/api/v1/health"),
+    # OAuth browser endpoints: the single-use link secret and the OAuth `state` are the credentials.
+    ("get", "/api/v1/integrations/connect/{token}"),
+    ("get", "/api/v1/integrations/oauth/callback"),
+}
 
 
 def _spec(client: TestClient) -> dict:

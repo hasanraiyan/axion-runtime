@@ -82,6 +82,11 @@ class Settings(BaseSettings):
         default=False, description="Allow plain http integration targets (development only)"
     )
 
+    # Public base URL of this API, used to build OAuth redirect URIs and hosted connect links (MOD-07)
+    PUBLIC_API_BASE_URL: str = Field(
+        default="http://localhost:8000", description="Externally reachable base URL of the API (no trailing slash)"
+    )
+
     # Cryptographic Envelope Encryption (MOD-02)
     AXION_MASTER_ENCRYPTION_KEY: str = Field(
         default="",

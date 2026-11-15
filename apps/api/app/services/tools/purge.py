@@ -7,7 +7,7 @@ step is idempotent and a retry completes whatever a partial failure left behind.
 """
 from __future__ import annotations
 
-from typing import Dict, Union
+from typing import Any, Dict, Optional, Union
 
 from beanie import PydanticObjectId
 from bson import ObjectId
@@ -36,8 +36,22 @@ class ToolCascadePurger:
         end_user_repo: IEndUserRepository,
         integration_repo: IIntegrationRepository,
         audit: AuditPort,
+        connection_repo: Optional[Any] = None,
+        session_repo: Optional[Any] = None,
+        oauth_client_repo: Optional[Any] = None,
+        policy_repo: Optional[Any] = None,
     ) -> None:
-        self._steps = (
+        extra = tuple(
+            (label, repo)
+            for label, repo in (
+                ("connections", connection_repo),
+                ("connect_sessions", session_repo),
+                ("oauth_clients", oauth_client_repo),
+                ("policies", policy_repo),
+            )
+            if repo is not None
+        )
+        self._steps = extra + (
             ("invocations", invocation_repo),
             ("bindings", binding_repo),
             ("settings", setting_repo),

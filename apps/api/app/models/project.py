@@ -76,6 +76,10 @@ class ProjectAuditAction(str, Enum):
     END_USER_BLOCKED = "end_user.blocked"
     END_USER_UNBLOCKED = "end_user.unblocked"
     END_USER_DELETED = "end_user.deleted"
+    CONNECTION_CREATED = "connection.created"
+    CONNECTION_REVOKED = "connection.revoked"
+    CONNECT_LINK_CREATED = "connect_link.created"
+    TOOL_POLICY_UPDATED = "tool_policy.updated"
 
 
 class ProjectSettings(BaseModel):

@@ -15,6 +15,7 @@ Rules at levels 2 and 3 apply only when their ``audience`` contains the subject'
 from __future__ import annotations
 
 from dataclasses import dataclass
+from enum import Enum
 from typing import List, Optional
 
 from app.core.tools.policy import stricter
@@ -30,6 +31,14 @@ from app.models.tool import (
     ToolSetting,
     ToolSyncState,
 )
+
+
+class ConnectionState(str, Enum):
+    """Gate 2 input: does the credential this call needs exist and work?"""
+
+    NOT_NEEDED = "not_needed"
+    CONNECTED = "connected"
+    MISSING = "missing"
 
 
 @dataclass(frozen=True)
@@ -54,6 +63,7 @@ class ToolAccessService:
         setting: Optional[ToolSetting],
         bindings: List[ToolBinding],
         principal: PrincipalContext,
+        connection: ConnectionState = ConnectionState.NOT_NEEDED,
     ) -> Availability:
         subject = principal.subject
 
@@ -93,9 +103,14 @@ class ToolAccessService:
 
         policy = stricter(setting.approval_policy, decision[2])
 
-        # Gate 2 (credential): without a stored per-user connection, the subject must connect first.
+        # Gate 2 (credential). A per-user integration needs the subject's own connection, and the subject can
+        # fix that by connecting. A shared connection is the project's to fix, so the tool is simply not offered.
         if per_user:
+            if connection == ConnectionState.CONNECTED:
+                return Availability(True, approval_policy=policy)
             return Availability(False, "auth_required", auth_required=True, approval_policy=policy)
+        if connection == ConnectionState.MISSING:
+            return Availability(False, "integration_needs_connection")
         return Availability(True, approval_policy=policy)
 
     @staticmethod

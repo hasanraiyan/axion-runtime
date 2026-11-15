@@ -327,6 +327,50 @@ other than `/health` and `/api/v1/health` lacks a security requirement.
 **Still open.** `apps/web` does not depend on `@platform/api-client` at all, so the generated
 types/client have no consumers yet.
 
+### 18. Rotating refresh tokens make unguarded refresh a self-inflicted outage
+
+**Symptom.** Under concurrent tool calls with an expired access token, several callers each tried to refresh with
+the same refresh token. Providers that rotate refresh tokens accept only the first, answer `invalid_grant` to the
+rest, and the connection was then (correctly, but wrongly here) marked dead.
+
+**Fix.** `ConnectionTokenService` refreshes under a per-connection lock (`KeyedLocks`, weakly held), re-reads the
+connection inside the lock so a caller that lost the race uses the winner's token, and writes the result with a
+revision compare-and-swap. A *transient* refresh failure (network, 5xx) raises a retryable upstream error and leaves
+the grant intact; only `invalid_grant` / `invalid_client` mark it `needs_auth` and stop further attempts.
+
+**Verified.** `test_concurrent_calls_trigger_exactly_one_refresh`. This test only works because the in-process
+authorization server sleeps (`refresh_delay`): coroutines that never hit a real suspension point never interleave, so
+a concurrency test without one passes even when the lock is deleted (mutation testing caught this).
+
+### 19. Secrets in URL paths leak through access logs
+
+**Symptom (found by review of NFR-S11).** The connect-link secret is a path segment (`/integrations/connect/{token}`)
+and the app's request logger wrote the raw path. `uvicorn.access` is already silenced (it would also log the OAuth
+`code`/`state` query), but the app logger was not.
+
+**Fix.** `sanitize_path` masks the segment before logging; the credential-entry route is added to the redacted-body
+paths. `test_connect_link_secrets_never_reach_the_access_log` fails without the fix. Assert on the server's own logger
+(`app.http`): the TestClient's `httpx2` logs the URLs *it* requests and would mask a regression.
+
+### 20. A state check and an atomic claim can both stop a replay, so test each alone
+
+**Symptom.** Mutation testing showed removing the "session must be `started` and unexpired" check left the suite green,
+because the atomic `started -> completed` claim still blocked replays. But the claim does not look at expiry, so an
+expired-but-started session could have completed.
+
+**Fix.** Separate tests for each: `test_a_started_session_cannot_complete_after_it_expires` (the status/expiry check)
+and `test_the_atomic_claim_alone_stops_a_raced_callback` (a stale read must still lose the atomic transition).
+
+### 21. Changing credentials must revoke connections (and per-user means *only* the user's own)
+
+**Symptom.** Switching an integration from `project_shared` to `per_user` left the project's old connection in the
+database. Nothing used it, but a mutation of the Gate 2 check (`own | shared`) was not caught.
+
+**Fix.** `IntegrationService` now calls `IntegrationConnectionsPort.revoke_all` when the auth type, credential mode,
+client id, secret, or endpoint changes, and when the integration is deleted (upstream revoke, then delete, then drop the
+OAuth client). Gate 2 uses only the caller's own connections for `per_user`, and a test plants a stale project connection
+to prove it is ignored.
+
 ---
 
 ## Bugs found and fixed (commit `5ea80d9`)

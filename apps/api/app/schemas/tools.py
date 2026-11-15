@@ -437,3 +437,110 @@ class NativeProviderInfo(BaseModel):
 class IntegrationTypesResponse(BaseModel):
     types: List[IntegrationTypeInfo]
     native_providers: List[NativeProviderInfo]
+
+
+# ----------------------------------------------------------------- connections (phase 2)
+from pydantic import SecretStr  # noqa: E402
+
+from app.models.connection import (  # noqa: E402
+    ConnectionStatus,
+    ConnectionSubjectType,
+    CredentialKind,
+    IntegrationConnection,
+    ProjectToolPolicy,
+)
+
+
+class ConnectionResponse(BaseModel):
+    """Connection *metadata* only. Credentials are never returned to any caller."""
+
+    id: str
+    integration_id: str
+    integration_slug: Optional[str] = None
+    integration_name: Optional[str] = None
+    subject_type: ConnectionSubjectType
+    subject_id: Optional[str]
+    credential_kind: CredentialKind
+    status: ConnectionStatus
+    granted_scopes: List[str]
+    external_account: Dict[str, Any]
+    expires_at: Optional[datetime]
+    last_used_at: Optional[datetime]
+    last_error: Optional[str]
+    created_at: datetime
+    updated_at: datetime
+
+    @classmethod
+    def from_model(
+        cls, doc: IntegrationConnection, integration: Optional[Integration] = None
+    ) -> "ConnectionResponse":
+        return cls(
+            id=str(doc.id),
+            integration_id=str(doc.integration_id),
+            integration_slug=integration.slug if integration else None,
+            integration_name=integration.name if integration else None,
+            subject_type=doc.subject_type,
+            subject_id=doc.subject_id,
+            credential_kind=doc.credential_kind,
+            status=doc.status,
+            granted_scopes=list(doc.granted_scopes),
+            external_account=dict(doc.external_account),
+            expires_at=doc.expires_at,
+            last_used_at=doc.last_used_at,
+            last_error=doc.last_error,
+            created_at=doc.created_at,
+            updated_at=doc.updated_at,
+        )
+
+
+class AuthorizeRequest(BaseModel):
+    scope: str = Field(default="self", pattern="^(self|project)$", description="'project' connects the shared credential (admins)")
+    return_url: Optional[str] = Field(default=None, max_length=2000)
+
+
+class AuthorizeResponse(BaseModel):
+    authorization_url: str
+
+
+class ConnectLinkRequest(BaseModel):
+    end_user_external_id: Optional[str] = Field(default=None, max_length=255)
+    member_id: Optional[str] = Field(default=None, max_length=200)
+    return_url: Optional[str] = Field(default=None, max_length=2000)
+
+
+class ConnectLinkResponse(BaseModel):
+    connect_url: str
+    expires_in: int
+
+
+class StaticCredentialRequest(BaseModel):
+    credential: SecretStr = Field(..., min_length=1, max_length=4096, description="The user's own API key or token")
+
+
+class ConnectOutcomeResponse(BaseModel):
+    success: bool
+    integration: Optional[str] = None
+    error: Optional[str] = None
+
+
+class ToolPolicyResponse(BaseModel):
+    allowed_return_origins: List[str]
+    end_user_connect_enabled: bool
+    connect_link_ttl_seconds: int
+    revision: int
+
+    @classmethod
+    def from_model(cls, doc: ProjectToolPolicy) -> "ToolPolicyResponse":
+        return cls(
+            allowed_return_origins=list(doc.allowed_return_origins),
+            end_user_connect_enabled=doc.end_user_connect_enabled,
+            connect_link_ttl_seconds=doc.connect_link_ttl_seconds,
+            revision=doc.revision,
+        )
+
+
+class ToolPolicyUpdateRequest(BaseModel):
+    revision: int = Field(..., ge=1)
+    allowed_return_origins: Optional[List[str]] = Field(default=None, max_length=20)
+    end_user_connect_enabled: Optional[bool] = None
+    connect_link_ttl_seconds: Optional[int] = Field(default=None, ge=60, le=3600)

@@ -20,11 +20,14 @@ from app.core.protocols.tool_repositories import (
     IToolSettingRepository,
 )
 from app.core.tools.policy import default_approval_policy
-from app.core.tools.registry import AdapterRegistry
-from app.core.tools.types import PrincipalContext, ResolvedTool, SubjectType
+from app.core.protocols.tool_repositories import IToolPolicyRepository
+from app.core.tools.ports import ConnectionLookupPort
+from app.core.tools.registry import AdapterRegistry, AuthStrategyRegistry
+from app.core.tools.types import PrincipalContext, ResolvedTool, Subject, SubjectType
 from app.models.integration import Integration
 from app.models.tool import ToolBinding, ToolDefinition, ToolSetting
-from app.services.tools.access import Availability, ToolAccessService
+from app.models.integration import CredentialMode
+from app.services.tools.access import Availability, ConnectionState, ToolAccessService
 from app.services.tools.common import ProjectLifecycle
 
 DEFAULT_TIMEOUT_SECONDS = 30
@@ -87,6 +90,9 @@ class ToolsetResolver:
         binding_repo: IToolBindingRepository,
         adapters: AdapterRegistry,
         access: Optional[ToolAccessService] = None,
+        auth_registry: Optional[AuthStrategyRegistry] = None,
+        connections: Optional[ConnectionLookupPort] = None,
+        policy_repo: Optional[IToolPolicyRepository] = None,
     ) -> None:
         self._lifecycle = lifecycle
         self._integrations = integration_repo
@@ -95,6 +101,9 @@ class ToolsetResolver:
         self._bindings = binding_repo
         self._adapters = adapters
         self._access = access or ToolAccessService()
+        self._auth = auth_registry
+        self._connections = connections
+        self._policies = policy_repo
 
     # ------------------------------------------------------------------- helpers
     def _build(
@@ -143,6 +152,37 @@ class ToolsetResolver:
         }
         return hashlib.sha256(json.dumps(payload, sort_keys=True, default=str).encode()).hexdigest()[:32]
 
+    # ----------------------------------------------------------------- Gate 2 input
+    async def _connection_ids(self, project_id: Any, principal: PrincipalContext) -> tuple[set[str], set[str]]:
+        """Integration ids the subject has an active connection for, and those the project itself has."""
+        if self._connections is None:
+            return set(), set()
+        project_subject = Subject(SubjectType.PROJECT)
+        own = await self._connections.active_integration_ids(project_id, principal.subject)
+        shared = own if principal.subject.type == SubjectType.PROJECT else await self._connections.active_integration_ids(project_id, project_subject)
+        return own, shared
+
+    def _connection_state(self, integration: Integration, own: set[str], shared: set[str]) -> ConnectionState:
+        per_user = integration.auth_profile.credential_mode == CredentialMode.PER_USER
+        uses = False
+        if self._auth is not None:
+            try:
+                uses = self._auth.get(integration.auth_profile.auth_type).uses_connection
+            except Exception:
+                uses = False
+        if not (per_user or uses):
+            return ConnectionState.NOT_NEEDED
+        connected = str(integration.id) in (own if per_user else shared)
+        return ConnectionState.CONNECTED if connected else ConnectionState.MISSING
+
+    async def _connect_available(self, project_id: Any, principal: PrincipalContext) -> bool:
+        if principal.subject.type == SubjectType.MEMBER:
+            return True
+        if principal.subject.type == SubjectType.END_USER and self._policies is not None:
+            policy = await self._policies.get(project_id)
+            return bool(policy and policy.end_user_connect_enabled)
+        return False
+
     # ------------------------------------------------------------------- toolset
     async def resolve_toolset(self, principal: PrincipalContext, agent_id: Optional[str] = None) -> Toolset:
         project = await self._lifecycle.get_active(principal.project_id)
@@ -156,12 +196,15 @@ class ToolsetResolver:
 
         toolset = Toolset(version="")
         auth_seen: set[str] = set()
+        own_ids, shared_ids = await self._connection_ids(project.id, principal)
+        connect_ok = await self._connect_available(project.id, principal)
         for definition in definitions:
             integration = by_id.get(str(definition.integration_id))
             if integration is None:
                 continue  # deleted integration: nothing to report
             setting = settings.get(definition.tool_key)
-            availability = self._access.evaluate(integration, definition, setting, bindings, principal)
+            state = self._connection_state(integration, own_ids, shared_ids)
+            availability = self._access.evaluate(integration, definition, setting, bindings, principal, state)
             if availability.available and setting is not None:
                 if definition.ui and "model" not in definition.ui.visibility:
                     continue  # app-only tools never enter an agent toolset (FR-45)
@@ -169,7 +212,7 @@ class ToolsetResolver:
             elif availability.auth_required:
                 if str(integration.id) not in auth_seen:
                     auth_seen.add(str(integration.id))
-                    toolset.auth_required.append(AuthRequiredInfo(str(integration.id), integration.slug))
+                    toolset.auth_required.append(AuthRequiredInfo(str(integration.id), integration.slug, connect_available=connect_ok))
             elif availability.reason in {"disabled", "not_bound"} and setting is not None and not setting.is_enabled:
                 continue  # silently omit tools an admin has not enabled; they are not "excluded", just off
             else:
@@ -191,7 +234,9 @@ class ToolsetResolver:
         setting = await self._settings.get_by_key(project.id, tool_key)
         end_user_external = principal.subject.external_id if principal.subject.type == SubjectType.END_USER else None
         bindings = await self._bindings.list_for_resolution(project.id, principal.agent_id, end_user_external)
-        availability = self._access.evaluate(integration, definition, setting, bindings, principal)
+        own_ids, shared_ids = await self._connection_ids(project.id, principal)
+        state = self._connection_state(integration, own_ids, shared_ids)
+        availability = self._access.evaluate(integration, definition, setting, bindings, principal, state)
         effective_setting = setting or ToolSetting(
             project_id=project.id,
             tool_key=tool_key,

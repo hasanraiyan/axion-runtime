@@ -234,9 +234,12 @@ async def test_custom_header_resolution_fails_on_a_missing_secret_and_on_injecte
 def test_secret_template_parser_and_registry_contents():
     assert SecretTemplateParser.extract_placeholders("a {{secrets.A}} {{ secrets.B }} {{secrets.A}}") == ["A", "B"]
     assert SecretTemplateParser.interpolate("x {{secrets.A}} {{secrets.B}}", {"A": "1"}) == "x 1 {{secrets.B}}"
-    assert {t.value for t in build_default_auth_registry().types()} == {"none", "api_key", "bearer", "basic", "custom_headers"}
+    registry = build_default_auth_registry()
+    assert {t.value for t in registry.types()} == {"none", "api_key", "bearer", "basic", "custom_headers", "oauth_authorization_code"}
+    assert registry.get(AuthType.OAUTH_AUTHORIZATION_CODE).uses_connection
+    assert not registry.get(AuthType.BEARER).uses_connection
     with pytest.raises(BadRequestError):
-        build_default_auth_registry().get(AuthType.OAUTH_AUTHORIZATION_CODE)  # not available until phase 2
+        registry.get(AuthType.OAUTH_CLIENT_CREDENTIALS)  # machine-to-machine OAuth is a later phase
 
 
 # ------------------------------------------------------------------ policy, hashing

@@ -175,7 +175,7 @@ def test_map_mcp_result_handles_text_image_and_structured_content():
 def test_validate_config_normalizes_and_rejects_bad_input():
     adapter = McpAdapter(SdkMcpConnector(make_guard()))
     assert adapter.validate_config({"url": " https://x.example.com/mcp "})["url"] == "https://x.example.com/mcp"
-    assert AuthType.OAUTH_AUTHORIZATION_CODE not in adapter.supported_auth_types()
+    assert AuthType.OAUTH_AUTHORIZATION_CODE in adapter.supported_auth_types()
     for bad in ({}, {"url": "https://x"}, {"url": "https://x", "transport": "sse"},
                 {"url": "https://x", "request_timeout_seconds": 0}, {"url": "https://x", "allowed_hosts": "x"}):
         if bad == {"url": "https://x"}:

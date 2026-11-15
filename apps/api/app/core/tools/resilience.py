@@ -5,7 +5,9 @@ process; a shared store can replace them behind the same small interfaces.
 """
 from __future__ import annotations
 
+import asyncio
 import time
+import weakref
 from collections import OrderedDict, deque
 from dataclasses import dataclass
 from typing import Callable, Deque, Dict, Optional
@@ -107,3 +109,17 @@ class IdempotencyStore:
         self._items.move_to_end(key)
         while len(self._items) > self._max:
             self._items.popitem(last=False)
+
+
+class KeyedLocks:
+    """Per-key asyncio locks held weakly, so idle keys are garbage-collected (single-flight token refresh)."""
+
+    def __init__(self) -> None:
+        self._locks: "weakref.WeakValueDictionary[str, asyncio.Lock]" = weakref.WeakValueDictionary()
+
+    def lock(self, key: str) -> asyncio.Lock:
+        existing = self._locks.get(key)
+        if existing is None:
+            existing = asyncio.Lock()
+            self._locks[key] = existing
+        return existing

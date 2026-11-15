@@ -15,15 +15,23 @@ from app.core.crypto import CryptoService, get_crypto_service
 from app.core.outbound import OutboundUrlGuard, get_outbound_url_guard
 from app.core.tools.events import InProcessEventBus, get_event_bus
 from app.core.tools.registry import AdapterRegistry, AuthStrategyRegistry
-from app.core.tools.resilience import CircuitBreaker, IdempotencyStore, SlidingWindowRateLimiter
+from app.core.tools.ports import OAuthFlowPort
+from app.core.tools.resilience import CircuitBreaker, IdempotencyStore, KeyedLocks, SlidingWindowRateLimiter
 from app.core.tools.signing import TokenSigner
 from app.integrations.adapters import McpAdapter, NativeAdapter
 from app.integrations.auth import build_default_auth_registry
 from app.integrations.mcp_client import McpConnectorPort, SdkMcpConnector
 from app.integrations.native import NativeProviderRegistry, build_default_native_registry
+from app.integrations.oauth import OAuthFlowClient
 from app.repositories.end_user_repository import (
     get_end_user_repository,
     get_tool_invocation_repository,
+)
+from app.repositories.connection_repository import (
+    get_connect_session_repository,
+    get_connection_repository,
+    get_oauth_client_repository,
+    get_tool_policy_repository,
 )
 from app.repositories.integration_repository import get_integration_repository
 from app.repositories.project_audit_repository import get_project_audit_repository
@@ -36,6 +44,8 @@ from app.repositories.tool_repository import (
 )
 from app.services.tools.binding_service import BindingService
 from app.services.tools.common import ProjectAuditAdapter, ProjectLifecycle, ProjectSecretReader
+from app.services.tools.connect_flow import ConnectFlowService, ToolPolicyService
+from app.services.tools.connections import ConnectionService, ConnectionTokenService, TokenCipher
 from app.services.tools.credentials import CredentialBuilder
 from app.services.tools.discovery_service import DiscoveryService
 from app.services.tools.end_user_service import EndUserService
@@ -59,6 +69,7 @@ class SharedToolState:
     idempotency: IdempotencyStore
     events: InProcessEventBus
     native: NativeProviderRegistry
+    locks: KeyedLocks
 
 
 _shared: Optional[SharedToolState] = None
@@ -73,6 +84,7 @@ def get_shared_tool_state() -> SharedToolState:
             idempotency=IdempotencyStore(),
             events=get_event_bus(),
             native=build_default_native_registry(),
+            locks=KeyedLocks(),
         )
     return _shared
 
@@ -96,6 +108,9 @@ class ToolsContainer:
     approvals: ApprovalService
     gateway: ToolExecutionGateway
     invocations: Any  # IToolInvocationRepository (read-only listing)
+    connections: ConnectionService
+    connect_flow: ConnectFlowService
+    policy: ToolPolicyService
 
 
 def build_tools_container(
@@ -114,6 +129,12 @@ def build_tools_container(
     shared: SharedToolState,
     signer: TokenSigner,
     connector: Optional[McpConnectorPort] = None,
+    connection_repo: Any = None,
+    session_repo: Any = None,
+    oauth_client_repo: Any = None,
+    policy_repo: Any = None,
+    oauth: Optional[OAuthFlowPort] = None,
+    public_base_url: str = "http://localhost:8000",
 ) -> ToolsContainer:
     audit = ProjectAuditAdapter(audit_repo)
     lifecycle = ProjectLifecycle(project_repo)
@@ -124,23 +145,39 @@ def build_tools_container(
     adapters.register(McpAdapter(connector or SdkMcpConnector(guard)))
     auth_registry = build_default_auth_registry()
 
-    credentials = CredentialBuilder(auth_registry, ProjectSecretReader(secret_repo, crypto))
+    secret_reader = ProjectSecretReader(secret_repo, crypto)
+    cipher = TokenCipher(crypto)
+    oauth_flow = oauth or OAuthFlowClient(guard)
+    audit_port = audit
+    connections = ConnectionService(lifecycle, connection_repo, integration_repo, oauth_client_repo, cipher, oauth_flow, audit_port)
+    token_service = ConnectionTokenService(connection_repo, oauth_client_repo, integration_repo, cipher, oauth_flow, shared.locks)
+    credentials = CredentialBuilder(auth_registry, secret_reader, token_service)
+    integrations = IntegrationService(
+        lifecycle, integration_repo, secret_repo, adapters, auth_registry, guard, audit, events, connections=connections
+    )
+    policy = ToolPolicyService(lifecycle, policy_repo, audit_port)
 
-    integrations = IntegrationService(lifecycle, integration_repo, secret_repo, adapters, auth_registry, guard, audit, events)
     health = IntegrationHealthService(lifecycle, integration_repo, adapters, credentials, audit, events)
     discovery = DiscoveryService(lifecycle, integration_repo, tool_repo, setting_repo, adapters, credentials, audit, events)
     onboarding = IntegrationOnboardingService(integrations, health, discovery)
     catalog = ToolCatalogService(lifecycle, tool_repo, setting_repo)
     tool_settings = ToolSettingService(lifecycle, tool_repo, setting_repo, audit, events)
     bindings = BindingService(lifecycle, binding_repo, integration_repo, tool_repo, audit, events)
-    toolset = ToolsetResolver(lifecycle, integration_repo, tool_repo, setting_repo, binding_repo, adapters)
-    end_users = EndUserService(lifecycle, end_user_repo, signer, audit, events, invocation_repo)
+    toolset = ToolsetResolver(
+        lifecycle, integration_repo, tool_repo, setting_repo, binding_repo, adapters,
+        auth_registry=auth_registry, connections=connections, policy_repo=policy_repo,
+    )
+    end_users = EndUserService(lifecycle, end_user_repo, signer, audit, events, invocation_repo, connections=connections)
     principals = PrincipalResolver(end_users)
     approvals = ApprovalService(signer, end_users, audit)
     stages = build_stages(
         toolset, end_users, signer, shared.limiter, shared.breaker, shared.idempotency, credentials, adapters, health
     )
     gateway = ToolExecutionGateway(stages, InvocationRecorder(invocation_repo, audit))
+    connect_flow = ConnectFlowService(
+        lifecycle, integration_repo, adapters, auth_registry, oauth_client_repo, session_repo, policy, connections,
+        oauth_flow, cipher, secret_reader, audit_port, public_base_url, post_connect=onboarding.verify,
+    )
 
     return ToolsContainer(
         lifecycle=lifecycle,
@@ -160,6 +197,9 @@ def build_tools_container(
         approvals=approvals,
         gateway=gateway,
         invocations=invocation_repo,
+        connections=connections,
+        connect_flow=connect_flow,
+        policy=policy,
     )
 
 
@@ -182,6 +222,11 @@ def get_tools_container(
         guard=guard,
         shared=get_shared_tool_state(),
         signer=TokenSigner(app_settings.AXION_MASTER_ENCRYPTION_KEY),
+        connection_repo=get_connection_repository(),
+        session_repo=get_connect_session_repository(),
+        oauth_client_repo=get_oauth_client_repository(),
+        policy_repo=get_tool_policy_repository(),
+        public_base_url=app_settings.PUBLIC_API_BASE_URL,
     )
 
 
@@ -195,4 +240,8 @@ def get_tool_cascade_purger() -> ToolCascadePurger:
         end_user_repo=get_end_user_repository(),
         integration_repo=get_integration_repository(),
         audit=ProjectAuditAdapter(get_project_audit_repository()),
+        connection_repo=get_connection_repository(),
+        session_repo=get_connect_session_repository(),
+        oauth_client_repo=get_oauth_client_repository(),
+        policy_repo=get_tool_policy_repository(),
     )

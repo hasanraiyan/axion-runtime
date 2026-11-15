@@ -18,7 +18,7 @@ from app.core.outbound import OutboundUrlGuard
 from app.core.protocols.repositories import ISecretRepository
 from app.core.protocols.tool_repositories import IIntegrationRepository
 from app.core.tools.events import ToolsetChanged
-from app.core.tools.ports import AuditPort, DomainEventPort
+from app.core.tools.ports import AuditPort, DomainEventPort, IntegrationConnectionsPort
 from app.core.tools.registry import AdapterRegistry, AuthStrategyRegistry, adapter_key
 from app.models.integration import (
     AuthProfile,
@@ -48,7 +48,9 @@ class IntegrationService:
         guard: OutboundUrlGuard,
         audit: AuditPort,
         events: DomainEventPort,
+        connections: Optional[IntegrationConnectionsPort] = None,
     ) -> None:
+        self._connections = connections
         self._lifecycle = lifecycle
         self._integrations = integration_repo
         self._secrets = secret_repo
@@ -162,6 +164,7 @@ class IntegrationService:
         current = await self._get(project.id, integration_id)
 
         update: Dict[str, Any] = {"updated_by": actor_id}
+        credentials_changed = False
         if request.name is not None:
             update["name"] = request.name
         if request.description is not None:
@@ -184,10 +187,17 @@ class IntegrationService:
             if profile.auth_type != current.auth_profile.auth_type:
                 update["end_user_access"] = EndUserAccess.CLOSED
                 update["shared_identity_ack"] = None
+            credentials_changed = (
+                not profile.same_credentials_as(current.auth_profile)
+                or normalized.get("url") != current.config.get("url")
+            )
 
         updated = await self._integrations.update_with_revision(
             current.id, project.id, request.revision, update
         )
+        if connection_changed and credentials_changed and self._connections is not None:
+            # Existing connections were issued for different credentials or endpoints and must not survive.
+            await self._connections.revoke_all(str(project.id), str(current.id), actor_id, "credentials_changed")
         await self._audit.record(
             str(project.id),
             actor_id,
@@ -235,6 +245,8 @@ class IntegrationService:
                 "updated_by": actor_id,
             },
         )
+        if self._connections is not None:
+            await self._connections.revoke_all(str(project.id), str(updated.id), actor_id, "integration_deleted")
         await self._audit.record(
             str(project.id), actor_id, ProjectAuditAction.INTEGRATION_DELETED.value, {"integration_id": str(updated.id)}
         )

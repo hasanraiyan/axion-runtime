@@ -179,3 +179,123 @@ class IToolInvocationRepository(Protocol):
     async def scrub_subject(self, project_id: IdLike, subject_id: str) -> int: ...
 
     async def delete_by_project_id(self, project_id: IdLike) -> int: ...
+
+
+# ---------------------------------------------------------------------------------------------
+# Phase 2: connections, connect sessions, OAuth clients, tool policy
+# ---------------------------------------------------------------------------------------------
+from datetime import datetime  # noqa: E402
+
+from app.core.crypto.envelope import EncryptedEnvelope  # noqa: E402
+from app.models.connection import (  # noqa: E402
+    ConnectionStatus,
+    ConnectionSubjectType,
+    ConnectSession,
+    ConnectSessionStatus,
+    CredentialKind,
+    IntegrationConnection,
+    IntegrationOAuthClient,
+    ProjectToolPolicy,
+)
+
+
+@runtime_checkable
+class IConnectionRepository(Protocol):
+    async def save_credentials(
+        self,
+        project_id: IdLike,
+        integration_id: IdLike,
+        subject_type: ConnectionSubjectType,
+        subject_id: Optional[str],
+        subject_key: str,
+        kind: CredentialKind,
+        access_envelope: EncryptedEnvelope,
+        refresh_envelope: Optional[EncryptedEnvelope],
+        expires_at: Optional[datetime],
+        granted_scopes: List[str],
+        external_account: Dict[str, Any],
+    ) -> IntegrationConnection: ...
+
+    async def get(self, integration_id: IdLike, subject_key: str) -> Optional[IntegrationConnection]: ...
+
+    async def get_by_id(self, connection_id: IdLike, project_id: IdLike) -> Optional[IntegrationConnection]: ...
+
+    async def list_by_integration(
+        self, project_id: IdLike, integration_id: IdLike, skip: int = 0, limit: int = 50
+    ) -> Tuple[List[IntegrationConnection], int]: ...
+
+    async def list_for_subject(
+        self, project_id: IdLike, subject_type: ConnectionSubjectType, subject_id: Optional[str]
+    ) -> List[IntegrationConnection]: ...
+
+    async def update_with_revision(
+        self, connection_id: IdLike, expected_revision: int, update_dict: Dict[str, Any]
+    ) -> IntegrationConnection: ...
+
+    async def set_status(self, connection_id: IdLike, status: ConnectionStatus, error: Optional[str] = None) -> None: ...
+
+    async def touch_used(self, connection_id: IdLike) -> None: ...
+
+    async def delete(self, connection_id: IdLike) -> bool: ...
+
+    async def set_status_for_subject(
+        self,
+        project_id: IdLike,
+        subject_type: ConnectionSubjectType,
+        subject_id: str,
+        from_status: ConnectionStatus,
+        to_status: ConnectionStatus,
+    ) -> int: ...
+
+    async def delete_by_subject(self, project_id: IdLike, subject_type: ConnectionSubjectType, subject_id: str) -> int: ...
+
+    async def delete_by_project_id(self, project_id: IdLike) -> int: ...
+
+
+@runtime_checkable
+class IConnectSessionRepository(Protocol):
+    async def create(self, document: ConnectSession) -> ConnectSession: ...
+
+    async def get_by_token_hash(self, token_hash: str) -> Optional[ConnectSession]: ...
+
+    async def get_by_state_hash(self, state_hash: str) -> Optional[ConnectSession]: ...
+
+    async def mark_started(
+        self, session_id: IdLike, state_hash: str, verifier_envelope: EncryptedEnvelope
+    ) -> Optional[ConnectSession]:
+        """Atomically move ``pending`` -> ``started``; ``None`` if it was already used."""
+        ...
+
+    async def finish(
+        self, session_id: IdLike, status: ConnectSessionStatus, error: Optional[str] = None
+    ) -> Optional[ConnectSession]:
+        """Atomically move ``started`` -> ``completed``/``failed``; ``None`` if not in ``started`` (single use)."""
+        ...
+
+    async def mark_failed(self, session_id: IdLike, error: str) -> None: ...
+
+    async def delete_by_project_id(self, project_id: IdLike) -> int: ...
+
+
+@runtime_checkable
+class IOAuthClientRepository(Protocol):
+    async def get_by_integration(self, integration_id: IdLike) -> Optional[IntegrationOAuthClient]: ...
+
+    async def save(self, document: IntegrationOAuthClient) -> IntegrationOAuthClient: ...
+
+    async def delete_by_integration(self, integration_id: IdLike) -> int: ...
+
+    async def delete_by_project_id(self, project_id: IdLike) -> int: ...
+
+
+@runtime_checkable
+class IToolPolicyRepository(Protocol):
+    async def get(self, project_id: IdLike) -> Optional[ProjectToolPolicy]: ...
+
+    async def get_or_create(self, project_id: IdLike) -> ProjectToolPolicy: ...
+
+    async def update_with_revision(
+        self, project_id: IdLike, expected_revision: int, update_dict: Dict[str, Any]
+    ) -> ProjectToolPolicy: ...
+
+    async def delete_by_project_id(self, project_id: IdLike) -> int: ...

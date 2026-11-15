@@ -1,7 +1,7 @@
 # Software Requirements Specification (SRS)
 ## Module 07: Tool & Integration Management (Axion Runtime)
 
-- **Document Version**: 1.1.0
+- **Document Version**: 1.2.0
 - **Status**: Draft for Architectural Review
 - **Module ID**: `MOD-07`
 - **Component**: `apps/api` (backend), `apps/web` (connector management UI and MCP App host)
@@ -1344,15 +1344,35 @@ These requirements bind the implementation. Violations found during review (Sect
 
 ---
 
-## 16A. Implementation Status (Backend, Phase 1)
+## 16A. Implementation Status (Backend)
 
-Built in `apps/api` and covered by tests (no database or network required): data models; repositories and OCC;
-ports, registries and domain events; Outbound URL Guard with DNS pinning; native provider and **MCP adapter on the
-official MCP Python SDK 2.x** (Streamable HTTP); auth strategies (`none`, `api_key`, `bearer`, `basic`,
-`custom_headers`, all `project_shared`); discovery with drift detection; tool settings and approval; bindings with
-audiences; toolset resolution; the execution gateway (12 stages); approval tokens; end-user assertion, session
-tokens, block and erasure; project-purge cascade; secret-deletion guard; and 26 REST endpoints published in the
-OpenAPI contract.
+### Phase 1 (complete)
+Data models; repositories and OCC; ports, registries and domain events; Outbound URL Guard with DNS pinning; native
+provider and **MCP adapter on the official MCP Python SDK 2.x** (Streamable HTTP); static auth strategies (`none`,
+`api_key`, `bearer`, `basic`, `custom_headers`); discovery with drift detection; tool settings and approval; bindings
+with audiences; toolset resolution; the execution gateway (12 stages); approval tokens; end-user assertion, session
+tokens, block and erasure; project-purge cascade; secret-deletion guard.
+
+### Phase 2, slice A: OAuth and per-user connections (complete)
+- **OAuth 2.1 + PKCE (S256 only) for MCP servers** using the SDK's discovery and registration helpers: RFC 9728
+  protected-resource metadata, RFC 8414 server metadata, RFC 7591 dynamic registration, RFC 8707 `resource`, RFC 9207
+  issuer checks, RFC 7009 revocation. Manual client id and secret (MOD-02) supported. Every OAuth request goes through
+  the Outbound Guard.
+- **Two authentication levels**: `project_shared` (an admin connects once; everyone acts through it) and `per_user`
+  (each member or end user connects their own account; no fallback to any other credential).
+- **Connections**: one per `(integration, subject)`, sealed with AES-GCM envelopes whose AAD binds project,
+  integration, and subject. Refresh is single-flight with compare-and-swap; dead grants (`invalid_grant`,
+  `invalid_client`) mark only the affected connection `needs_auth` and stop retries; transient failures do not.
+- **Connect flow**: single-use links (hashed), OAuth `state` (hashed), PKCE verifier (sealed), atomic session claim,
+  exact-origin return-URL allow-list, outcome-only redirects. Per-user API keys and bearer tokens via verified key entry.
+- **Gate 2** is real: toolsets report `auth_required` (with `connect_available`) for per-user integrations and omit
+  shared integrations that are not connected; the gateway returns `auth_required` instead of falling back.
+- **Governance**: `ProjectToolPolicy` (end-user connect switch, return origins, link TTL); admin and machine
+  (`connections:manage`) can list metadata and revoke but never read credentials; blocking suspends, unblocking
+  resumes, erasing deletes tokens and revokes upstream; changing credentials or deleting an integration revokes its
+  connections; project purge cascades.
+- **Endpoints** (13 more): connect links, authorize, public connect and callback, connections list/revoke, tool policy,
+  and self-service `me/connections` for members (Clerk) and end users (session token with `connections:own`).
 
 **Deliberate differences from this SRS**
 
@@ -1360,16 +1380,18 @@ OpenAPI contract.
 |---|---|---|---|
 | End-user bindings | allow or deny | **deny only** | An end-user allow could override an agent-level deny |
 | Binding precedence | deny wins | end-user deny, then agent rules, then project default; deny wins within a level | Makes "agent overrides default" and "deny wins" consistent |
-| `FR-83` acknowledgment | `project_shared` integrations | every `project_shared` integration, uniformly | No per-type special case (OCP) |
+| FR-83 acknowledgment | `project_shared` integrations | every `project_shared` integration, uniformly | No per-type special case (OCP) |
 | MCP SDK | "official SDK" | official SDK 2.x over `httpx2`, guarded by a custom transport | SDK exposes no HTTP status; handled with a response hook |
+| Hosted connect page | Axion-hosted consent page | the link redirects straight to the provider; no Axion page | UI is deferred; the provider's consent screen is shown |
+| Per-user discovery | with a connected user's credentials | with the calling admin's **own** connection | An admin connects their own account, then runs discovery |
+| Revoked state | `connections.status = revoked` | the record is deleted | Deleting removes the credential outright; the audit log keeps the history |
 | Toolset cache (NFR-P1) | 30 s TTL cache | not implemented | Resolution is DB-bound; measure before caching |
-| Session pool (FR-18, FR-81) | pooled sessions | one session per call | Phase 2 |
+| Session pool (FR-18, FR-81) | pooled sessions | one session per call | Next slice |
 
-**Not yet built (phase 2 and later):** OAuth 2.1 + PKCE and dynamic client registration; `IntegrationConnection`,
-`ConnectSession`, `ProjectToolPolicy`, hosted connect flow and per-user (`per_user`) connections for members and end
-users (the credential gate already refuses to fall back to a shared credential); MCP App resources, approval and
-bridge (`ui` metadata is discovered and enforced as model/app visibility only); REST/OpenAPI and webhook adapters;
-per-user session pool; tool-bulk operations. End users cannot register their own MCP servers (out of scope).
+### Still to build
+MCP App resources (fetch, hash-pin, admin approval, bridge for app-initiated calls and reads); the MCP session pool
+(per subject) and `list_changed` handling; REST/OpenAPI and webhook adapters; OAuth client credentials; bulk tool
+operations; the web UI and hosted pages. End users cannot register their own MCP servers (out of scope by decision).
 
 ---
 
@@ -1378,4 +1400,5 @@ per-user session pool; tool-bulk operations. End users cannot register their own
 | Version | Date | Description |
 |---|---|---|
 | 1.0.0 | 2026-11-15 | Initial draft based on analysis of the Agent Marketplace backend and Axion MOD-01/02/03/06 |
+| 1.2.0 | 2026-11-15 | Phase 2 slice A implemented (OAuth, per-user connections); implementation status rewritten |
 | 1.1.0 | 2026-11-15 | Added principals, credential modes, per-user authentication for members and end users, end-user governance, context-bound arguments, dry run; split tool definition/setting; added SOLID review and normative SOLID requirements; incorporated reference connectors spec and external-users module |

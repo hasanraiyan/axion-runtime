@@ -38,3 +38,15 @@ class UpstreamTargetBlocked(UpstreamError):
     """The Outbound Guard refused the target at run time (e.g. DNS now resolves to a private address)."""
 
     retryable = False
+
+
+class OAuthFlowFailed(Exception):
+    """An OAuth discovery, registration, authorization, or token step failed (message is safe to log)."""
+
+
+class OAuthInvalidGrant(OAuthFlowFailed):
+    """The authorization server rejected the grant or refresh token: the user must reconnect."""
+
+
+class OAuthInvalidClient(OAuthFlowFailed):
+    """The authorization server rejected our client credentials."""

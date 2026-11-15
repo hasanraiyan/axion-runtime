@@ -9,10 +9,17 @@ from starlette.responses import Response
 logger = logging.getLogger("app.http")
 
 # Path regex matching sensitive secret routes where request/response bodies must never be logged
-REDACT_PATHS_REGEX = re.compile(r"/(secrets|reveal|resolve)(?:/|$|\?)", re.IGNORECASE)
+REDACT_PATHS_REGEX = re.compile(r"/(secrets|reveal|resolve|credential)(?:/|$|\?)", re.IGNORECASE)
+# The single-use connect-link secret travels in the path, so it must never reach an access log (SRS-07 NFR-S11).
+SECRET_PATH_SEGMENTS = re.compile(r"(/integrations/connect/)[^/?#]+", re.IGNORECASE)
 REDACTED_PATHS_REGEX = REDACT_PATHS_REGEX
 REDACTED_BODY = "[REDACTED]"
 REDACTED_PLACEHOLDER = "[REDACTED]"
+
+
+def sanitize_path(path: str) -> str:
+    """Mask secrets that appear inside a path (e.g. connect-link tokens) before the path is logged."""
+    return SECRET_PATH_SEGMENTS.sub(r"\1" + REDACTED_PLACEHOLDER, path)
 
 
 def is_redacted_path(path: str) -> bool:
@@ -49,7 +56,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         start_time = time.perf_counter()
         method = request.method
-        url = request.url.path
+        url = sanitize_path(request.url.path)
         client_ip = request.client.host if request.client else "unknown"
         is_sensitive = is_redacted_path(url)
 

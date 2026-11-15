@@ -36,6 +36,12 @@ from app.models.integration import Integration, IntegrationStatus, IntegrationTy
 from app.models.tool import ToolBinding, ToolDefinition, ToolSetting  # noqa: E402
 from app.models.end_user import ProjectEndUser  # noqa: E402
 from app.models.tool_invocation import ToolInvocation  # noqa: E402
+from app.models.connection import (  # noqa: E402
+    ConnectSession,
+    IntegrationConnection,
+    IntegrationOAuthClient,
+    ProjectToolPolicy,
+)
 
 # Registry of all Beanie document models for initialization.
 DOCUMENT_MODELS: List[Type[Document]] = [
@@ -54,6 +60,10 @@ DOCUMENT_MODELS: List[Type[Document]] = [
     ToolBinding,
     ProjectEndUser,
     ToolInvocation,
+    IntegrationConnection,
+    ConnectSession,
+    IntegrationOAuthClient,
+    ProjectToolPolicy,
 ]
 
 __all__ = [
@@ -85,5 +95,9 @@ __all__ = [
     "ToolBinding",
     "ProjectEndUser",
     "ToolInvocation",
+    "IntegrationConnection",
+    "ConnectSession",
+    "IntegrationOAuthClient",
+    "ProjectToolPolicy",
     "DOCUMENT_MODELS",
 ]

@@ -64,10 +64,11 @@ def test_integrations_do_not_depend_on_services_or_the_api_layer():
 
 
 def test_only_the_mcp_connector_touches_the_mcp_sdk_and_only_the_guard_touches_raw_transports():
-    sdk_users = [p.name for p in py_files("integrations") if violations([p], ["mcp"])]
-    assert sdk_users == ["mcp_client.py"]
+    # The SDK is used by exactly two integration modules: the MCP session client and the OAuth flow client.
+    sdk_users = sorted(p.name for p in py_files("integrations") if violations([p], ["mcp"]))
+    assert sdk_users == ["mcp_client.py", "oauth.py"]
     httpx2_users = sorted(p.name for p in py_files("integrations") if violations([p], ["httpx2"]))
-    assert httpx2_users == ["guarded_transport.py", "mcp_client.py"]
+    assert httpx2_users == ["guarded_transport.py", "mcp_client.py", "oauth.py"]
 
 
 def test_repositories_do_not_import_services_or_the_api_layer():
@@ -100,6 +101,7 @@ def test_no_branching_on_integration_type_or_auth_type_outside_registries():
     assert offenders == []
 
 
+@pytest.mark.usefixtures("tool_models")
 def test_adding_a_new_integration_type_needs_no_change_to_services():
     """The scripted adapter used across the suite is registered at runtime: proof the extension point works."""
     from tests.tools_harness import make_harness
@@ -128,11 +130,15 @@ def test_repository_protocols_are_one_per_aggregate():
 
     names = [n for n in vars(protocols) if n.startswith("I") and n.endswith("Repository")]
     assert sorted(names) == [
+        "IConnectSessionRepository",
+        "IConnectionRepository",
         "IEndUserRepository",
         "IIntegrationRepository",
+        "IOAuthClientRepository",
         "IToolBindingRepository",
         "IToolDefinitionRepository",
         "IToolInvocationRepository",
+        "IToolPolicyRepository",
         "IToolSettingRepository",
     ]
 

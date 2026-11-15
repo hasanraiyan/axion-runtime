@@ -15,7 +15,7 @@ from bson import ObjectId
 from app.core.exceptions import BadRequestError, EndUserBlockedError, NotFoundError
 from app.core.protocols.tool_repositories import IEndUserRepository, IToolInvocationRepository
 from app.core.tools.events import EndUserBlocked, ToolsetChanged
-from app.core.tools.ports import AuditPort, DomainEventPort
+from app.core.tools.ports import AuditPort, DomainEventPort, EndUserConnectionPort
 from app.core.tools.signing import TokenSigner
 from app.core.tools.types import Subject, SubjectType
 from app.models.end_user import EndUserStatus, ProjectEndUser
@@ -51,6 +51,7 @@ class EndUserService:
         audit: AuditPort,
         events: DomainEventPort,
         invocation_repo: Optional[IToolInvocationRepository] = None,
+        connections: Optional[EndUserConnectionPort] = None,
     ) -> None:
         self._lifecycle = lifecycle
         self._end_users = end_user_repo
@@ -58,6 +59,7 @@ class EndUserService:
         self._audit = audit
         self._events = events
         self._invocations = invocation_repo
+        self._connections = connections
 
     # --------------------------------------------------------------- assertion
     async def assert_user(
@@ -123,6 +125,8 @@ class EndUserService:
         project = await self._lifecycle.get_active(project_id)
         await self.get(project.id, external_id)
         user = await self._end_users.update_status(project.id, external_id, EndUserStatus.BLOCKED)
+        if self._connections is not None:
+            await self._connections.suspend_subject(str(project.id), str(user.id))
         await self._audit.record(
             str(project.id), actor_id, ProjectAuditAction.END_USER_BLOCKED.value, {"end_user_id": str(user.id)}
         )
@@ -134,6 +138,8 @@ class EndUserService:
         project = await self._lifecycle.get_active(project_id)
         await self.get(project.id, external_id)
         user = await self._end_users.update_status(project.id, external_id, EndUserStatus.ACTIVE)
+        if self._connections is not None:
+            await self._connections.resume_subject(str(project.id), str(user.id))
         await self._audit.record(
             str(project.id), actor_id, ProjectAuditAction.END_USER_UNBLOCKED.value, {"end_user_id": str(user.id)}
         )
@@ -144,6 +150,9 @@ class EndUserService:
         project = await self._lifecycle.get_active(project_id)
         existing = await self.get(project.id, external_id)
         user = await self._end_users.update_status(project.id, external_id, EndUserStatus.DELETED)
+        erased_connections = 0
+        if self._connections is not None:
+            erased_connections = await self._connections.erase_subject(str(project.id), str(existing.id))
         scrubbed = 0
         if self._invocations is not None:
             scrubbed = await self._invocations.scrub_subject(project.id, str(existing.id))
@@ -151,7 +160,7 @@ class EndUserService:
             str(project.id),
             actor_id,
             ProjectAuditAction.END_USER_DELETED.value,
-            {"end_user_id": str(user.id), "invocation_records_scrubbed": scrubbed},
+            {"end_user_id": str(user.id), "invocation_records_scrubbed": scrubbed, "connections_erased": erased_connections},
         )
         await self._events.publish(EndUserBlocked(str(project.id), str(user.id)))
 

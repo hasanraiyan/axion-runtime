@@ -69,7 +69,16 @@ class AuthProfile(BaseModel):
     headers: Dict[str, str] = Field(
         default_factory=dict, description="custom_headers values; may contain {{secrets.NAME}} placeholders"
     )
-    oauth: Dict[str, Any] = Field(default_factory=dict, description="Non-secret OAuth settings (phase 2)")
+    oauth: Dict[str, Any] = Field(default_factory=dict, description="Non-secret OAuth settings (scopes, client_id)")
+
+    def same_credentials_as(self, other: "AuthProfile") -> bool:
+        """True when existing stored connections would still be valid under ``other`` (SRS-07 5.1.2)."""
+        return (
+            self.auth_type == other.auth_type
+            and self.credential_mode == other.credential_mode
+            and self.secret_id == other.secret_id
+            and (self.oauth or {}).get("client_id") == (other.oauth or {}).get("client_id")
+        )
 
 
 class SharedIdentityAck(BaseModel):

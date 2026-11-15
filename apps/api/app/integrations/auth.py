@@ -52,6 +52,8 @@ def _validate_header_name(name: str) -> str:
 
 class NoAuthStrategy:
     auth_type = AuthType.NONE
+    uses_connection = False
+    static_kind = None
 
     def validate(self, profile: AuthProfile) -> None:
         _require_shared(profile)
@@ -68,10 +70,12 @@ class NoAuthStrategy:
 
 class ApiKeyStrategy:
     auth_type = AuthType.API_KEY
+    uses_connection = False
+    static_kind = 'api_key'
 
     def validate(self, profile: AuthProfile) -> None:
-        _require_shared(profile)
-        _require_secret(profile, "api_key authentication")
+        if profile.credential_mode == CredentialMode.PROJECT_SHARED:
+            _require_secret(profile, "api_key authentication")
         placement = profile.placement or "header"
         name = profile.name or ("X-API-Key" if placement == "header" else None)
         if not name:
@@ -96,10 +100,12 @@ class ApiKeyStrategy:
 
 class BearerStrategy:
     auth_type = AuthType.BEARER
+    uses_connection = False
+    static_kind = 'bearer'
 
     def validate(self, profile: AuthProfile) -> None:
-        _require_shared(profile)
-        _require_secret(profile, "bearer authentication")
+        if profile.credential_mode == CredentialMode.PROJECT_SHARED:
+            _require_secret(profile, "bearer authentication")
 
     def secret_ids(self, profile: AuthProfile) -> List[str]:
         return [str(profile.secret_id)] if profile.secret_id else []
@@ -114,6 +120,8 @@ class BearerStrategy:
 
 class BasicStrategy:
     auth_type = AuthType.BASIC
+    uses_connection = False
+    static_kind = None
 
     def validate(self, profile: AuthProfile) -> None:
         _require_shared(profile)
@@ -137,6 +145,8 @@ class BasicStrategy:
 
 class CustomHeadersStrategy:
     auth_type = AuthType.CUSTOM_HEADERS
+    uses_connection = False
+    static_kind = None
 
     def validate(self, profile: AuthProfile) -> None:
         _require_shared(profile)
@@ -174,8 +184,46 @@ class CustomHeadersStrategy:
         return sorted(names)
 
 
+class OAuthAuthorizationCodeStrategy:
+    """OAuth 2.1 authorization code + PKCE (MCP). Tokens live in a stored connection, never in the profile."""
+
+    auth_type = AuthType.OAUTH_AUTHORIZATION_CODE
+    uses_connection = True
+    static_kind = None
+
+    def validate(self, profile: AuthProfile) -> None:
+        oauth = profile.oauth or {}
+        scopes = oauth.get("scopes", [])
+        if not isinstance(scopes, list) or len(scopes) > 50 or not all(isinstance(s, str) and 0 < len(s) <= 200 for s in scopes):
+            raise BadRequestError("oauth.scopes must be a list of up to 50 scope strings")
+        client_id = oauth.get("client_id")
+        if client_id is not None and (not isinstance(client_id, str) or not client_id or len(client_id) > 500):
+            raise BadRequestError("oauth.client_id must be a non-empty string")
+        if profile.secret_id is not None and not client_id:
+            raise BadRequestError("A client secret requires oauth.client_id")
+        unknown = set(oauth) - {"scopes", "client_id"}
+        if unknown:
+            raise BadRequestError(f"Unsupported oauth setting: {sorted(unknown)[0]}")
+
+    def secret_ids(self, profile: AuthProfile) -> List[str]:
+        return [str(profile.secret_id)] if profile.secret_id else []  # the optional manual client secret
+
+    def secret_names(self, profile: AuthProfile) -> List[str]:
+        return []
+
+    async def build(self, project_id: str, profile: AuthProfile, secrets: SecretReaderPort) -> ResolvedCredentials:
+        raise BadRequestError("OAuth credentials come from a stored connection")
+
+
 def build_default_auth_registry() -> AuthStrategyRegistry:
     registry = AuthStrategyRegistry()
-    for strategy in (NoAuthStrategy(), ApiKeyStrategy(), BearerStrategy(), BasicStrategy(), CustomHeadersStrategy()):
+    for strategy in (
+        NoAuthStrategy(),
+        ApiKeyStrategy(),
+        BearerStrategy(),
+        BasicStrategy(),
+        CustomHeadersStrategy(),
+        OAuthAuthorizationCodeStrategy(),
+    ):
         registry.register(strategy)
     return registry

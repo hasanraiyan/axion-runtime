@@ -329,6 +329,15 @@ class CredentialStage:
                 "The user must connect their account for this integration before the tool can run",
                 extra={"integration": context.integration.slug, "connect_available": False},
             )
+        except UpstreamError:
+            # E.g. the token endpoint is briefly unreachable. The grant is intact, so this is retryable and is
+            # deliberately not counted against the integration's circuit breaker (the integration itself is fine).
+            return _fail(
+                InvocationStatus.UPSTREAM_ERROR,
+                "credential_unavailable",
+                "Credentials could not be refreshed right now; retry shortly",
+                retryable=True,
+            )
         except AppException:
             return _fail(
                 InvocationStatus.UPSTREAM_ERROR,

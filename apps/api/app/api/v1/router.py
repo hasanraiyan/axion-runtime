@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 from app.api.v1.endpoints import (
     auth,
+    connections,
     credentials,
     end_users,
     health,
@@ -26,3 +27,4 @@ api_v1_router.include_router(integrations.router, prefix="/projects/{project_id}
 api_v1_router.include_router(tools.router, prefix="/projects/{project_id}", tags=["Tools"])
 api_v1_router.include_router(tool_runtime.router, prefix="/projects/{project_id}", tags=["Tool Runtime"])
 api_v1_router.include_router(end_users.router, prefix="/projects/{project_id}", tags=["End Users"])
+api_v1_router.include_router(connections.router, tags=["Connections"])
