@@ -35,6 +35,14 @@ TAGS_METADATA = [
         "name": "Secrets",
         "description": "Project secrets management, envelope encryption, OCC revision control, privileged reveal, and runtime resolution.",
     },
+    {
+        "name": "Providers",
+        "description": "Model provider configuration, connectivity healthchecks, dynamic model discovery, and OCC lifecycle management.",
+    },
+    {
+        "name": "Models",
+        "description": "Project model catalog, capability inspection, manual model definition, and OCC governance.",
+    },
 ]
 
 

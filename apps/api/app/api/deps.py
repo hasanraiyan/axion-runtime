@@ -27,7 +27,10 @@ from app.core.logging import logger
 from app.core.protocols.repositories import (
     ICredentialRepository,
     IProjectMemberRepository,
+    IProjectModelRepository,
+    IProjectProviderRepository,
     IProjectRepository,
+    IProjectRoutingPolicyRepository,
 )
 from app.core.security import verify_clerk_token
 from app.db.client import get_global_client, get_global_database
@@ -44,6 +47,15 @@ from app.repositories.project_member_repository import (
 from app.repositories.project_repository import (
     ProjectRepository,
     get_project_repository,
+)
+from app.repositories.project_provider_repository import (
+    get_project_provider_repository,
+)
+from app.repositories.project_model_repository import (
+    get_project_model_repository,
+)
+from app.repositories.project_routing_policy_repository import (
+    get_project_routing_policy_repository,
 )
 from app.schemas.auth import AuthenticatedActor, AuthenticatedUser
 from app.schemas.common import FilterParams, PaginationParams
@@ -70,6 +82,18 @@ from app.services.runtime_secret_resolver import (
 from app.services.secret_service import (
     ProjectSecretService,
     get_secret_service,
+)
+from app.services.provider_service import (
+    ProviderManagementService,
+    get_provider_service,
+)
+from app.services.model_catalog_service import (
+    ModelCatalogService,
+    get_model_catalog_service,
+)
+from app.services.model_routing_service import (
+    ModelRoutingService,
+    get_model_routing_service,
 )
 from app.services.user_service import UserService, get_user_service
 
@@ -844,3 +868,9 @@ RateLimiterDep = Annotated[CredentialRateLimiter, Depends(get_credential_rate_li
 ApiKeyAuthenticatorDep = Annotated[ApiKeyAuthenticator, Depends(get_api_key_authenticator)]
 ApiKeyAuthDep = Annotated[AuthenticatedActor, Depends(get_api_key_auth)]
 AuthenticatedContextDep = Annotated[AuthenticatedActor, Depends(get_authenticated_context)]
+ProviderServiceDep = Annotated[ProviderManagementService, Depends(get_provider_service)]
+ModelCatalogServiceDep = Annotated[ModelCatalogService, Depends(get_model_catalog_service)]
+ModelRoutingServiceDep = Annotated[ModelRoutingService, Depends(get_model_routing_service)]
+ProviderRepoDep = Annotated[IProjectProviderRepository, Depends(get_project_provider_repository)]
+ModelRepoDep = Annotated[IProjectModelRepository, Depends(get_project_model_repository)]
+RoutingPolicyRepoDep = Annotated[IProjectRoutingPolicyRepository, Depends(get_project_routing_policy_repository)]
