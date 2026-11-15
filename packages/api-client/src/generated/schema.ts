@@ -3260,6 +3260,11 @@ export interface components {
             end_user_access: components["schemas"]["EndUserAccess"];
             /** Last Discovery At */
             last_discovery_at: string | null;
+            /**
+             * Catalog Stale
+             * @default false
+             */
+            catalog_stale: boolean;
             /** Health */
             health: {
                 [key: string]: unknown;

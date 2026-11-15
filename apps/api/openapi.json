@@ -14142,6 +14142,11 @@
             ],
             "title": "Last Discovery At"
           },
+          "catalog_stale": {
+            "type": "boolean",
+            "title": "Catalog Stale",
+            "default": false
+          },
           "health": {
             "additionalProperties": true,
             "type": "object",
