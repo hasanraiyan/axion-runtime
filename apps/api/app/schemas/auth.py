@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import List, Literal, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from app.models.user import UserRole
 
 
@@ -25,15 +25,25 @@ class AuthenticatedUser(BaseModel):
     last_name: Optional[str] = Field(default=None, description="Last name")
     image_url: Optional[str] = Field(default=None, description="Profile avatar image URL")
     role: UserRole = Field(default=UserRole.USER, description="Assigned role: 'admin' or 'user'")
-    roles: List[str] = Field(default_factory=list, description="Assigned authorization roles")
+    roles: List[str] = Field(default_factory=list, description="Assigned authorization roles derived from DB role")
     is_active: bool = Field(default=True, description="Account active state")
     is_authenticated: bool = Field(default=True, description="Authentication state")
     created_at: Optional[datetime] = Field(default=None, description="Account creation timestamp")
     updated_at: Optional[datetime] = Field(default=None, description="Account last update timestamp")
 
+    @model_validator(mode="after")
+    def sync_roles_from_role(self) -> "AuthenticatedUser":
+        """Ensure DB role is the sole authority; roles list is always derived consistently."""
+        self.roles = [self.role.value]
+        return self
+
 
 class UpdateUserRoleRequest(BaseModel):
     role: UserRole = Field(..., description="New role to assign: 'admin' or 'user'")
+
+
+class UpdateUserStatusRequest(BaseModel):
+    is_active: bool = Field(..., description="New active state for user account")
 
 
 class AuthMeResponse(BaseModel):

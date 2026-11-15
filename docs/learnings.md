@@ -553,9 +553,49 @@ uses the local PEM key, verifying RS256 signature, expiration, clock leeway, and
 **Verification.** `pytest tests/test_auth.py -v` verifies rejection of forged unsigned tokens, tampered signatures,
 and expired tokens, and confirms valid signed tokens authenticate successfully.
 
+### 35. Hardening user authentication, privilege mutation safety rails, OCC, and lifecycle (AUTH-02 - AUTH-11)
+
+**Symptom.** Privilege changes had no audit trail; admins could demote themselves or the last active admin; role
+writes could be silently reverted by concurrent profile syncs (lost update); `is_active=False` was not enforced;
+first-user admin bootstrap had a race condition; dev tokens were weakly guarded; token claims were trusted over DB.
+
+**Root cause.**
+1. Role changes were read-modify-write without OCC or last-admin checks, logging only `logger.info`.
+2. `sync_clerk_user` called `user.save()`, replacing the entire document (including `role`).
+3. `is_active` had no enforcement in `get_current_user` or `require_role`, and no management endpoint existed.
+4. Bootstrap relied on `count_all() == 0` without a concurrency lock.
+5. In `verify_clerk_token`, role was derived from token claims (`roles = claims.get("roles")`), bypassing DB authority.
+
+**Fix.**
+- **AUTH-02 (Audit & safety rails)**: Added `UserAuditLog` Beanie model and collection; enforced safety rails in
+  `UserService.update_role`: demoting the last active administrator or self-demotion raises `ConflictError` (409);
+  role change on inactive user raises `BadRequestError` (400); every role mutation emits an immutable audit event.
+- **AUTH-03 (OCC & atomic updates)**: Added `revision` counter to `User`; replaced full-document `save()` in
+  `sync_clerk_user` with `update_profile_atomic` ($set only on profile fields, never `role`); role changes use
+  `update_role_atomic` with OCC expected role filter.
+- **AUTH-04 (is_active enforcement & endpoint)**: Enforced `is_active` in `get_current_user` and `require_role`
+  (raises `ForbiddenError("Account disabled")`); added `PUT /api/v1/auth/users/{clerk_id}/status` with self-deactivation
+  and last-admin protection.
+- **AUTH-05 (Atomic bootstrap)**: Replaced count-based bootstrap with atomic `claim_bootstrap_admin` lock on
+  `auth_bootstrap` collection, making admin bootstrap one-shot and race-free.
+- **AUTH-06 (Dev-token fail closed)**: Gated dev tokens strictly to `ENVIRONMENT in ("development", "test")`; added
+  startup lifespan assertion refusing production startup if `CLERK_SECRET_KEY` is a placeholder or `DEBUG` is true.
+- **AUTH-07, AUTH-08 (DB authority & narrow handling)**: DB is sole role authority; `verify_clerk_token` returns
+  `UserRole.USER` for Clerk claims; `deps.py` logs DB offline at warning and fails closed in production.
+- **AUTH-10 (Single source of truth for roles)**: Added `@model_validator` on `AuthenticatedUser` deriving `roles`
+  consistently from `[self.role.value]`.
+- **AUTH-11 (Hygiene)**: Added `Cache-Control: no-store` to `/auth/me`; validated `clerk_id` path regex pattern
+  `^user_[A-Za-z0-9]+$`; documented 400/409/422/429/503 responses; removed default `None` from `_admin: CurrentAdmin`.
+
+**File references.** `apps/api/app/models/user.py`, `apps/api/app/repositories/user_repository.py`,
+`apps/api/app/services/user_service.py`, `apps/api/app/api/v1/endpoints/auth.py`, `apps/api/app/api/deps.py`,
+`apps/api/app/core/security.py`, `apps/api/app/schemas/auth.py`, `apps/api/app/main.py`, `apps/api/tests/test_auth.py`.
+
+**Verification.** `pytest tests/test_auth.py tests/test_db.py -v` (29 passed); full suite 771 passed.
+
 ---
 
-## Bugs found and fixed (commit `5ea80d9`)
+## Bugs found and fixed (commit `5ea80d9` and current)
 
 | Area                                        | Fix                                                                                                                                     |
 | ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
@@ -571,16 +611,14 @@ and expired tokens, and confirms valid signed tokens authenticate successfully.
 | Slug missing from project search            | `slug` added to the case-insensitive regex `$or`                                                                                        |
 | Search regex injection                      | all search terms go through `re.escape`                                                                                                 |
 | DB outage reported as 404                   | `get_by_id` only swallows `ValueError`                                                                                                  |
-
-Test suite at time of writing: **137 passed** (`pytest -q` in `apps/api`).
-
-Development tooling fixed separately:
-
-| Area                            | Fix                                                                                    |
-| ------------------------------- | -------------------------------------------------------------------------------------- |
-| Dev reload broken on Windows    | `apps/api/dev.py` supervises uvicorn with `watchfiles` + `terminate()` (see lesson 11) |
-| Reload churn from non-app files | watch root reduced from all of `apps/api` to `apps/api/app`                            |
-| Duplicate `e2e_secrets_test.py` | single canonical copy at `apps/api/tests/e2e_secrets_test.py` (outside the watch root) |
+| Clerk session forgery (AUTH-01)             | `verify_token_async` via Clerk backend SDK with JWKS caching and key rotation                                                           |
+| Privilege escalation & safety rails (AUTH-02)| `UserAuditLog` immutable audit trail; last-admin & self-demotion guards                                                                |
+| Role lost update (AUTH-03)                  | atomic profile update without touching role; OCC revision filter on role updates                                                        |
+| Inactive account access (AUTH-04)           | `is_active` enforced in `get_current_user` and `require_role`; admin status update endpoint added                                       |
+| Racy first-user admin bootstrap (AUTH-05)   | atomic `auth_bootstrap` collection lock; one-shot and race-free                                                                         |
+| Loose dev tokens in production (AUTH-06)    | fail-closed startup validation; dev tokens strictly gated to non-production                                                             |
+| Role claim tampering (AUTH-07, AUTH-10)     | DB is sole role authority; `roles` derived consistently from `role`                                                                     |
+| PII cache & input hygiene (AUTH-11)         | `Cache-Control: no-store` on `/me`; path parameter regex validation; DI required admin                                                  |
 
 ---
 
@@ -588,32 +626,20 @@ Development tooling fixed separately:
 
 Ordered by risk. These are candidates for the next hardening pass.
 
-1. **Deactivated users can still authenticate.** `app/api/deps.py::get_current_user`
-   wraps the user sync in a broad `except Exception` and then returns the token identity.
-   If the database lookup fails — or the user is `is_active=False` — the request still
-   succeeds with the JWT's claims, and DB role changes are not enforced.
-2. **First-user ADMIN race.** `UserService.sync_clerk_user` counts users and then inserts;
-   two concurrent first requests can both become ADMIN. A unique `email` collision during
-   insert can also make the sync fail (currently swallowed by the point above).
-3. **No transactional boundaries.** `create_project` (compensated only for the member
+1. **No transactional boundaries.** `create_project` (compensated only for the member
    insert), `purge_project`, and role/ownership transfer are multiple independent writes.
    A crash mid-way leaves partial data.
-4. **Purge is not idempotent/recoverable.** It is a `SOFT_DELETED → PURGED` transition plus
+2. **Purge is not idempotent/recoverable.** It is a `SOFT_DELETED → PURGED` transition plus
    cascades; audit logs stay in `project_audit_logs` with no archival policy, and a failure
    after the status update leaves members/secrets behind.
-5. **Blocking Clerk SDK call in async code.** `app/core/security.py` calls
-   `_clerk_client.users.get(...)` (synchronous HTTP) inside `async def verify_clerk_token`,
-   blocking the event loop. Needs `run_in_threadpool`/`anyio.to_thread` or an async client.
-6. **JWT audience is not verified** (`options={"verify_aud": False}` in
-   `app/core/security.py`). Configure the Clerk audience and verify it in production.
-7. **Rate limiter weaknesses.** `app/middleware/rate_limit.py` keeps per-IP timestamps in
+3. **Rate limiter weaknesses.** `app/middleware/rate_limit.py` keeps per-IP timestamps in
    memory forever (no eviction of idle keys), trusts `request.client.host` only (ignores
    `X-Forwarded-For`/proxy headers), and is per-process so it does not enforce limits across
    workers. Move to Redis or a shared store before scaling out.
-8. **Slug generation TOCTOU** (`_resolve_unique_slug`): concurrent creates can pick the
+4. **Slug generation TOCTOU** (`_resolve_unique_slug`): concurrent creates can pick the
    same slug; the database 409 is correct but the client sees a hard failure instead of a
    retry. Consider retrying with a new suffix on `DuplicateKeyError`.
-9. **Stale `BaseDocument` collection in the local dev database.** It still contains one
+5. **Stale `BaseDocument` collection in the local dev database.** It still contains one
    duplicate `User` document written before the `is_root` fix. The same `clerk_id` exists
    in `users`, so the collection can be dropped after confirming nothing else is needed.
 

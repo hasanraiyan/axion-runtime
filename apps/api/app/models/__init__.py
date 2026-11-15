@@ -1,6 +1,6 @@
 from typing import List, Type
 from beanie import Document
-from app.models.user import User, UserRole
+from app.models.user import User, UserRole, UserAuditLog, UserAuditAction
 from app.models.project import (
     Project,
     ProjectMember,
@@ -47,6 +47,7 @@ from app.models.connection import (  # noqa: E402
 # Registry of all Beanie document models for initialization.
 DOCUMENT_MODELS: List[Type[Document]] = [
     User,
+    UserAuditLog,
     Project,
     ProjectMember,
     ProjectAuditLog,
@@ -71,6 +72,8 @@ DOCUMENT_MODELS: List[Type[Document]] = [
 __all__ = [
     "User",
     "UserRole",
+    "UserAuditLog",
+    "UserAuditAction",
     "Project",
     "ProjectMember",
     "ProjectAuditLog",

@@ -90,8 +90,6 @@ async def verify_clerk_token(token: str) -> AuthenticatedUser:
     first_name = claims.get("first_name")
     last_name = claims.get("last_name")
     image_url = claims.get("image_url")
-    roles = claims.get("roles", ["user"])
-    is_admin = "admin" in roles
 
     # Optional profile metadata enrichment from Clerk API if not included in JWT claims
     if not email and _clerk_client is not None:
@@ -108,6 +106,7 @@ async def verify_clerk_token(token: str) -> AuthenticatedUser:
         except Exception as exc:
             logger.debug(f"Could not enrich user profile from Clerk API: {exc}")
 
+    # DB is the sole role authority (AUTH-07, AUTH-10). Token claims are identity only.
     return AuthenticatedUser(
         id=user_id,
         clerk_id=user_id,
@@ -115,6 +114,6 @@ async def verify_clerk_token(token: str) -> AuthenticatedUser:
         first_name=first_name,
         last_name=last_name,
         image_url=image_url,
-        role=UserRole.ADMIN if is_admin else UserRole.USER,
-        roles=roles,
+        role=UserRole.USER,
+        roles=["user"],
     )

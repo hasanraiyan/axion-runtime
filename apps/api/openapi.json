@@ -78,6 +78,36 @@
                 }
               }
             }
+          },
+          "403": {
+            "description": "Account is disabled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database service unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -107,6 +137,7 @@
             "required": true,
             "schema": {
               "type": "string",
+              "pattern": "^user_[A-Za-z0-9]+$",
               "description": "Target Clerk User ID",
               "title": "Clerk Id"
             },
@@ -134,6 +165,16 @@
               }
             }
           },
+          "400": {
+            "description": "Target user is inactive or request is invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
           "401": {
             "description": "Missing or invalid authorization token",
             "content": {
@@ -145,7 +186,7 @@
             }
           },
           "403": {
-            "description": "Admin privileges required",
+            "description": "Admin privileges required or account disabled",
             "content": {
               "application/json": {
                 "schema": {
@@ -164,12 +205,153 @@
               }
             }
           },
-          "422": {
-            "description": "Validation Error",
+          "409": {
+            "description": "Cannot demote self or the last remaining administrator",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Malformed role value or path parameter",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/users/{clerk_id}/status": {
+      "put": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Update User Active Status",
+        "description": "Activate or deactivate a user account. Requires admin role.",
+        "operationId": "update_user_status",
+        "security": [
+          {
+            "ClerkSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "clerk_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^user_[A-Za-z0-9]+$",
+              "description": "Target Clerk User ID",
+              "title": "Clerk Id"
+            },
+            "description": "Target Clerk User ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserStatusRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_AuthenticatedUser_"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid status request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authorization token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Admin privileges required or account disabled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Target user not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Cannot deactivate self or the last remaining administrator",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Malformed status value or path parameter",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
                 }
               }
             }
@@ -12677,7 +12859,7 @@
             },
             "type": "array",
             "title": "Roles",
-            "description": "Assigned authorization roles"
+            "description": "Assigned authorization roles derived from DB role"
           },
           "is_active": {
             "type": "boolean",
@@ -18577,6 +18759,20 @@
           "role"
         ],
         "title": "UpdateUserRoleRequest"
+      },
+      "UpdateUserStatusRequest": {
+        "properties": {
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active",
+            "description": "New active state for user account"
+          }
+        },
+        "type": "object",
+        "required": [
+          "is_active"
+        ],
+        "title": "UpdateUserStatusRequest"
       },
       "UserRole": {
         "type": "string",

@@ -84,6 +84,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/users/{clerk_id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Update User Active Status
+         * @description Activate or deactivate a user account. Requires admin role.
+         */
+        put: operations["update_user_status"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/projects": {
         parameters: {
             query?: never;
@@ -2596,7 +2616,7 @@ export interface components {
             role: components["schemas"]["UserRole"];
             /**
              * Roles
-             * @description Assigned authorization roles
+             * @description Assigned authorization roles derived from DB role
              */
             roles?: string[];
             /**
@@ -4999,6 +5019,14 @@ export interface components {
             /** @description New role to assign: 'admin' or 'user' */
             role: components["schemas"]["UserRole"];
         };
+        /** UpdateUserStatusRequest */
+        UpdateUserStatusRequest: {
+            /**
+             * Is Active
+             * @description New active state for user account
+             */
+            is_active: boolean;
+        };
         /**
          * UserRole
          * @enum {string}
@@ -5093,6 +5121,33 @@ export interface operations {
                     "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
+            /** @description Account is disabled */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Rate limit exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Database service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
         };
     };
     update_user_role: {
@@ -5120,6 +5175,15 @@ export interface operations {
                     "application/json": components["schemas"]["ApiResponse_AuthenticatedUser_"];
                 };
             };
+            /** @description Target user is inactive or request is invalid */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
             /** @description Missing or invalid authorization token */
             401: {
                 headers: {
@@ -5129,7 +5193,7 @@ export interface operations {
                     "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
-            /** @description Admin privileges required */
+            /** @description Admin privileges required or account disabled */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -5147,13 +5211,121 @@ export interface operations {
                     "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
-            /** @description Validation Error */
+            /** @description Cannot demote self or the last remaining administrator */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Malformed role value or path parameter */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Rate limit exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    update_user_status: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Target Clerk User ID */
+                clerk_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateUserStatusRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_AuthenticatedUser_"];
+                };
+            };
+            /** @description Invalid status request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Missing or invalid authorization token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Admin privileges required or account disabled */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Target user not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Cannot deactivate self or the last remaining administrator */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Malformed status value or path parameter */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Rate limit exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };

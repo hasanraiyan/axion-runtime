@@ -8,6 +8,7 @@ from fastapi.security import APIKeyHeader, HTTPAuthorizationCredentials, HTTPBea
 from pymongo import AsyncMongoClient
 from pymongo.asynchronous.database import AsyncDatabase
 
+from app.core.config import settings
 from app.core.exceptions import (
     CredentialExpiredError,
     CredentialRevokedError,
@@ -174,6 +175,8 @@ async def get_current_user(
             image_url=clerk_user.image_url,
         )
         if db_user is not None:
+            if not db_user.is_active:
+                raise ForbiddenError("Account disabled")
             return AuthenticatedUser(
                 id=str(db_user.id),
                 clerk_id=db_user.clerk_id,
@@ -188,8 +191,15 @@ async def get_current_user(
                 created_at=db_user.created_at,
                 updated_at=db_user.updated_at,
             )
+    except ForbiddenError:
+        raise
     except Exception as exc:
-        logger.debug(f"User DB sync bypassed (DB offline or uninitialized): {exc}")
+        logger.warning(f"User DB sync unavailable (offline or degraded): {exc}")
+        if settings.ENVIRONMENT == "production":
+            raise ServiceUnavailableError("User database service unavailable")
+
+    if not clerk_user.is_active:
+        raise ForbiddenError("Account disabled")
 
     return clerk_user
 
@@ -269,6 +279,8 @@ def require_role(required_role: UserRole):
     async def role_checker(
         current_user: Annotated[AuthenticatedUser, Depends(get_current_user)],
     ) -> AuthenticatedUser:
+        if not current_user.is_active:
+            raise ForbiddenError("Account disabled")
         if current_user.role != required_role:
             raise ForbiddenError(
                 f"Insufficient permissions: requires '{required_role.value}' role"

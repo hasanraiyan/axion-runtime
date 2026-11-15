@@ -114,7 +114,13 @@ async def test_user_repository_and_service_with_mock():
         email="mock@example.com",
         role=UserRole.USER,
     )
+    admin_user = User(
+        clerk_id="user_mocked",
+        email="mock@example.com",
+        role=UserRole.ADMIN,
+    )
     mock_repo.get_by_clerk_id.return_value = existing_user
+    mock_repo.update_role_atomic.return_value = admin_user
     mock_repo.is_db_ready.return_value = True
 
     service = UserService(user_repo=mock_repo)
@@ -122,4 +128,8 @@ async def test_user_repository_and_service_with_mock():
 
     assert updated is not None
     assert updated.role == UserRole.ADMIN
-    mock_repo.update.assert_awaited_once_with(existing_user)
+    mock_repo.update_role_atomic.assert_awaited_once_with(
+        clerk_id="user_mocked",
+        new_role=UserRole.ADMIN,
+        expected_role=UserRole.USER,
+    )

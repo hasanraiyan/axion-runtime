@@ -8,7 +8,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from app.api.metrics import router as metrics_router
 from app.api.v1.router import api_v1_router
 from app.core.config import settings
-from app.core.exceptions import AppException
+from app.core.exceptions import AppException, ConfigurationError
 from app.core.logging import logger, setup_logging
 from app.db.client import close_db, init_db
 from app.middleware.logging import RequestLoggingMiddleware
@@ -55,6 +55,16 @@ async def lifespan(app: FastAPI):
     """
     setup_logging(debug=settings.DEBUG)
     logger.info(f"Starting {settings.PROJECT_NAME} v{settings.VERSION} [{settings.ENVIRONMENT}]")
+
+    # Startup assertions: fail closed in production (AUTH-06)
+    if settings.ENVIRONMENT == "production":
+        if not settings.CLERK_SECRET_KEY or settings.CLERK_SECRET_KEY.startswith("sk_test_placeholder"):
+            raise ConfigurationError(
+                "CLERK_SECRET_KEY must be configured with a valid non-placeholder secret key in production."
+            )
+        if settings.DEBUG:
+            raise ConfigurationError("DEBUG mode cannot be enabled in production environment.")
+
     await init_db(app)
     start_background_services()
     yield
