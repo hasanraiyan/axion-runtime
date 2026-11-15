@@ -58,4 +58,8 @@ Thumbs.db
 # OpenAPI artifacts cache
 .openapi-cache/
 
+# Upstream debug artifacts (captured payloads, throwaway probes)
+apps/api/debug/
+apps/api/sandbox/out/
+
 .ruff_cache/

@@ -41,20 +41,20 @@ class ProjectModel(BaseDocument):
     model_type: ModelType = Field(
         default=ModelType.CHAT_COMPLETION, description="Model type / modality"
     )
-    supports_streaming: bool = Field(
-        default=True, description="Flag indicating support for SSE token streaming"
+    supports_streaming: Optional[bool] = Field(
+        default=None, description="Flag indicating support for SSE token streaming (None = not reported by upstream)"
     )
-    supports_tools: bool = Field(
-        default=False, description="Flag indicating native tool/function calling support"
+    supports_tools: Optional[bool] = Field(
+        default=None, description="Flag indicating native tool/function calling support (None = not reported)"
     )
-    supports_vision: bool = Field(
-        default=False, description="Flag indicating multimodal vision (image input) support"
+    supports_vision: Optional[bool] = Field(
+        default=None, description="Flag indicating multimodal vision (image input) support (None = not reported)"
     )
-    supports_json_mode: bool = Field(
-        default=False, description="Flag indicating enforced JSON schema / structured output support"
+    supports_json_mode: Optional[bool] = Field(
+        default=None, description="Flag indicating enforced JSON schema / structured output support (None = not reported)"
     )
-    supports_reasoning: bool = Field(
-        default=False, description="Flag indicating extended reasoning / chain-of-thought token extraction"
+    supports_reasoning: Optional[bool] = Field(
+        default=None, description="Flag indicating extended reasoning / chain-of-thought token extraction (None = not reported)"
     )
     max_input_tokens: Optional[int] = Field(
         default=None, gt=0, description="Maximum allowable prompt / context window token count"
@@ -62,8 +62,8 @@ class ProjectModel(BaseDocument):
     max_output_tokens: Optional[int] = Field(
         default=None, gt=0, description="Maximum allowable completion generation token count"
     )
-    default_temperature: float = Field(
-        default=0.7, ge=0.0, le=2.0, description="Recommended default generation temperature"
+    default_temperature: Optional[float] = Field(
+        default=None, ge=0.0, le=2.0, description="Recommended default generation temperature (None = not reported)"
     )
     input_cost_per_million: Optional[float] = Field(
         default=None, ge=0.0, description="Estimated USD cost per 1,000,000 input prompt tokens"

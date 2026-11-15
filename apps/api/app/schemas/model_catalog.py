@@ -11,14 +11,16 @@ class ModelCreateRequest(BaseModel):
     display_name: str = Field(..., min_length=1, max_length=100, description="Human-friendly model name")
     description: Optional[str] = Field(default=None, max_length=500, description="Notes on model specialization")
     model_type: ModelType = Field(default=ModelType.CHAT_COMPLETION, description="Model type / modality")
-    supports_streaming: bool = Field(default=True, description="SSE streaming support")
-    supports_tools: bool = Field(default=False, description="Function/tool calling support")
-    supports_vision: bool = Field(default=False, description="Multimodal vision input support")
-    supports_json_mode: bool = Field(default=False, description="Structured JSON output support")
-    supports_reasoning: bool = Field(default=False, description="Extended reasoning / CoT support")
+    supports_streaming: Optional[bool] = Field(default=None, description="SSE streaming support (omit when unknown)")
+    supports_tools: Optional[bool] = Field(default=None, description="Function/tool calling support (omit when unknown)")
+    supports_vision: Optional[bool] = Field(default=None, description="Multimodal vision input support (omit when unknown)")
+    supports_json_mode: Optional[bool] = Field(default=None, description="Structured JSON output support (omit when unknown)")
+    supports_reasoning: Optional[bool] = Field(default=None, description="Extended reasoning / CoT support (omit when unknown)")
     max_input_tokens: Optional[int] = Field(default=None, gt=0, description="Context window token limit")
     max_output_tokens: Optional[int] = Field(default=None, gt=0, description="Maximum generation token limit")
-    default_temperature: float = Field(default=0.7, ge=0.0, le=2.0, description="Default generation temperature")
+    default_temperature: Optional[float] = Field(
+        default=None, ge=0.0, le=2.0, description="Default generation temperature (omit when unknown)"
+    )
     input_cost_per_million: Optional[float] = Field(default=None, ge=0.0, description="USD cost per 1M prompt tokens")
     output_cost_per_million: Optional[float] = Field(default=None, ge=0.0, description="USD cost per 1M completion tokens")
     is_enabled: bool = Field(default=True, description="Toggle whether model is selectable by agents")
@@ -54,14 +56,14 @@ class ModelResponse(BaseModel):
     display_name: str
     description: Optional[str] = None
     model_type: ModelType
-    supports_streaming: bool
-    supports_tools: bool
-    supports_vision: bool
-    supports_json_mode: bool
-    supports_reasoning: bool
+    supports_streaming: Optional[bool] = None
+    supports_tools: Optional[bool] = None
+    supports_vision: Optional[bool] = None
+    supports_json_mode: Optional[bool] = None
+    supports_reasoning: Optional[bool] = None
     max_input_tokens: Optional[int] = None
     max_output_tokens: Optional[int] = None
-    default_temperature: float
+    default_temperature: Optional[float] = None
     input_cost_per_million: Optional[float] = None
     output_cost_per_million: Optional[float] = None
     is_enabled: bool

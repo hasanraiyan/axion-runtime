@@ -416,6 +416,258 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/projects/{project_id}/credentials": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Project Credentials
+         * @description Retrieve a paginated list of credential metadata for a project. Raw keys are never returned.
+         */
+        get: operations["list_credentials"];
+        put?: never;
+        /**
+         * Create Project Credential
+         * @description Generate a new project API credential. Returns plaintext raw_key strictly once. Zero plaintext is stored in the database.
+         */
+        post: operations["create_credential"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/credentials/{credential_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Credential Metadata
+         * @description Retrieve metadata for a single project credential. Raw keys are never returned.
+         */
+        get: operations["get_credential"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete or Purge Credential
+         * @description Soft-delete (default) or permanently purge (purge=true) a project credential.
+         */
+        delete: operations["delete_credential"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/credentials/{credential_id}/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Revoke Credential
+         * @description Immediately revoke an active credential. Subsequent API requests using this key will be rejected.
+         */
+        post: operations["revoke_credential"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/providers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Project Providers
+         * @description Retrieve a paginated list of model provider configurations and health status for a project. Zero plaintext secrets are returned.
+         */
+        get: operations["list_providers"];
+        put?: never;
+        /**
+         * Register Provider Connection
+         * @description Register a new external AI model provider connection bound to a project secret (FR-01, FR-02). Runs live healthcheck test and initializes OCC revision.
+         */
+        post: operations["create_provider"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/providers/inspect-models": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Live Inspect Upstream Provider Models
+         * @description Live query upstream provider using in-flight API key or secret_id to preview available models without saving (FR-13 Mode 1).
+         */
+        post: operations["inspect_upstream_models"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/providers/{provider_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Provider Configuration
+         * @description Inspect single provider configuration metadata, connectivity parameters, and latest health status.
+         */
+        get: operations["get_provider"];
+        put?: never;
+        post?: never;
+        /**
+         * Soft-Delete Provider
+         * @description Soft-delete a provider and cascade soft-delete all child models (FR-08). Immediately excluded from listings and routing.
+         */
+        delete: operations["delete_provider"];
+        options?: never;
+        head?: never;
+        /**
+         * Update Provider Configuration
+         * @description Update provider metadata, base_url, headers, timeout, or default toggle with OCC revision verification (FR-08).
+         */
+        patch: operations["update_provider"];
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/providers/{provider_id}/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Test Provider Connection
+         * @description Trigger on-demand live connectivity test and latency measurement for an existing provider (FR-03).
+         */
+        post: operations["test_provider_connection"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/providers/{provider_id}/discover": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Discover and Register Upstream Models
+         * @description Query upstream provider API and automatically persist discovered models into project catalog (FR-04).
+         */
+        post: operations["discover_provider_models"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/providers/{provider_id}/live-models": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Upstream Live Models
+         * @description Live query upstream provider using saved provider credentials to view current upstream model catalog (FR-13 Mode 2).
+         */
+        get: operations["get_provider_live_models"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/models": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Models in Catalog
+         * @description Retrieve a paginated list of registered models filtered by capability flags (tools, vision, JSON mode), provider, or modality (FR-06).
+         */
+        get: operations["list_models"];
+        put?: never;
+        /**
+         * Register Model in Catalog
+         * @description Manually register a model under an existing active provider with capability flags and token limits (FR-05).
+         */
+        post: operations["create_model"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/models/{model_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Model Capabilities
+         * @description Inspect single model definition, capabilities, context limits, and token pricing (FR-06).
+         */
+        get: operations["get_model"];
+        put?: never;
+        post?: never;
+        /**
+         * Soft-Delete Model
+         * @description Soft-delete a model from catalog (FR-08). Immediately excluded from listings and routing.
+         */
+        delete: operations["delete_model"];
+        options?: never;
+        head?: never;
+        /**
+         * Update Model Definition
+         * @description Update model capabilities, limits, pricing, or enabled toggle with OCC revision verification (FR-08).
+         */
+        patch: operations["update_model"];
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -483,6 +735,65 @@ export interface components {
              */
             message: string;
         };
+        /** ApiResponse[CredentialCreateResponse] */
+        ApiResponse_CredentialCreateResponse_: {
+            /**
+             * Success
+             * @description Always true for successful responses
+             * @default true
+             * @constant
+             */
+            success: true;
+            /** @description Response payload */
+            data: components["schemas"]["CredentialCreateResponse"];
+            /**
+             * Message
+             * @description Status message
+             * @default Operation completed successfully
+             */
+            message: string;
+        };
+        /** ApiResponse[CredentialResponse] */
+        ApiResponse_CredentialResponse_: {
+            /**
+             * Success
+             * @description Always true for successful responses
+             * @default true
+             * @constant
+             */
+            success: true;
+            /** @description Response payload */
+            data: components["schemas"]["CredentialResponse"];
+            /**
+             * Message
+             * @description Status message
+             * @default Operation completed successfully
+             */
+            message: string;
+        };
+        /** ApiResponse[Dict[str, Any]] */
+        ApiResponse_Dict_str__Any__: {
+            /**
+             * Success
+             * @description Always true for successful responses
+             * @default true
+             * @constant
+             */
+            success: true;
+            /**
+             * Data
+             * @description Response payload
+             */
+            data: {
+                [key: string]: unknown;
+            };
+            /**
+             * Message
+             * @description Status message
+             * @default Operation completed successfully
+             */
+            message: string;
+        };
         /** ApiResponse[Dict[str, str]] */
         ApiResponse_Dict_str__str__: {
             /**
@@ -542,6 +853,24 @@ export interface components {
              */
             message: string;
         };
+        /** ApiResponse[ModelResponse] */
+        ApiResponse_ModelResponse_: {
+            /**
+             * Success
+             * @description Always true for successful responses
+             * @default true
+             * @constant
+             */
+            success: true;
+            /** @description Response payload */
+            data: components["schemas"]["ModelResponse"];
+            /**
+             * Message
+             * @description Status message
+             * @default Operation completed successfully
+             */
+            message: string;
+        };
         /** ApiResponse[NoneType] */
         ApiResponse_NoneType_: {
             /**
@@ -574,6 +903,78 @@ export interface components {
             success: true;
             /** @description Response payload */
             data: components["schemas"]["ProjectResponse"];
+            /**
+             * Message
+             * @description Status message
+             * @default Operation completed successfully
+             */
+            message: string;
+        };
+        /** ApiResponse[ProviderDiscoverySummaryResponse] */
+        ApiResponse_ProviderDiscoverySummaryResponse_: {
+            /**
+             * Success
+             * @description Always true for successful responses
+             * @default true
+             * @constant
+             */
+            success: true;
+            /** @description Response payload */
+            data: components["schemas"]["ProviderDiscoverySummaryResponse"];
+            /**
+             * Message
+             * @description Status message
+             * @default Operation completed successfully
+             */
+            message: string;
+        };
+        /** ApiResponse[ProviderHealthcheckResponse] */
+        ApiResponse_ProviderHealthcheckResponse_: {
+            /**
+             * Success
+             * @description Always true for successful responses
+             * @default true
+             * @constant
+             */
+            success: true;
+            /** @description Response payload */
+            data: components["schemas"]["ProviderHealthcheckResponse"];
+            /**
+             * Message
+             * @description Status message
+             * @default Operation completed successfully
+             */
+            message: string;
+        };
+        /** ApiResponse[ProviderInspectResponse] */
+        ApiResponse_ProviderInspectResponse_: {
+            /**
+             * Success
+             * @description Always true for successful responses
+             * @default true
+             * @constant
+             */
+            success: true;
+            /** @description Response payload */
+            data: components["schemas"]["ProviderInspectResponse"];
+            /**
+             * Message
+             * @description Status message
+             * @default Operation completed successfully
+             */
+            message: string;
+        };
+        /** ApiResponse[ProviderResponse] */
+        ApiResponse_ProviderResponse_: {
+            /**
+             * Success
+             * @description Always true for successful responses
+             * @default true
+             * @constant
+             */
+            success: true;
+            /** @description Response payload */
+            data: components["schemas"]["ProviderResponse"];
             /**
              * Message
              * @description Status message
@@ -722,6 +1123,328 @@ export interface components {
              */
             updated_at?: string | null;
         };
+        /** CredentialCreateRequest */
+        CredentialCreateRequest: {
+            /**
+             * Name
+             * @description Unique display name for the credential
+             */
+            name: string;
+            /**
+             * Description
+             * @description Optional human-readable notes
+             */
+            description?: string | null;
+            /**
+             * Environment
+             * @description Target tier ('production' uses 'axion_live_', others use 'axion_test_')
+             * @default production
+             */
+            environment: string;
+            /**
+             * Scopes
+             * @description Explicit list of capability scopes (e.g. ['projects:read', 'runs:write'])
+             */
+            scopes: string[];
+            /**
+             * Expires At
+             * @description Optional expiration timestamp (must be in the future)
+             */
+            expires_at?: string | null;
+            /**
+             * Rate Limit Rpm
+             * @description Custom requests-per-minute rate limit
+             */
+            rate_limit_rpm?: number | null;
+        };
+        /**
+         * CredentialCreateResponse
+         * @description Returned ONLY upon initial creation.
+         *     raw_key is presented strictly once and cannot be retrieved again.
+         */
+        CredentialCreateResponse: {
+            /**
+             * Id
+             * @description Credential unique identifier
+             */
+            id: string;
+            /**
+             * Project Id
+             * @description Associated project ID
+             */
+            project_id: string;
+            /**
+             * Name
+             * @description Display name
+             */
+            name: string;
+            /**
+             * Description
+             * @description Human-readable notes
+             */
+            description?: string | null;
+            /**
+             * Environment
+             * @description Environment tier
+             */
+            environment: string;
+            /**
+             * Key Prefix
+             * @description Key prefix (e.g. 'axion_live_')
+             */
+            key_prefix: string;
+            /**
+             * Masked Key
+             * @description Masked preview hint
+             */
+            masked_key: string;
+            /** @description Lifecycle status */
+            status: components["schemas"]["CredentialStatus"];
+            /**
+             * Scopes
+             * @description Granted scopes
+             */
+            scopes: string[];
+            /**
+             * Rate Limit Rpm
+             * @description Requests-per-minute limit
+             */
+            rate_limit_rpm?: number | null;
+            /**
+             * Revision
+             * @description OCC revision counter
+             */
+            revision: number;
+            /**
+             * Expires At
+             * @description Expiration timestamp
+             */
+            expires_at?: string | null;
+            /**
+             * Revoked At
+             * @description Revocation timestamp
+             */
+            revoked_at?: string | null;
+            /**
+             * Last Used At
+             * @description Most recent request timestamp
+             */
+            last_used_at?: string | null;
+            /**
+             * Total Uses
+             * @description Accurate invocation count
+             * @default 0
+             */
+            total_uses: number;
+            /**
+             * Created By
+             * @description Creator user ID
+             */
+            created_by: string;
+            /**
+             * Created At
+             * Format: date-time
+             * @description Creation timestamp
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             * @description Last update timestamp
+             */
+            updated_at: string;
+            /**
+             * Raw Key
+             * @description Plaintext API key. Store securely; this cannot be retrieved again.
+             */
+            raw_key: string;
+        };
+        /**
+         * CredentialResponse
+         * @description Metadata response (Never includes raw_key).
+         */
+        CredentialResponse: {
+            /**
+             * Id
+             * @description Credential unique identifier
+             */
+            id: string;
+            /**
+             * Project Id
+             * @description Associated project ID
+             */
+            project_id: string;
+            /**
+             * Name
+             * @description Display name
+             */
+            name: string;
+            /**
+             * Description
+             * @description Human-readable notes
+             */
+            description?: string | null;
+            /**
+             * Environment
+             * @description Environment tier
+             */
+            environment: string;
+            /**
+             * Key Prefix
+             * @description Key prefix (e.g. 'axion_live_')
+             */
+            key_prefix: string;
+            /**
+             * Masked Key
+             * @description Masked preview hint
+             */
+            masked_key: string;
+            /** @description Lifecycle status */
+            status: components["schemas"]["CredentialStatus"];
+            /**
+             * Scopes
+             * @description Granted scopes
+             */
+            scopes: string[];
+            /**
+             * Rate Limit Rpm
+             * @description Requests-per-minute limit
+             */
+            rate_limit_rpm?: number | null;
+            /**
+             * Revision
+             * @description OCC revision counter
+             */
+            revision: number;
+            /**
+             * Expires At
+             * @description Expiration timestamp
+             */
+            expires_at?: string | null;
+            /**
+             * Revoked At
+             * @description Revocation timestamp
+             */
+            revoked_at?: string | null;
+            /**
+             * Last Used At
+             * @description Most recent request timestamp
+             */
+            last_used_at?: string | null;
+            /**
+             * Total Uses
+             * @description Accurate invocation count
+             * @default 0
+             */
+            total_uses: number;
+            /**
+             * Created By
+             * @description Creator user ID
+             */
+            created_by: string;
+            /**
+             * Created At
+             * Format: date-time
+             * @description Creation timestamp
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             * @description Last update timestamp
+             */
+            updated_at: string;
+        };
+        /** CredentialRevokeRequest */
+        CredentialRevokeRequest: {
+            /**
+             * Expected Revision
+             * @description Expected OCC revision counter
+             */
+            expected_revision: number;
+            /**
+             * Reason
+             * @description Optional reason for revocation
+             */
+            reason?: string | null;
+        };
+        /**
+         * CredentialStatus
+         * @enum {string}
+         */
+        CredentialStatus: "active" | "revoked" | "expired";
+        /** DiscoveredModelInfo */
+        DiscoveredModelInfo: {
+            /**
+             * Model Id
+             * @description Upstream model identifier
+             */
+            model_id: string;
+            /**
+             * Display Name
+             * @description Human-friendly model name
+             */
+            display_name: string;
+            /** Description */
+            description?: string | null;
+            /**
+             * Owned By
+             * @description Owner organization or user returned by upstream
+             */
+            owned_by?: string | null;
+            /**
+             * Created At Upstream
+             * @description Unix timestamp of model creation upstream
+             */
+            created_at_upstream?: number | null;
+            /** @description Model type if reported upstream */
+            model_type?: components["schemas"]["ModelType"] | null;
+            /**
+             * Supports Streaming
+             * @description SSE streaming support if reported upstream
+             */
+            supports_streaming?: boolean | null;
+            /**
+             * Supports Tools
+             * @description Function/tool calling support if reported upstream
+             */
+            supports_tools?: boolean | null;
+            /**
+             * Supports Vision
+             * @description Multimodal vision input if reported upstream
+             */
+            supports_vision?: boolean | null;
+            /**
+             * Supports Json Mode
+             * @description Structured JSON output if reported upstream
+             */
+            supports_json_mode?: boolean | null;
+            /**
+             * Supports Reasoning
+             * @description Extended reasoning if reported upstream
+             */
+            supports_reasoning?: boolean | null;
+            /**
+             * Max Input Tokens
+             * @description Upstream context limit if reported
+             */
+            max_input_tokens?: number | null;
+            /**
+             * Max Output Tokens
+             * @description Upstream output limit if reported
+             */
+            max_output_tokens?: number | null;
+            /**
+             * Default Temperature
+             * @description Recommended generation temperature if reported
+             */
+            default_temperature?: number | null;
+            /**
+             * Max Temperature
+             * @description Upper bound of the upstream sampling temperature range if reported
+             */
+            max_temperature?: number | null;
+        };
         /** ErrorDetail */
         ErrorDetail: {
             /**
@@ -779,6 +1502,12 @@ export interface components {
              */
             database?: string | null;
         };
+        /**
+         * HealthcheckStatus
+         * @description Healthcheck connectivity outcome (SRS-06 Section 4.1 & 5 FR-03).
+         * @enum {string}
+         */
+        HealthcheckStatus: "healthy" | "unreachable" | "auth_failed" | "rate_limited";
         /** MemberResponse */
         MemberResponse: {
             /** Id */
@@ -802,6 +1531,193 @@ export interface components {
             /** Last Name */
             last_name?: string | null;
         };
+        /** ModelCreateRequest */
+        ModelCreateRequest: {
+            /**
+             * Provider Id
+             * @description Parent provider document ID
+             */
+            provider_id: string;
+            /**
+             * Model Id
+             * @description Upstream model identifier
+             */
+            model_id: string;
+            /**
+             * Display Name
+             * @description Human-friendly model name
+             */
+            display_name: string;
+            /**
+             * Description
+             * @description Notes on model specialization
+             */
+            description?: string | null;
+            /**
+             * @description Model type / modality
+             * @default chat_completion
+             */
+            model_type: components["schemas"]["ModelType"];
+            /**
+             * Supports Streaming
+             * @description SSE streaming support (omit when unknown)
+             */
+            supports_streaming?: boolean | null;
+            /**
+             * Supports Tools
+             * @description Function/tool calling support (omit when unknown)
+             */
+            supports_tools?: boolean | null;
+            /**
+             * Supports Vision
+             * @description Multimodal vision input support (omit when unknown)
+             */
+            supports_vision?: boolean | null;
+            /**
+             * Supports Json Mode
+             * @description Structured JSON output support (omit when unknown)
+             */
+            supports_json_mode?: boolean | null;
+            /**
+             * Supports Reasoning
+             * @description Extended reasoning / CoT support (omit when unknown)
+             */
+            supports_reasoning?: boolean | null;
+            /**
+             * Max Input Tokens
+             * @description Context window token limit
+             */
+            max_input_tokens?: number | null;
+            /**
+             * Max Output Tokens
+             * @description Maximum generation token limit
+             */
+            max_output_tokens?: number | null;
+            /**
+             * Default Temperature
+             * @description Default generation temperature (omit when unknown)
+             */
+            default_temperature?: number | null;
+            /**
+             * Input Cost Per Million
+             * @description USD cost per 1M prompt tokens
+             */
+            input_cost_per_million?: number | null;
+            /**
+             * Output Cost Per Million
+             * @description USD cost per 1M completion tokens
+             */
+            output_cost_per_million?: number | null;
+            /**
+             * Is Enabled
+             * @description Toggle whether model is selectable by agents
+             * @default true
+             */
+            is_enabled: boolean;
+            /**
+             * Is Default
+             * @description Default model for this model type
+             * @default false
+             */
+            is_default: boolean;
+        };
+        /** ModelResponse */
+        ModelResponse: {
+            /** Id */
+            id: string;
+            /** Project Id */
+            project_id: string;
+            /** Provider Id */
+            provider_id: string;
+            /** Model Id */
+            model_id: string;
+            /** Display Name */
+            display_name: string;
+            /** Description */
+            description?: string | null;
+            model_type: components["schemas"]["ModelType"];
+            /** Supports Streaming */
+            supports_streaming?: boolean | null;
+            /** Supports Tools */
+            supports_tools?: boolean | null;
+            /** Supports Vision */
+            supports_vision?: boolean | null;
+            /** Supports Json Mode */
+            supports_json_mode?: boolean | null;
+            /** Supports Reasoning */
+            supports_reasoning?: boolean | null;
+            /** Max Input Tokens */
+            max_input_tokens?: number | null;
+            /** Max Output Tokens */
+            max_output_tokens?: number | null;
+            /** Default Temperature */
+            default_temperature?: number | null;
+            /** Input Cost Per Million */
+            input_cost_per_million?: number | null;
+            /** Output Cost Per Million */
+            output_cost_per_million?: number | null;
+            /** Is Enabled */
+            is_enabled: boolean;
+            /** Is Default */
+            is_default: boolean;
+            /** Revision */
+            revision: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Provider Name */
+            provider_name?: string | null;
+        };
+        /**
+         * ModelType
+         * @description Model modality / capability classification (SRS-06 Section 4.2).
+         * @enum {string}
+         */
+        ModelType: "chat_completion" | "text_completion" | "embedding" | "reranker";
+        /** ModelUpdateRequest */
+        ModelUpdateRequest: {
+            /** Display Name */
+            display_name?: string | null;
+            /** Description */
+            description?: string | null;
+            model_type?: components["schemas"]["ModelType"] | null;
+            /** Supports Streaming */
+            supports_streaming?: boolean | null;
+            /** Supports Tools */
+            supports_tools?: boolean | null;
+            /** Supports Vision */
+            supports_vision?: boolean | null;
+            /** Supports Json Mode */
+            supports_json_mode?: boolean | null;
+            /** Supports Reasoning */
+            supports_reasoning?: boolean | null;
+            /** Max Input Tokens */
+            max_input_tokens?: number | null;
+            /** Max Output Tokens */
+            max_output_tokens?: number | null;
+            /** Default Temperature */
+            default_temperature?: number | null;
+            /** Input Cost Per Million */
+            input_cost_per_million?: number | null;
+            /** Output Cost Per Million */
+            output_cost_per_million?: number | null;
+            /** Is Enabled */
+            is_enabled?: boolean | null;
+            /** Is Default */
+            is_default?: boolean | null;
+            /**
+             * Revision
+             * @description Current OCC revision counter for optimistic locking
+             */
+            revision: number;
+        };
         /** PaginatedData[AuditLogResponse] */
         PaginatedData_AuditLogResponse_: {
             /**
@@ -809,6 +1725,16 @@ export interface components {
              * @description List of items for current page
              */
             items: components["schemas"]["AuditLogResponse"][];
+            /** @description Pagination metadata */
+            pagination: components["schemas"]["PaginationMeta"];
+        };
+        /** PaginatedData[CredentialResponse] */
+        PaginatedData_CredentialResponse_: {
+            /**
+             * Items
+             * @description List of items for current page
+             */
+            items: components["schemas"]["CredentialResponse"][];
             /** @description Pagination metadata */
             pagination: components["schemas"]["PaginationMeta"];
         };
@@ -822,6 +1748,16 @@ export interface components {
             /** @description Pagination metadata */
             pagination: components["schemas"]["PaginationMeta"];
         };
+        /** PaginatedData[ModelResponse] */
+        PaginatedData_ModelResponse_: {
+            /**
+             * Items
+             * @description List of items for current page
+             */
+            items: components["schemas"]["ModelResponse"][];
+            /** @description Pagination metadata */
+            pagination: components["schemas"]["PaginationMeta"];
+        };
         /** PaginatedData[ProjectSummaryResponse] */
         PaginatedData_ProjectSummaryResponse_: {
             /**
@@ -829,6 +1765,16 @@ export interface components {
              * @description List of items for current page
              */
             items: components["schemas"]["ProjectSummaryResponse"][];
+            /** @description Pagination metadata */
+            pagination: components["schemas"]["PaginationMeta"];
+        };
+        /** PaginatedData[ProviderResponse] */
+        PaginatedData_ProviderResponse_: {
+            /**
+             * Items
+             * @description List of items for current page
+             */
+            items: components["schemas"]["ProviderResponse"][];
             /** @description Pagination metadata */
             pagination: components["schemas"]["PaginationMeta"];
         };
@@ -860,6 +1806,24 @@ export interface components {
              */
             message: string;
         };
+        /** PaginatedResponse[CredentialResponse] */
+        PaginatedResponse_CredentialResponse_: {
+            /**
+             * Success
+             * @description Always true for successful responses
+             * @default true
+             * @constant
+             */
+            success: true;
+            /** @description Response payload */
+            data: components["schemas"]["PaginatedData_CredentialResponse_"];
+            /**
+             * Message
+             * @description Status message
+             * @default Operation completed successfully
+             */
+            message: string;
+        };
         /** PaginatedResponse[MemberResponse] */
         PaginatedResponse_MemberResponse_: {
             /**
@@ -878,6 +1842,24 @@ export interface components {
              */
             message: string;
         };
+        /** PaginatedResponse[ModelResponse] */
+        PaginatedResponse_ModelResponse_: {
+            /**
+             * Success
+             * @description Always true for successful responses
+             * @default true
+             * @constant
+             */
+            success: true;
+            /** @description Response payload */
+            data: components["schemas"]["PaginatedData_ModelResponse_"];
+            /**
+             * Message
+             * @description Status message
+             * @default Operation completed successfully
+             */
+            message: string;
+        };
         /** PaginatedResponse[ProjectSummaryResponse] */
         PaginatedResponse_ProjectSummaryResponse_: {
             /**
@@ -889,6 +1871,24 @@ export interface components {
             success: true;
             /** @description Response payload */
             data: components["schemas"]["PaginatedData_ProjectSummaryResponse_"];
+            /**
+             * Message
+             * @description Status message
+             * @default Operation completed successfully
+             */
+            message: string;
+        };
+        /** PaginatedResponse[ProviderResponse] */
+        PaginatedResponse_ProviderResponse_: {
+            /**
+             * Success
+             * @description Always true for successful responses
+             * @default true
+             * @constant
+             */
+            success: true;
+            /** @description Response payload */
+            data: components["schemas"]["PaginatedData_ProviderResponse_"];
             /**
              * Message
              * @description Status message
@@ -1109,6 +2109,225 @@ export interface components {
              * @example 1
              */
             version: number;
+        };
+        /** ProviderCreateRequest */
+        ProviderCreateRequest: {
+            /**
+             * Name
+             * @description Human-readable provider name
+             */
+            name: string;
+            /**
+             * Slug
+             * @description URL-safe unique slug within the project (auto-generated if omitted)
+             */
+            slug?: string | null;
+            /** @description Supported provider architecture */
+            provider_type: components["schemas"]["ProviderType"];
+            /**
+             * Secret Id
+             * @description Foreign key to project_secrets (MOD-02)
+             */
+            secret_id: string;
+            /**
+             * Base Url
+             * @description Upstream API endpoint URL (mandatory for custom_openai_compatible)
+             */
+            base_url?: string | null;
+            /**
+             * Api Version
+             * @description API version
+             */
+            api_version?: string | null;
+            /**
+             * Custom Headers
+             * @description Arbitrary key-value string pairs injected into HTTP calls
+             */
+            custom_headers?: {
+                [key: string]: string;
+            };
+            /**
+             * Timeout Seconds
+             * @description Read and socket timeout in seconds
+             * @default 60
+             */
+            timeout_seconds: number;
+            /**
+             * Max Retries
+             * @description Retry attempts on transient 5xx/network errors
+             * @default 2
+             */
+            max_retries: number;
+            /**
+             * Is Default
+             * @description Whether to designate as the default project provider
+             * @default false
+             */
+            is_default: boolean;
+        };
+        /** ProviderDiscoverySummaryResponse */
+        ProviderDiscoverySummaryResponse: {
+            /** Provider Id */
+            provider_id: string;
+            /** Discovered Count */
+            discovered_count: number;
+            /** Created Count */
+            created_count: number;
+            /** Updated Count */
+            updated_count: number;
+            /** Models */
+            models: components["schemas"]["DiscoveredModelInfo"][];
+        };
+        /** ProviderHealthcheckResponse */
+        ProviderHealthcheckResponse: {
+            /** Provider Id */
+            provider_id: string;
+            status: components["schemas"]["ProviderStatus"];
+            healthcheck_status: components["schemas"]["HealthcheckStatus"];
+            /** Latency Ms */
+            latency_ms?: number | null;
+            /** Message */
+            message?: string | null;
+            /**
+             * Checked At
+             * Format: date-time
+             */
+            checked_at?: string;
+        };
+        /**
+         * ProviderInspectRequest
+         * @description Pre-registration or live inspection request (FR-13). Zero plaintext stored.
+         */
+        ProviderInspectRequest: {
+            provider_type: components["schemas"]["ProviderType"];
+            /**
+             * Secret Id
+             * @description Existing secret ID if saved
+             */
+            secret_id?: string | null;
+            /**
+             * Api Key
+             * @description Transient in-flight API key for preview
+             */
+            api_key?: string | null;
+            /** Base Url */
+            base_url?: string | null;
+            /** Custom Headers */
+            custom_headers?: {
+                [key: string]: string;
+            };
+        };
+        /** ProviderInspectResponse */
+        ProviderInspectResponse: {
+            provider_type: components["schemas"]["ProviderType"];
+            /** Models */
+            models: components["schemas"]["DiscoveredModelInfo"][];
+            /** Total Models */
+            total_models: number;
+        };
+        /** ProviderResponse */
+        ProviderResponse: {
+            /** Id */
+            id: string;
+            /** Project Id */
+            project_id: string;
+            /** Name */
+            name: string;
+            /** Slug */
+            slug: string;
+            provider_type: components["schemas"]["ProviderType"];
+            /** Secret Id */
+            secret_id: string;
+            status: components["schemas"]["ProviderStatus"];
+            /** Is Default */
+            is_default: boolean;
+            /** Last Healthcheck At */
+            last_healthcheck_at?: string | null;
+            healthcheck_status?: components["schemas"]["HealthcheckStatus"] | null;
+            /** Healthcheck Latency Ms */
+            healthcheck_latency_ms?: number | null;
+            /** Revision */
+            revision: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Base Url */
+            base_url?: string | null;
+            /** Api Version */
+            api_version?: string | null;
+            /** Custom Headers */
+            custom_headers?: {
+                [key: string]: string;
+            };
+            /**
+             * Timeout Seconds
+             * @default 60
+             */
+            timeout_seconds: number;
+            /**
+             * Max Retries
+             * @default 2
+             */
+            max_retries: number;
+            /** Healthcheck Message */
+            healthcheck_message?: string | null;
+            /** Created By */
+            created_by: string;
+            /** Updated By */
+            updated_by: string;
+            /**
+             * Secret Name
+             * @description Masked/resolved secret name from MOD-02
+             */
+            secret_name?: string | null;
+        };
+        /**
+         * ProviderStatus
+         * @description Provider operational status (SRS-06 Section 4.1 & 7).
+         * @enum {string}
+         */
+        ProviderStatus: "active" | "degraded" | "disabled" | "error";
+        /**
+         * ProviderType
+         * @description Supported provider architectures and integrations (SRS-06 Section 3 & 4.1).
+         * @enum {string}
+         */
+        ProviderType: "google_genai" | "openai" | "anthropic" | "custom_openai_compatible" | "azure_openai" | "aws_bedrock" | "mistral" | "cohere";
+        /** ProviderUpdateRequest */
+        ProviderUpdateRequest: {
+            /** Name */
+            name?: string | null;
+            /** Slug */
+            slug?: string | null;
+            /** Secret Id */
+            secret_id?: string | null;
+            /** Base Url */
+            base_url?: string | null;
+            /** Api Version */
+            api_version?: string | null;
+            /** Custom Headers */
+            custom_headers?: {
+                [key: string]: string;
+            } | null;
+            /** Timeout Seconds */
+            timeout_seconds?: number | null;
+            /** Max Retries */
+            max_retries?: number | null;
+            status?: components["schemas"]["ProviderStatus"] | null;
+            /** Is Default */
+            is_default?: boolean | null;
+            /**
+             * Revision
+             * @description Current OCC revision counter for optimistic locking
+             */
+            revision: number;
         };
         /** SecretBatchResolveRequest */
         SecretBatchResolveRequest: {
@@ -3009,6 +4228,1238 @@ export interface operations {
                 };
             };
             /** @description Secret or project not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description OCC revision mismatch or project archived */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_credentials: {
+        parameters: {
+            query?: {
+                /** @description Filter by environment tier */
+                environment?: string | null;
+                /** @description Filter by status ('active', 'revoked', 'expired') */
+                status?: components["schemas"]["CredentialStatus"] | null;
+                /** @description Search name or description */
+                search?: string | null;
+                /** @description Field to sort by */
+                sort_by?: string;
+                /** @description Sort order direction */
+                sort_order?: string;
+                /** @description Page number (1-based) */
+                page?: number;
+                /** @description Items per page */
+                page_size?: number;
+                /** @description Limit override */
+                limit?: number | null;
+                /** @description Offset override */
+                offset?: number | null;
+            };
+            header?: never;
+            path: {
+                /** @description Project ID or URL-safe slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Credentials retrieved successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedResponse_CredentialResponse_"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Project not found or caller not a member */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_credential: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Project ID or URL-safe slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CredentialCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description Credential created successfully */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_CredentialCreateResponse_"];
+                };
+            };
+            /** @description Validation error, empty scopes, or invalid expiration */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Insufficient project permissions */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Project not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Credential with name already exists in project, or project is archived */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_credential: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Project ID or URL-safe slug */
+                project_id: string;
+                /** @description Credential document ID */
+                credential_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Credential retrieved successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_CredentialResponse_"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Credential or project not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_credential: {
+        parameters: {
+            query?: {
+                /** @description Set to true for permanent deletion of revoked or soft-deleted key */
+                purge?: boolean;
+            };
+            header?: never;
+            path: {
+                /** @description Project ID or URL-safe slug */
+                project_id: string;
+                /** @description Credential document ID */
+                credential_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Credential deleted or purged successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_Dict_str__Any__"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Credential or project not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Credential already deleted, cannot purge active key, or project archived */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    revoke_credential: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Project ID or URL-safe slug */
+                project_id: string;
+                /** @description Credential document ID */
+                credential_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CredentialRevokeRequest"];
+            };
+        };
+        responses: {
+            /** @description Credential revoked successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_CredentialResponse_"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Credential or project not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Credential already revoked or OCC conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_providers: {
+        parameters: {
+            query?: {
+                /** @description Filter by provider architecture */
+                provider_type?: components["schemas"]["ProviderType"] | null;
+                /** @description Filter by operational status */
+                status?: components["schemas"]["ProviderStatus"] | null;
+                /** @description Search by provider name or slug */
+                search?: string | null;
+                /** @description Field to sort by */
+                sort_by?: string;
+                /** @description Sort order direction */
+                sort_order?: string;
+                /** @description Page number (1-based) */
+                page?: number;
+                /** @description Items per page */
+                page_size?: number;
+                /** @description Limit override */
+                limit?: number | null;
+                /** @description Offset override */
+                offset?: number | null;
+            };
+            header?: never;
+            path: {
+                /** @description Project 24-char ObjectId hex or URL-safe slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Providers retrieved successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedResponse_ProviderResponse_"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Project not found or caller not a member */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_provider: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Project ID or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProviderCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description Provider registered successfully */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_ProviderResponse_"];
+                };
+            };
+            /** @description Validation error or invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Project or referenced secret not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Provider with slug or name already exists in this project */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    inspect_upstream_models: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Project ID or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProviderInspectRequest"];
+            };
+        };
+        responses: {
+            /** @description Upstream models inspected successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_ProviderInspectResponse_"];
+                };
+            };
+            /** @description Inspection failed or unreachable upstream */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Project or secret not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_provider: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Project ID or slug */
+                project_id: string;
+                /** @description Provider document ID or slug */
+                provider_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Provider retrieved successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_ProviderResponse_"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Provider or project not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_provider: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Project ID or slug */
+                project_id: string;
+                /** @description Provider document ID */
+                provider_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Provider soft-deleted successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_NoneType_"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Provider or project not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Project archived */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_provider: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Project ID or slug */
+                project_id: string;
+                /** @description Provider document ID */
+                provider_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProviderUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description Provider updated successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_ProviderResponse_"];
+                };
+            };
+            /** @description Validation error or invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Provider or project not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description OCC revision mismatch or project archived */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    test_provider_connection: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Project ID or slug */
+                project_id: string;
+                /** @description Provider document ID */
+                provider_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Provider healthcheck completed */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_ProviderHealthcheckResponse_"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Provider or project not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    discover_provider_models: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Project ID or slug */
+                project_id: string;
+                /** @description Provider document ID */
+                provider_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Models discovered and persisted successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_ProviderDiscoverySummaryResponse_"];
+                };
+            };
+            /** @description Failed to reach or parse upstream catalog */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Provider or project not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_provider_live_models: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Project ID or slug */
+                project_id: string;
+                /** @description Provider document ID */
+                provider_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Live upstream models retrieved successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_ProviderInspectResponse_"];
+                };
+            };
+            /** @description Failed to query upstream models */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Provider or project not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_models: {
+        parameters: {
+            query?: {
+                /** @description Filter by parent provider ID */
+                provider_id?: string | null;
+                /** @description Filter by model modality */
+                model_type?: components["schemas"]["ModelType"] | null;
+                /** @description Filter by tool/function calling support */
+                supports_tools?: boolean | null;
+                /** @description Filter by vision/multimodal input support */
+                supports_vision?: boolean | null;
+                /** @description Filter by structured JSON output support */
+                supports_json_mode?: boolean | null;
+                /** @description Filter by enabled/disabled status */
+                is_enabled?: boolean | null;
+                /** @description Search by model identifier or display name */
+                search?: string | null;
+                /** @description Field to sort by */
+                sort_by?: string;
+                /** @description Sort order direction */
+                sort_order?: string;
+                /** @description Page number (1-based) */
+                page?: number;
+                /** @description Items per page */
+                page_size?: number;
+                /** @description Limit override */
+                limit?: number | null;
+                /** @description Offset override */
+                offset?: number | null;
+            };
+            header?: never;
+            path: {
+                /** @description Project 24-char ObjectId hex or URL-safe slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Models retrieved successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedResponse_ModelResponse_"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Project not found or caller not a member */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_model: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Project ID or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ModelCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description Model registered successfully */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_ModelResponse_"];
+                };
+            };
+            /** @description Validation error or invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Project or parent provider not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Model with identifier already exists for this provider */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_model: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Project ID or slug */
+                project_id: string;
+                /** @description Model document ID */
+                model_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Model retrieved successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_ModelResponse_"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Model or project not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_model: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Project ID or slug */
+                project_id: string;
+                /** @description Model document ID */
+                model_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Model soft-deleted successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_NoneType_"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Model or project not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Project archived */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_model: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Project ID or slug */
+                project_id: string;
+                /** @description Model document ID */
+                model_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ModelUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description Model updated successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_ModelResponse_"];
+                };
+            };
+            /** @description Validation error or invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Model or project not found */
             404: {
                 headers: {
                     [name: string]: unknown;

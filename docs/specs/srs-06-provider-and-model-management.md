@@ -323,9 +323,10 @@ Stored in MongoDB collection: `project_routing_policies`
   2. The service connects to the upstream provider using decrypted credentials.
   3. Queries the provider model list (e.g., `GET /v1/models` for OpenAI/vLLM/DeepSeek, `list_models` for Google).
   4. For each discovered model:
-     - If the model already exists in `project_models` for this provider: Updates metadata (if changed).
-     - If the model is new: Automatically populates `model_id`, auto-generates `display_name`, infers default capabilities based on known model prefixes (e.g., `vision`, `tools`), and inserts the record.
+     - If the model already exists in `project_models` for this provider: refreshes every attribute the upstream actually reports (limits, sampling defaults, capability flags, model type). Values the upstream is silent about are left untouched, so a corrected upstream limit always overwrites the stale one.
+     - If the model is new: automatically populates `model_id`, auto-generates `display_name`, and stores only the attributes present in the upstream payload.
   5. Returns a summary of newly added, updated, and existing models.
+- **Truthfulness Rule**: Discovery never fabricates capabilities, token limits, or sampling defaults. Anything the upstream listing does not state is stored as `NULL` (`supports_*`, `max_input_tokens`, `max_output_tokens`, `default_temperature`) instead of being guessed from the model name; `model_type` is the only storage-required classification (defaulting to `chat_completion`).
 - **Fallback**: For providers without automated discovery APIs (or where discovery is restricted), administrators use manual registration (FR-05).
 
 ### FR-05: Manual Model Definition & Registration
@@ -409,8 +410,10 @@ Stored in MongoDB collection: `project_routing_policies`
        - For OpenAI / Custom OpenAI-compatible (vLLM, DeepSeek, Ollama, Together): Calls `GET {base_url}/models` passing the bearer key and custom headers.
        - For Google Generative AI: Calls Google AI Studio API (`models.list` / Gemini SDK).
        - For Anthropic: Fetches available models from Anthropic API.
-     - **Output**: Returns an unpersisted, normalized list of available models with upstream IDs, friendly display names, context limits, and detected capabilities (tools, vision, JSON mode).
+     - **Output**: Returns an unpersisted, normalized list of available models with upstream IDs, friendly display names, context limits, and only the capabilities the upstream actually reports.
      - **Security Invariant**: Any raw `api_key` provided in this inspection payload is held transiently in memory for the duration of the HTTP call and is never logged or persisted to disk/database.
+     - **Upstream Field Mapping (Google Generative AI)**: `inputTokenLimit` → `max_input_tokens`; `outputTokenLimit` → `max_output_tokens` (suppressed for `embedContent` entries, whose `outputTokenLimit: 1` is not a generation cap); `temperature` → `default_temperature`; `maxTemperature` → `max_temperature`; `thinking` → `supports_reasoning`; `supportedGenerationMethods` → `model_type` and `supports_streaming`. Tools/vision/JSON-mode are not reported by `models.list` and therefore stay `null`.
+     - **Diagnostics**: The exact upstream JSON (plus our normalization of it) is written to `UPSTREAM_PAYLOAD_DUMP_DIR` (default `apps/api/debug/upstream` in development, disabled elsewhere) so every reported limit can be traced to the provider's own response. Credentials are never written; query strings are stripped.
   2. **Existing Provider Live Query (`GET /projects/{project_id}/providers/{provider_id}/live-models`)**:
      - Resolves the provider's bound `secret_id` via `MOD-02` in memory, calls the upstream models endpoint, and returns the live upstream list for comparison against the locally registered catalog.
 

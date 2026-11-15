@@ -79,6 +79,10 @@ def infer_model_capabilities(
     max_input_tokens: Optional[int] = None,
     max_output_tokens: Optional[int] = None,
     default_temperature: Optional[float] = None,
+    max_temperature: Optional[float] = None,
+    model_type: Optional[ModelType] = None,
+    supports_streaming: Optional[bool] = None,
+    supports_reasoning: Optional[bool] = None,
 ) -> DiscoveredModelInfo:
     """
     Build discovered model information reflecting only true upstream attributes.
@@ -87,11 +91,11 @@ def infer_model_capabilities(
     mid = model_id.lower()
     dname = display_name or model_id
 
-    model_type = None
-    if "embed" in mid:
-        model_type = ModelType.EMBEDDING
-    elif "rerank" in mid:
-        model_type = ModelType.RERANKER
+    if model_type is None:
+        if "embed" in mid:
+            model_type = ModelType.EMBEDDING
+        elif "rerank" in mid:
+            model_type = ModelType.RERANKER
 
     return DiscoveredModelInfo(
         model_id=model_id,
@@ -100,14 +104,87 @@ def infer_model_capabilities(
         owned_by=owned_by,
         created_at_upstream=created_at_upstream,
         model_type=model_type,
-        supports_streaming=None,
+        supports_streaming=supports_streaming,
         supports_tools=None,
         supports_vision=None,
         supports_json_mode=None,
-        supports_reasoning=None,
+        supports_reasoning=supports_reasoning,
         max_input_tokens=max_input_tokens,
         max_output_tokens=max_output_tokens,
         default_temperature=default_temperature,
+        max_temperature=max_temperature,
+    )
+
+
+def _as_int(value: Any) -> Optional[int]:
+    """Accept only real numeric counts; booleans and strings are not token limits."""
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return None
+    return int(value)
+
+
+def _as_float(value: Any) -> Optional[float]:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return None
+    return float(value)
+
+
+_GEMINI_EMBEDDING_METHODS = {"embedcontent", "asyncbatchembedcontent"}
+
+
+def infer_gemini_model(item: Dict[str, Any]) -> DiscoveredModelInfo:
+    """
+    Map one Google `models.list` entry onto discovery attributes.
+
+    Google's payload is the authority here:
+      * `supportedGenerationMethods` tells us whether the entry is a chat
+        (`generateContent`) or embedding (`embedContent`) model,
+      * `thinking` states whether extended reasoning is available,
+      * `inputTokenLimit` / `outputTokenLimit` / `temperature` / `maxTemperature`
+        are the limits and sampling range the API will actually enforce.
+
+    Anything the payload does not state (tools, vision, JSON mode, creation date)
+    stays `None` rather than being guessed from the model name.
+    """
+    raw_name = item.get("name") or item.get("id") or ""
+    model_id = str(raw_name).removeprefix("models/")
+    methods = {str(m).lower() for m in (item.get("supportedGenerationMethods") or [])}
+
+    is_embedding = bool(methods & _GEMINI_EMBEDDING_METHODS)
+    if is_embedding:
+        model_type: Optional[ModelType] = ModelType.EMBEDDING
+    elif "generatecontent" in methods:
+        model_type = ModelType.CHAT_COMPLETION
+    else:
+        model_type = None
+
+    thinking = item.get("thinking")
+    supports_reasoning = thinking if isinstance(thinking, bool) else None
+
+    if is_embedding:
+        # Embedding entries report `outputTokenLimit: 1`, which is not a
+        # generation cap; reporting it would be actively misleading.
+        max_output = None
+    else:
+        max_output = _as_int(item.get("outputTokenLimit"))
+
+    return infer_model_capabilities(
+        model_id=model_id,
+        display_name=item.get("displayName") or model_id,
+        description=item.get("description"),
+        owned_by="google",
+        created_at_upstream=None,
+        max_input_tokens=_as_int(item.get("inputTokenLimit")),
+        max_output_tokens=max_output,
+        default_temperature=_as_float(item.get("temperature")),
+        max_temperature=_as_float(item.get("maxTemperature")),
+        model_type=model_type,
+        # `generateContent` always has a streaming counterpart; embed-only
+        # models do not stream.
+        supports_streaming=(
+            True if "generatecontent" in methods else (False if is_embedding else None)
+        ),
+        supports_reasoning=supports_reasoning,
     )
 
 
@@ -597,19 +674,16 @@ class ProviderManagementService:
                 continue
             # Google Gemini format clean: 'models/gemini-1.5-pro' -> 'gemini-1.5-pro'
             clean_id = model_id.removeprefix("models/") if isinstance(model_id, str) else str(model_id)
+
+            if provider_type == ProviderType.GOOGLE_GENAI:
+                # Google documents limits/capabilities in the listing itself.
+                discovered.append(infer_gemini_model(item))
+                continue
+
             display_name = item.get("displayName") or item.get("display_name") or clean_id
             description = item.get("description")
             owned_by = item.get("owned_by") or item.get("ownedBy")
             created = item.get("created")
-
-            # Extract real limits if upstream actually returned them (e.g. Gemini inputTokenLimit)
-            raw_input = item.get("inputTokenLimit") or item.get("max_input_tokens")
-            raw_output = item.get("outputTokenLimit") or item.get("max_output_tokens")
-            raw_temp = item.get("temperature") or item.get("default_temperature")
-
-            max_input = int(raw_input) if isinstance(raw_input, (int, float)) else None
-            max_output = int(raw_output) if isinstance(raw_output, (int, float)) else None
-            temp = float(raw_temp) if isinstance(raw_temp, (int, float)) else None
 
             discovered.append(
                 infer_model_capabilities(
@@ -617,10 +691,16 @@ class ProviderManagementService:
                     display_name=display_name,
                     description=description,
                     owned_by=str(owned_by) if owned_by is not None else None,
-                    created_at_upstream=int(created) if isinstance(created, (int, float)) else None,
-                    max_input_tokens=max_input,
-                    max_output_tokens=max_output,
-                    default_temperature=temp,
+                    created_at_upstream=_as_int(created),
+                    max_input_tokens=_as_int(
+                        item.get("max_input_tokens", item.get("inputTokenLimit"))
+                    ),
+                    max_output_tokens=_as_int(
+                        item.get("max_output_tokens", item.get("outputTokenLimit"))
+                    ),
+                    default_temperature=_as_float(
+                        item.get("default_temperature", item.get("temperature"))
+                    ),
                 )
             )
 

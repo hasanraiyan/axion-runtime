@@ -167,6 +167,9 @@ class DiscoveredModelInfo(BaseModel):
     max_input_tokens: Optional[int] = Field(default=None, description="Upstream context limit if reported")
     max_output_tokens: Optional[int] = Field(default=None, description="Upstream output limit if reported")
     default_temperature: Optional[float] = Field(default=None, description="Recommended generation temperature if reported")
+    max_temperature: Optional[float] = Field(
+        default=None, description="Upper bound of the upstream sampling temperature range if reported"
+    )
 
 
 class ProviderInspectRequest(BaseModel):

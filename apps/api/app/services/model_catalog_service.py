@@ -358,7 +358,12 @@ class ModelCatalogService:
             )
 
             if existing:
+                # Re-discovery refreshes everything the upstream actually states.
+                # Only values upstream is silent about are left untouched, so a
+                # limit that upstream later corrects can no longer stay stale.
                 update_dict: Dict[str, Any] = {}
+                if d_model.model_type is not None and d_model.model_type != existing.model_type:
+                    update_dict["model_type"] = d_model.model_type
                 if d_model.supports_streaming is not None:
                     update_dict["supports_streaming"] = d_model.supports_streaming
                 if d_model.supports_tools is not None:
@@ -369,11 +374,14 @@ class ModelCatalogService:
                     update_dict["supports_json_mode"] = d_model.supports_json_mode
                 if d_model.supports_reasoning is not None:
                     update_dict["supports_reasoning"] = d_model.supports_reasoning
-                if d_model.max_input_tokens is not None and not existing.max_input_tokens:
+                if d_model.max_input_tokens is not None:
                     update_dict["max_input_tokens"] = d_model.max_input_tokens
-                if d_model.max_output_tokens is not None and not existing.max_output_tokens:
+                if d_model.max_output_tokens is not None:
                     update_dict["max_output_tokens"] = d_model.max_output_tokens
+                if d_model.default_temperature is not None:
+                    update_dict["default_temperature"] = d_model.default_temperature
                 if d_model.description is not None and not existing.description:
+                    # Descriptions double as admin notes; only fill what is empty.
                     update_dict["description"] = d_model.description
 
                 if update_dict:
@@ -385,7 +393,8 @@ class ModelCatalogService:
                     )
                 updated_count += 1
             else:
-                # Register new model
+                # Register new model. Unknown capabilities stay None (no invented
+                # defaults); `model_type` is the only storage-required classification.
                 new_doc = ProjectModel(
                     project_id=project.id,
                     provider_id=provider.id,
@@ -393,14 +402,14 @@ class ModelCatalogService:
                     display_name=d_model.display_name,
                     description=d_model.description,
                     model_type=d_model.model_type or ModelType.CHAT_COMPLETION,
-                    supports_streaming=d_model.supports_streaming if d_model.supports_streaming is not None else True,
-                    supports_tools=d_model.supports_tools if d_model.supports_tools is not None else False,
-                    supports_vision=d_model.supports_vision if d_model.supports_vision is not None else False,
-                    supports_json_mode=d_model.supports_json_mode if d_model.supports_json_mode is not None else False,
-                    supports_reasoning=d_model.supports_reasoning if d_model.supports_reasoning is not None else False,
+                    supports_streaming=d_model.supports_streaming,
+                    supports_tools=d_model.supports_tools,
+                    supports_vision=d_model.supports_vision,
+                    supports_json_mode=d_model.supports_json_mode,
+                    supports_reasoning=d_model.supports_reasoning,
                     max_input_tokens=d_model.max_input_tokens,
                     max_output_tokens=d_model.max_output_tokens,
-                    default_temperature=d_model.default_temperature if d_model.default_temperature is not None else 0.7,
+                    default_temperature=d_model.default_temperature,
                     is_enabled=True,
                     is_default=False,
                     revision=1,

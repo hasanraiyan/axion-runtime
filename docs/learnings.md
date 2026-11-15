@@ -193,6 +193,38 @@ walks every `partialFilterExpression` on `ProjectCredential` and fails on any op
 outside the allowed set (`$ne`/`$not` regression). Startup was re-run against the local
 MongoDB and the collection's indexes were created without warnings.
 
+### 13. Model limits must come from the provider payload, and "unknown" must stay `NULL`
+
+**Symptom.** The `/live-models` payload reported `max_input_tokens`/`max_output_tokens`/
+`default_temperature` for every model even when nothing was known, and once a catalog row
+was discovered, its limits were frozen forever. Users could not tell which numbers were
+the provider's and which were ours.
+
+**Ground truth.** `apps/api/debug/upstream/*.json` now keeps the untouched upstream body
+(`app/core/upstream_dump.py`, written by `_fetch_upstream_model_catalog`). The captured
+Google `GET /v1beta/models` response shows what the API really states per model:
+`inputTokenLimit`, `outputTokenLimit`, `temperature`, `maxTemperature`, `thinking`,
+`supportedGenerationMethods`. Google reports `gemini-2.5-flash` as 1,048,576 in / 65,536 out,
+temperature 1 (range 0-2), `thinking: true`; `gemini-embedding-001` as 2,048 in and
+`outputTokenLimit: 1`, which is **not** a generation cap.
+
+**Fix.**
+1. `infer_gemini_model()` (`app/services/provider_service.py`) maps only those fields:
+   `thinking` → `supports_reasoning`, `supportedGenerationMethods` → `model_type` +
+   `supports_streaming`, `maxTemperature` → `max_temperature`, and drops the bogus output
+   cap for `embedContent` entries. Tools/vision/JSON-mode stay `None` because `models.list`
+   never reports them.
+2. `discover_models` overwrites every attribute upstream states (a corrected limit now
+   replaces a stale/fabricated one) and stores `NULL` for what upstream omits.
+   `ProjectModel.supports_*`/`default_temperature` and the corresponding API schemas are
+   `Optional` so "unknown" survives the round-trip instead of becoming `True`/`0.7`.
+
+**Verified.** `tests/test_gemini_live_model_mapping.py` runs against a trimmed copy of the
+captured payload (`tests/fixtures/gemini_models_live.json`) and asserts the real numbers,
+the embedding suppression, and that no capability is invented;
+`test_rediscovery_overwrites_stale_limits_and_capabilities` proves a second discovery
+replaces 1,000,000/8,192 with 1,048,576/65,536.
+
 ---
 
 ## Bugs found and fixed (commit `5ea80d9`)

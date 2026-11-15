@@ -39,6 +39,7 @@ from app.schemas.model_catalog import (
 from app.schemas.provider import (
     ProviderCreateRequest,
     ProviderInspectRequest,
+    ProviderInspectResponse,
     ProviderUpdateRequest,
 )
 from app.schemas.routing_policy import (
@@ -48,7 +49,11 @@ from app.schemas.routing_policy import (
 from app.services.model_catalog_service import ModelCatalogService
 from app.services.model_routing_service import ModelRoutingService
 from app.services.project_service import ProjectService
-from app.services.provider_service import ProviderManagementService
+from app.services.provider_service import (
+    ProviderManagementService,
+    infer_gemini_model,
+    infer_model_capabilities,
+)
 from app.services.secret_service import ProjectSecretService
 from tests.fakes.fake_project_model_repository import FakeProjectModelRepository
 from tests.fakes.fake_project_provider_repository import FakeProjectProviderRepository
@@ -574,10 +579,148 @@ async def test_model_catalog_discovery(active_project):
     assert summary2.updated_count == 2
 
 
+@pytest.mark.asyncio
+async def test_discovery_leaves_unknown_capabilities_null(active_project):
+    """New catalog rows must not claim streaming/tools/temperature upstream never stated."""
+    model_repo = FakeProjectModelRepository()
+    provider_repo = FakeProjectProviderRepository()
+    project_repo = MagicMock()
+    project_repo.get_by_id_or_slug = AsyncMock(return_value=active_project)
+    audit_repo = MagicMock()
+    audit_repo.log_event = AsyncMock()
+
+    prov = await provider_repo.create(
+        ProjectProvider(
+            project_id=active_project.id,
+            name="Mystery",
+            slug="mystery",
+            provider_type=ProviderType.OPENAI,
+            secret_id=PydanticObjectId(),
+            created_by="admin",
+            updated_by="admin",
+        )
+    )
+
+    provider_service = MagicMock()
+    provider_service.live_provider_models = AsyncMock(
+        return_value=ProviderInspectResponse(
+            provider_type=ProviderType.OPENAI,
+            models=[infer_model_capabilities("mystery-model", "Mystery Model")],
+            total_models=1,
+        )
+    )
+
+    catalog_service = ModelCatalogService(
+        model_repo=model_repo,
+        provider_repo=provider_repo,
+        project_repo=project_repo,
+        audit_repo=audit_repo,
+        provider_service=provider_service,
+    )
+    await catalog_service.discover_models(active_project.id, prov.id, actor_id="admin")
+
+    stored = await model_repo.get_by_provider_and_model_id(prov.id, "mystery-model")
+    assert stored is not None
+    assert stored.supports_streaming is None
+    assert stored.supports_tools is None
+    assert stored.supports_vision is None
+    assert stored.supports_json_mode is None
+    assert stored.supports_reasoning is None
+    assert stored.default_temperature is None
+    assert stored.max_input_tokens is None
+    assert stored.max_output_tokens is None
+    # Only the storage-required classification is defaulted.
+    assert stored.model_type is ModelType.CHAT_COMPLETION
+
+
+@pytest.mark.asyncio
+async def test_rediscovery_overwrites_stale_limits_and_capabilities(active_project):
+    """A second discovery replaces old/fabricated numbers instead of keeping them."""
+    model_repo = FakeProjectModelRepository()
+    provider_repo = FakeProjectProviderRepository()
+    project_repo = MagicMock()
+    project_repo.get_by_id_or_slug = AsyncMock(return_value=active_project)
+    audit_repo = MagicMock()
+    audit_repo.log_event = AsyncMock()
+
+    prov = await provider_repo.create(
+        ProjectProvider(
+            project_id=active_project.id,
+            name="Google Gemini",
+            slug="google-gemini",
+            provider_type=ProviderType.GOOGLE_GENAI,
+            secret_id=PydanticObjectId(),
+            created_by="admin",
+            updated_by="admin",
+        )
+    )
+
+    stale_item = {
+        "name": "models/gemini-2.5-flash",
+        "displayName": "Gemini 2.5 Flash",
+        "inputTokenLimit": 1_000_000,
+        "outputTokenLimit": 8_192,
+        "supportedGenerationMethods": ["generateContent", "countTokens"],
+    }
+    real_item = {
+        "name": "models/gemini-2.5-flash",
+        "displayName": "Gemini 2.5 Flash",
+        "inputTokenLimit": 1_048_576,
+        "outputTokenLimit": 65_536,
+        "supportedGenerationMethods": [
+            "generateContent",
+            "countTokens",
+            "createCachedContent",
+            "batchGenerateContent",
+        ],
+        "temperature": 1,
+        "maxTemperature": 2,
+        "thinking": True,
+    }
+
+    provider_service = MagicMock()
+    provider_service.live_provider_models = AsyncMock(
+        return_value=ProviderInspectResponse(
+            provider_type=ProviderType.GOOGLE_GENAI,
+            models=[infer_gemini_model(stale_item)],
+            total_models=1,
+        )
+    )
+    catalog_service = ModelCatalogService(
+        model_repo=model_repo,
+        provider_repo=provider_repo,
+        project_repo=project_repo,
+        audit_repo=audit_repo,
+        provider_service=provider_service,
+    )
+
+    await catalog_service.discover_models(active_project.id, prov.id, actor_id="admin")
+    stored = await model_repo.get_by_provider_and_model_id(prov.id, "gemini-2.5-flash")
+    assert (stored.max_input_tokens, stored.max_output_tokens) == (1_000_000, 8_192)
+    assert stored.default_temperature is None
+    assert stored.supports_reasoning is None
+
+    provider_service.live_provider_models = AsyncMock(
+        return_value=ProviderInspectResponse(
+            provider_type=ProviderType.GOOGLE_GENAI,
+            models=[infer_gemini_model(real_item)],
+            total_models=1,
+        )
+    )
+    await catalog_service.discover_models(active_project.id, prov.id, actor_id="admin")
+
+    stored = await model_repo.get_by_provider_and_model_id(prov.id, "gemini-2.5-flash")
+    assert stored.max_input_tokens == 1_048_576
+    assert stored.max_output_tokens == 65_536
+    assert stored.default_temperature == 1.0
+    assert stored.supports_reasoning is True
+    assert stored.supports_streaming is True
+    assert stored.revision == 2
+
+
 # ==============================================================================
 # ModelRoutingService Tests (FR-07)
 # ==============================================================================
-
 
 @pytest.mark.asyncio
 async def test_routing_policy_crud_and_failover_resolution(active_project):

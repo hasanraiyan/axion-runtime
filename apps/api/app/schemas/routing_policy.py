@@ -88,9 +88,9 @@ class ModelResolutionResponse(BaseModel):
     provider_type: str
     base_url: Optional[str] = None
     custom_headers: Dict[str, str] = Field(default_factory=dict)
-    supports_streaming: bool = True
-    supports_tools: bool = False
-    supports_vision: bool = False
-    supports_json_mode: bool = False
+    supports_streaming: Optional[bool] = None
+    supports_tools: Optional[bool] = None
+    supports_vision: Optional[bool] = None
+    supports_json_mode: Optional[bool] = None
     is_fallback: bool = False
     fallback_reason: Optional[str] = None
