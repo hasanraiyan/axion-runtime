@@ -61,8 +61,8 @@ class _Local:
     def target_urls(self, profile: AuthProfile) -> List[str]:
         return []
 
-    def forget(self, project_id: str, profile: AuthProfile) -> None:
-        return None
+    def forget(self, project_id: str, profile: AuthProfile) -> bool:
+        return False
 
 
 class NoAuthStrategy(_Local):
@@ -308,8 +308,8 @@ class OAuthClientCredentialsStrategy:
             oauth.get("token_endpoint_auth_method", "client_secret_basic"),
         )
 
-    def forget(self, project_id: str, profile: AuthProfile) -> None:
-        self._cache.invalidate(self._key(project_id, profile))
+    def forget(self, project_id: str, profile: AuthProfile) -> bool:
+        return self._cache.invalidate(self._key(project_id, profile))
 
     async def build(self, project_id: str, profile: AuthProfile, secrets: SecretReaderPort) -> ResolvedCredentials:
         oauth = profile.oauth or {}

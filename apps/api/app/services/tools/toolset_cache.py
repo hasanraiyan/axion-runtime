@@ -46,6 +46,8 @@ class ToolsetCache:
         return item[1]
 
     def put(self, key: Key, value: Any, generation: int) -> None:
+        if self._ttl <= 0:
+            return  # caching disabled
         if generation != self.generation(key[0]):
             return  # the project changed while this was being built
         if len(self._items) >= self._max and key not in self._items:

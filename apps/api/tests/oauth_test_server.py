@@ -40,6 +40,7 @@ class OAuthMcpServer:
         self.cc_token_ttl: Optional[int] = None  # expires_in for client_credentials tokens (None = access_ttl)
         self.cc_omit_expires = False
         self.cc_delay = 0.0
+        self.cc_revoke_on_issue = False  # every client_credentials token is born revoked
         self.cc_requests: List[Dict[str, Any]] = []  # form + how the client authenticated
         self.codes: Dict[str, Dict[str, Any]] = {}
         self.access: Dict[str, Dict[str, Any]] = {}
@@ -180,7 +181,7 @@ class OAuthMcpServer:
             return await self._json(send, 401, {"error": "invalid_client"})
         token = self._next("cc")
         ttl = self.cc_token_ttl if self.cc_token_ttl is not None else self.access_ttl
-        self.access[token] = {"user": f"client:{client_id}", "expires": time.time() + ttl, "revoked": False}
+        self.access[token] = {"user": f"client:{client_id}", "expires": time.time() + ttl, "revoked": self.cc_revoke_on_issue}
         payload: Dict[str, Any] = {"access_token": token, "token_type": "Bearer", "scope": form.get("scope", "")}
         if not self.cc_omit_expires:
             payload["expires_in"] = ttl

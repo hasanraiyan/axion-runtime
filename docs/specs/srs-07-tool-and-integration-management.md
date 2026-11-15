@@ -1388,6 +1388,7 @@ tokens, block and erasure; project-purge cascade; secret-deletion guard.
 | Revoked state | `connections.status = revoked` | the record is deleted | Deleting removes the credential outright; the audit log keeps the history |
 | `oauth_client_credentials` | token endpoint discovered | explicit https `profile.oauth.token_endpoint` (no discovery), client secret is a MOD-02 secret, always `project_shared`, in-memory token cache (single flight, 60 s skew, never persisted) | There is no user to redirect and no protected-resource metadata to rely on; a restart simply fetches a new token |
 | Metrics and tracing (NFR-O) | metrics and traces | `TelemetryPort` with an in-process Prometheus-format registry (`/metrics`, bearer `METRICS_TOKEN`, off when unset) and OpenTelemetry *API* spans (no-op until the deployment installs an SDK/exporter); `traceparent` is propagated upstream and the trace id is stored on invocation records | No new dependency; metric labels are limited to a fixed allow-list (type, status, outcome, result, grant, transport, kind), so there is no per-project, per-tool, or per-user series |
+| Cache and cap scope | shared across instances | per process only. `TOOLSET_CACHE_TTL_SECONDS` (default 30, 0 disables) bounds how long another process can serve a stale *listing*; invocation never uses the cache. A cluster-wide cache or limit needs shared infrastructure (e.g. Redis) and is not built | Lower the TTL, or set it to 0, if listings must reflect changes immediately across several processes |
 | Toolset cache (NFR-P1) | 30 s TTL cache | process-wide cache of *listings* only (30 s TTL, per project/subject/agent), invalidated by `ToolsetChanged`; invocation never uses it | Multi-process deployments see another process's change within the TTL; the project lifecycle is checked on every call |
 | Concurrency cap (NFR-P5) | per-integration cap, default 16 | per-integration, per-process semaphore (`TOOL_MAX_CONCURRENT_CALLS`, per integration `config.max_concurrent_calls`); a bounded wait then a retryable `integration_busy` | The cap is per process, not cluster-wide |
 | Session pool (FR-18, FR-81) | pooled per subject | pooled per credential fingerprint (per-user credentials imply per-subject) | `connect` has no subject parameter; the fingerprint gives the same isolation |
@@ -1441,6 +1442,7 @@ operations; the web UI and hosted pages. End users cannot register their own MCP
 | Version | Date | Description |
 |---|---|---|
 | 1.0.0 | 2026-11-15 | Initial draft based on analysis of the Agent Marketplace backend and Axion MOD-01/02/03/06 |
+| 1.9.0 | 2026-11-15 | Client-credentials token rejection retries once with a fresh token; `TOOLSET_CACHE_TTL_SECONDS`; legacy index detection and script |
 | 1.8.0 | 2026-11-15 | Metrics (`/metrics`), tracing hooks, and trace-context propagation; implementation status updated |
 | 1.7.0 | 2026-11-15 | OAuth client credentials (`oauth_client_credentials`) for machine-to-machine MCP servers |
 | 1.6.0 | 2026-11-15 | Legacy SSE transport and `auto` fallback (FR-20); real-socket test harness; real `list_changed` delivery verified |

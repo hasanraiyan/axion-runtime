@@ -81,7 +81,7 @@ class SharedToolState:
     locks: KeyedLocks
     mcp_pool: McpSessionPool = field(default_factory=McpSessionPool)
     policy_cache: PolicyCache = field(default_factory=PolicyCache)
-    toolset_cache: ToolsetCache = field(default_factory=ToolsetCache)
+    toolset_cache: ToolsetCache = field(default_factory=lambda: ToolsetCache(ttl=app_settings.TOOLSET_CACHE_TTL_SECONDS))
     concurrency: ConcurrencyLimiter = field(default_factory=ConcurrencyLimiter)
     token_cache: TokenCache = field(default_factory=TokenCache)
     telemetry: Telemetry = field(default_factory=lambda: Telemetry(tracer=build_tracer()))

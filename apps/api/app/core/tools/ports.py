@@ -135,8 +135,8 @@ class AuthStrategy(Protocol):
         """URLs the strategy itself calls (e.g. a token endpoint); each is checked by the Outbound Guard on save."""
         ...
 
-    def forget(self, project_id: str, profile: AuthProfile) -> None:
-        """Drop any cached credential material (called when the upstream rejected it)."""
+    def forget(self, project_id: str, profile: AuthProfile) -> bool:
+        """Drop cached credential material (the upstream rejected it); ``True`` if something was dropped."""
         ...
 
     async def build(

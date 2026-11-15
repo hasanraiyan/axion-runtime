@@ -24,7 +24,7 @@ from app.models.integration import AuthProfile, AuthType, CredentialMode, Integr
 from app.schemas.tools import IntegrationCreateRequest
 from tests.oauth_test_server import RESOURCE, OAuthMcpServer
 from tests.test_tools_connections import ADMIN, Env
-from tests.tools_harness import StaticResolver, make_harness
+from tests.tools_harness import StaticResolver, make_harness, tool
 
 pytestmark = pytest.mark.usefixtures("tool_models")
 
@@ -135,15 +135,61 @@ async def test_a_rejected_client_returns_a_clear_error_to_the_agent_not_misconfi
         assert not result.ok and result.error_code == "upstream_auth_failed"
 
 
-async def test_a_revoked_token_is_dropped_so_the_next_call_gets_a_fresh_one():
+async def test_a_revoked_cached_token_is_replaced_and_the_call_is_retried_once():
     async with env() as e:
         key = await ready(e)
         assert (await e.invoke(key, MEMBER)).ok
         for info in e.server.access.values():
             info["revoked"] = True  # the upstream revokes everything issued so far
-        assert not (await e.invoke(key, MEMBER)).ok  # the cached token is rejected and the integration is marked as failing
-        await e.c.onboarding.verify(e.h.project.id, e.integration_id, ADMIN)  # an admin re-tests: needs a *fresh* token
+        before = e.server.counters["client_credentials"]
+        assert (await e.invoke(key, MEMBER)).ok  # transparently retried with a fresh token
+        assert e.server.counters["client_credentials"] - before == 1
+        assert (await e.c.integrations.get(e.h.project.id, e.integration_id)).status == IntegrationStatus.ACTIVE
+
+
+async def test_credentials_rejected_even_when_fresh_mark_the_integration_failing_after_one_retry():
+    async with env() as e:
+        key = await ready(e)
         assert (await e.invoke(key, MEMBER)).ok
+        e.server.confidential_clients[CLIENT_ID] = "rotated-upstream"  # the fresh token cannot be obtained
+        for info in e.server.access.values():
+            info["revoked"] = True
+        before = e.server.counters["client_credentials"]
+        result = await e.invoke(key, MEMBER)
+        assert not result.ok and result.error_code == "upstream_auth_failed"
+        assert e.server.counters["client_credentials"] - before == 1  # exactly one retry, no loop
+        assert (await e.c.integrations.get(e.h.project.id, e.integration_id)).status != IntegrationStatus.ACTIVE
+
+
+async def test_a_fresh_token_that_is_also_rejected_fails_cleanly_after_exactly_one_retry():
+    async with env() as e:
+        key = await ready(e)
+        assert (await e.invoke(key, MEMBER)).ok
+        e.server.cc_revoke_on_issue = True  # the upstream rejects even freshly issued tokens
+        for info in e.server.access.values():
+            info["revoked"] = True
+        before = e.server.counters["client_credentials"]
+        result = await e.invoke(key, MEMBER)
+        assert result.error_code == "upstream_auth_failed"  # not an internal error from the retry loop
+        assert e.server.counters["client_credentials"] - before == 1
+
+
+async def test_static_credentials_are_never_retried_on_rejection():
+    h = make_harness()
+    from tests.test_tools_services import ready as ready_scripted, req as scripted_req
+
+    await ready_scripted(h, [tool("a")])
+    attempts = []
+    original = h.scripted.execute
+
+    async def counting(*args, **kwargs):
+        attempts.append(1)
+        return await original(*args, **kwargs)
+
+    h.scripted.execute = counting  # type: ignore[method-assign]
+    h.scripted.raise_on_execute = UpstreamAuthError("no")
+    result = await h.container.gateway.invoke(scripted_req(h, "svc.a", {"q": "x"}))
+    assert result.error_code == "upstream_auth_failed" and len(attempts) == 1
 
 
 async def test_rotating_the_client_secret_takes_effect_immediately():

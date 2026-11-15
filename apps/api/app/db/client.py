@@ -51,6 +51,12 @@ async def init_db(app: Optional[FastAPI] = None) -> None:
             )
             logger.info(f"Beanie initialized with {len(DOCUMENT_MODELS)} document models.")
 
+            from app.db.migrations import legacy_index_warning, legacy_indexes_present
+
+            legacy = await legacy_indexes_present(_database)
+            if legacy:
+                logger.warning(legacy_index_warning(legacy))
+
         if app is not None:
             app.state.mongo_client = _client
             app.state.mongo_db = _database

@@ -418,13 +418,24 @@ class ExecuteStage:
                     "The integration is handling too many calls right now; retry shortly", retryable=True,
                 )
         try:
-            async with asyncio.timeout(timeout):
-                with self._telemetry.span("integration.execute", {"integration.type": tool.integration_type}) as span:
-                    try:
-                        raw = await adapter.execute(integration, tool, state.arguments, state.credentials, timeout)
-                    except Exception as exc:
-                        span.record_error(exc)
-                        raise
+            for attempt in (1, 2):
+                try:
+                    async with asyncio.timeout(timeout):
+                        with self._telemetry.span("integration.execute", {"integration.type": tool.integration_type}) as span:
+                            try:
+                                raw = await adapter.execute(integration, tool, state.arguments, state.credentials, timeout)
+                            except Exception as exc:
+                                span.record_error(exc)
+                                raise
+                    break
+                except UpstreamAuthError:
+                    # A cached machine token the upstream no longer accepts (revoked, expired early) is not a broken
+                    # integration: drop it and retry once with a fresh one. The rejected call never ran, so the retry
+                    # is safe for any tool. Only a rejection of the *fresh* credentials marks the integration failing.
+                    if attempt == 1 and self._credentials is not None and self._credentials.forget(integration):
+                        state.credentials = await self._credentials.resolve(integration, request.principal.subject)
+                        continue
+                    raise
         except (UpstreamTimeout, TimeoutError):
             return await self._failure(integration, key, InvocationStatus.TIMEOUT, "upstream_timeout", "The tool timed out", True)
         except UpstreamAuthError:

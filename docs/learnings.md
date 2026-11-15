@@ -484,8 +484,10 @@ Outbound Guard on save *without* the MCP `allowed_hosts` list, because the token
 **Pitfall.** `cache or TokenCache()` silently replaced an injected cache: `TokenCache` defines `__len__`, so an empty
 one is falsy. Use `is not None` for injected collaborators that are containers.
 
-**Behaviour to know.** After the upstream rejects a token the integration is marked `error` (existing gateway rule), so
-calls report `tool_unavailable` until an admin re-tests it; the re-test then fetches a fresh token.
+**Rejected tokens.** A 401 on a *cached* machine token drops it and retries the call once with a fresh token (the rejected
+call never ran, so this is safe for any tool). Only a rejection of freshly issued credentials marks the integration
+`error`, after which calls report `tool_unavailable` until an admin re-tests it. Static credentials are never retried
+(`forget` returns whether anything was cached).
 
 **Verification.** `tests/test_oauth_client_credentials.py` (real SDK server + authorization server); 18 mutants, one
 equivalent survivor (a too-short token is refetched either way).
@@ -505,6 +507,16 @@ excluded from the OpenAPI contract.
 
 **Verification.** `tests/test_tools_telemetry.py`; the OTel SDK is not installed, so the adapter's span handle is tested
 against a fake span and the gateway against a recording tracer. 16 mutants killed.
+
+### 32. Obsolete TTL index must be dropped by an operator; startup only warns
+
+**Symptom.** `idx_tool_invocations_ttl` (fixed 30 days on `started_at`) predates per-record `expire_at`. Beanie creates
+indexes but never drops them, so on an existing database MongoDB keeps deleting invocations after 30 days even when a
+project asked for longer content retention.
+
+**Fix.** `app/db/migrations.py` detects the index; `init_db` logs a warning naming the command; the operator runs
+`python scripts/drop_legacy_indexes.py` (dry run) then `--apply`. Nothing is dropped automatically: removing an index is
+a data-lifecycle change and belongs to a person. Verified with a fake collection (`tests/test_db_migrations.py`).
 
 ---
 

@@ -84,8 +84,8 @@ class TokenCache:
                 self._entries.pop(next(iter(self._entries)), None)
         self._entries[key] = _Entry(tokens.access_token, self._clock() + lifetime, fingerprint)
 
-    def invalidate(self, key: Hashable) -> None:
-        self._entries.pop(key, None)
+    def invalidate(self, key: Hashable) -> bool:
+        return self._entries.pop(key, None) is not None
 
     def __len__(self) -> int:
         return len(self._entries)
