@@ -44,8 +44,11 @@ class ProviderCreateRequest(BaseModel):
 
     @model_validator(mode="after")
     def validate_custom_provider_base_url(self) -> "ProviderCreateRequest":
-        if self.provider_type == ProviderType.CUSTOM_OPENAI_COMPATIBLE and not self.base_url:
-            raise ValueError("base_url is required for custom_openai_compatible provider")
+        if self.provider_type == ProviderType.CUSTOM_OPENAI_COMPATIBLE:
+            if not self.base_url:
+                raise ValueError("base_url is required for custom_openai_compatible provider")
+            if not (self.base_url.startswith("http://") or self.base_url.startswith("https://")):
+                raise ValueError("base_url must start with http:// or https://")
         return self
 
 
