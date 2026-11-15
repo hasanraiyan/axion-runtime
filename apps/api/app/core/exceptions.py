@@ -243,3 +243,65 @@ class CredentialRevisionConflictError(ConflictError):
         self.code = "CREDENTIAL_REVISION_CONFLICT"
 
 
+# ==============================================================================
+# Provider & Model Domain Exceptions (SRS-06)
+# ==============================================================================
+
+
+class DuplicateProviderSlugError(ConflictError):
+    def __init__(self, slug: str, details: Optional[List[Dict[str, Any]]] = None):
+        super().__init__(
+            message=f"Provider with slug '{slug}' already exists in this project",
+            details=details,
+        )
+        self.code = "PROVIDER_SLUG_EXISTS"
+
+
+class DuplicateProviderNameError(ConflictError):
+    def __init__(self, name: str, details: Optional[List[Dict[str, Any]]] = None):
+        super().__init__(
+            message=f"Provider with name '{name}' already exists in this project",
+            details=details,
+        )
+        self.code = "PROVIDER_NAME_EXISTS"
+
+
+class DuplicateModelError(ConflictError):
+    def __init__(self, model_id: str, details: Optional[List[Dict[str, Any]]] = None):
+        super().__init__(
+            message=f"Model with identifier '{model_id}' already exists for this provider",
+            details=details,
+        )
+        self.code = "MODEL_EXISTS"
+
+
+class ProviderRevisionConflictError(ConflictError):
+    def __init__(
+        self,
+        message: str = "Provider update conflict: concurrent modification detected",
+        details: Optional[List[Dict[str, Any]]] = None,
+    ):
+        super().__init__(message=message, details=details)
+        self.code = "REVISION_CONFLICT"
+
+
+class ModelRevisionConflictError(ConflictError):
+    def __init__(
+        self,
+        message: str = "Model update conflict: concurrent modification detected",
+        details: Optional[List[Dict[str, Any]]] = None,
+    ):
+        super().__init__(message=message, details=details)
+        self.code = "REVISION_CONFLICT"
+
+
+class SecretInUseError(ConflictError):
+    def __init__(self, secret_id: str, count: int = 1, details: Optional[List[Dict[str, Any]]] = None):
+        super().__init__(
+            message=f"Cannot delete secret '{secret_id}': referenced by {count} active provider(s)",
+            details=details,
+        )
+        self.code = "SECRET_IN_USE"
+
+
+

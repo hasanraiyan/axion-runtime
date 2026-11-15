@@ -18,6 +18,19 @@ from app.models.credential import (
     ProjectCredential,
     CredentialStatus,
 )
+from app.models.project_provider import (
+    HealthcheckStatus,
+    ProjectProvider,
+    ProviderStatus,
+    ProviderType,
+)
+from app.models.project_model import (
+    ModelType,
+    ProjectModel,
+)
+from app.models.project_routing_policy import (
+    ProjectRoutingPolicy,
+)
 
 # Registry of all Beanie document models for initialization.
 DOCUMENT_MODELS: List[Type[Document]] = [
@@ -27,6 +40,9 @@ DOCUMENT_MODELS: List[Type[Document]] = [
     ProjectAuditLog,
     ProjectSecret,
     ProjectCredential,
+    ProjectProvider,
+    ProjectModel,
+    ProjectRoutingPolicy,
 ]
 
 __all__ = [
@@ -43,5 +59,12 @@ __all__ = [
     "EncryptedEnvelope",
     "ProjectCredential",
     "CredentialStatus",
+    "ProjectProvider",
+    "ProviderType",
+    "ProviderStatus",
+    "HealthcheckStatus",
+    "ProjectModel",
+    "ModelType",
+    "ProjectRoutingPolicy",
     "DOCUMENT_MODELS",
 ]

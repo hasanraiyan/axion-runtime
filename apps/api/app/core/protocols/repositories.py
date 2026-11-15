@@ -6,6 +6,9 @@ from bson import ObjectId
 from app.models.credential import CredentialStatus, ProjectCredential
 from app.models.project import Project, ProjectAuditAction, ProjectAuditLog, ProjectMember, ProjectRole, ProjectStatus
 from app.models.secret import ProjectSecret
+from app.models.project_provider import HealthcheckStatus, ProjectProvider, ProviderStatus, ProviderType
+from app.models.project_model import ModelType, ProjectModel
+from app.models.project_routing_policy import ProjectRoutingPolicy
 
 
 @runtime_checkable
@@ -332,3 +335,277 @@ class IProjectMemberRepository(Protocol):
         session: Optional[Any] = None,
     ) -> int:
         ...
+
+
+@runtime_checkable
+class IProjectProviderRepository(Protocol):
+    """Protocol defining the interface for ProjectProvider persistence operations."""
+
+    async def create(
+        self,
+        document: ProjectProvider,
+        session: Optional[Any] = None,
+    ) -> ProjectProvider:
+        ...
+
+    async def get_by_id_and_project(
+        self,
+        provider_id: Union[str, PydanticObjectId, ObjectId],
+        project_id: Union[str, PydanticObjectId, ObjectId],
+        include_deleted: bool = False,
+    ) -> Optional[ProjectProvider]:
+        ...
+
+    async def get_by_slug(
+        self,
+        project_id: Union[str, PydanticObjectId, ObjectId],
+        slug: str,
+        include_deleted: bool = False,
+    ) -> Optional[ProjectProvider]:
+        ...
+
+    async def get_by_name(
+        self,
+        project_id: Union[str, PydanticObjectId, ObjectId],
+        name: str,
+        include_deleted: bool = False,
+    ) -> Optional[ProjectProvider]:
+        ...
+
+    async def list_by_project(
+        self,
+        project_id: Union[str, PydanticObjectId, ObjectId],
+        provider_type: Optional[ProviderType] = None,
+        status: Optional[ProviderStatus] = None,
+        search: Optional[str] = None,
+        sort_by: str = "updated_at",
+        sort_order: str = "desc",
+        skip: int = 0,
+        limit: int = 50,
+        include_deleted: bool = False,
+    ) -> Tuple[List[ProjectProvider], int]:
+        ...
+
+    async def count_by_secret_id(
+        self,
+        secret_id: Union[str, PydanticObjectId, ObjectId],
+        include_deleted: bool = False,
+    ) -> int:
+        ...
+
+    async def update_with_revision(
+        self,
+        provider_id: Union[str, PydanticObjectId, ObjectId],
+        project_id: Union[str, PydanticObjectId, ObjectId],
+        expected_revision: int,
+        update_dict: Dict[str, Any],
+        session: Optional[Any] = None,
+    ) -> ProjectProvider:
+        ...
+
+    async def unset_other_defaults(
+        self,
+        project_id: Union[str, PydanticObjectId, ObjectId],
+        exclude_id: Optional[Union[str, PydanticObjectId, ObjectId]] = None,
+        session: Optional[Any] = None,
+    ) -> int:
+        ...
+
+    async def update_healthcheck(
+        self,
+        provider_id: Union[str, PydanticObjectId, ObjectId],
+        project_id: Union[str, PydanticObjectId, ObjectId],
+        healthcheck_status: HealthcheckStatus,
+        latency_ms: Optional[int] = None,
+        message: Optional[str] = None,
+        status: Optional[ProviderStatus] = None,
+        session: Optional[Any] = None,
+    ) -> Optional[ProjectProvider]:
+        ...
+
+    async def soft_delete(
+        self,
+        provider_id: Union[str, PydanticObjectId, ObjectId],
+        project_id: Union[str, PydanticObjectId, ObjectId],
+        session: Optional[Any] = None,
+    ) -> bool:
+        ...
+
+    async def purge(
+        self,
+        provider_id: Union[str, PydanticObjectId, ObjectId],
+        project_id: Union[str, PydanticObjectId, ObjectId],
+        session: Optional[Any] = None,
+    ) -> bool:
+        ...
+
+    async def purge_by_project(
+        self,
+        project_id: Union[str, PydanticObjectId, ObjectId],
+        session: Optional[Any] = None,
+    ) -> int:
+        ...
+
+
+@runtime_checkable
+class IProjectModelRepository(Protocol):
+    """Protocol defining the interface for ProjectModel persistence operations."""
+
+    async def create(
+        self,
+        document: ProjectModel,
+        session: Optional[Any] = None,
+    ) -> ProjectModel:
+        ...
+
+    async def get_by_id_and_project(
+        self,
+        model_id: Union[str, PydanticObjectId, ObjectId],
+        project_id: Union[str, PydanticObjectId, ObjectId],
+        include_deleted: bool = False,
+    ) -> Optional[ProjectModel]:
+        ...
+
+    async def get_by_provider_and_model_id(
+        self,
+        provider_id: Union[str, PydanticObjectId, ObjectId],
+        model_id: str,
+        include_deleted: bool = False,
+    ) -> Optional[ProjectModel]:
+        ...
+
+    async def list_by_project(
+        self,
+        project_id: Union[str, PydanticObjectId, ObjectId],
+        provider_id: Optional[Union[str, PydanticObjectId, ObjectId]] = None,
+        model_type: Optional[ModelType] = None,
+        supports_tools: Optional[bool] = None,
+        supports_vision: Optional[bool] = None,
+        supports_json_mode: Optional[bool] = None,
+        is_enabled: Optional[bool] = None,
+        search: Optional[str] = None,
+        sort_by: str = "created_at",
+        sort_order: str = "desc",
+        skip: int = 0,
+        limit: int = 50,
+        include_deleted: bool = False,
+    ) -> Tuple[List[ProjectModel], int]:
+        ...
+
+    async def list_by_provider(
+        self,
+        provider_id: Union[str, PydanticObjectId, ObjectId],
+        include_deleted: bool = False,
+    ) -> List[ProjectModel]:
+        ...
+
+    async def update_with_revision(
+        self,
+        model_id: Union[str, PydanticObjectId, ObjectId],
+        project_id: Union[str, PydanticObjectId, ObjectId],
+        expected_revision: int,
+        update_dict: Dict[str, Any],
+        session: Optional[Any] = None,
+    ) -> ProjectModel:
+        ...
+
+    async def unset_other_defaults(
+        self,
+        project_id: Union[str, PydanticObjectId, ObjectId],
+        model_type: ModelType,
+        exclude_id: Optional[Union[str, PydanticObjectId, ObjectId]] = None,
+        session: Optional[Any] = None,
+    ) -> int:
+        ...
+
+    async def soft_delete(
+        self,
+        model_id: Union[str, PydanticObjectId, ObjectId],
+        project_id: Union[str, PydanticObjectId, ObjectId],
+        session: Optional[Any] = None,
+    ) -> bool:
+        ...
+
+    async def soft_delete_by_provider(
+        self,
+        provider_id: Union[str, PydanticObjectId, ObjectId],
+        project_id: Union[str, PydanticObjectId, ObjectId],
+        session: Optional[Any] = None,
+    ) -> int:
+        ...
+
+    async def purge(
+        self,
+        model_id: Union[str, PydanticObjectId, ObjectId],
+        project_id: Union[str, PydanticObjectId, ObjectId],
+        session: Optional[Any] = None,
+    ) -> bool:
+        ...
+
+    async def purge_by_project(
+        self,
+        project_id: Union[str, PydanticObjectId, ObjectId],
+        session: Optional[Any] = None,
+    ) -> int:
+        ...
+
+
+@runtime_checkable
+class IProjectRoutingPolicyRepository(Protocol):
+    """Protocol defining the interface for ProjectRoutingPolicy persistence operations."""
+
+    async def create(
+        self,
+        document: ProjectRoutingPolicy,
+        session: Optional[Any] = None,
+    ) -> ProjectRoutingPolicy:
+        ...
+
+    async def get_by_id_and_project(
+        self,
+        policy_id: Union[str, PydanticObjectId, ObjectId],
+        project_id: Union[str, PydanticObjectId, ObjectId],
+    ) -> Optional[ProjectRoutingPolicy]:
+        ...
+
+    async def get_by_name(
+        self,
+        project_id: Union[str, PydanticObjectId, ObjectId],
+        name: str,
+    ) -> Optional[ProjectRoutingPolicy]:
+        ...
+
+    async def list_by_project(
+        self,
+        project_id: Union[str, PydanticObjectId, ObjectId],
+        is_active: Optional[bool] = None,
+        skip: int = 0,
+        limit: int = 50,
+    ) -> Tuple[List[ProjectRoutingPolicy], int]:
+        ...
+
+    async def update_with_revision(
+        self,
+        policy_id: Union[str, PydanticObjectId, ObjectId],
+        project_id: Union[str, PydanticObjectId, ObjectId],
+        expected_revision: int,
+        update_dict: Dict[str, Any],
+        session: Optional[Any] = None,
+    ) -> ProjectRoutingPolicy:
+        ...
+
+    async def delete(
+        self,
+        policy_id: Union[str, PydanticObjectId, ObjectId],
+        project_id: Union[str, PydanticObjectId, ObjectId],
+        session: Optional[Any] = None,
+    ) -> bool:
+        ...
+
+    async def purge_by_project(
+        self,
+        project_id: Union[str, PydanticObjectId, ObjectId],
+        session: Optional[Any] = None,
+    ) -> int:
+        ...
+

@@ -7,7 +7,10 @@ from app.core.protocols.repositories import (
     ICredentialRepository,
     IProjectAuditRepository,
     IProjectMemberRepository,
+    IProjectModelRepository,
+    IProjectProviderRepository,
     IProjectRepository,
+    IProjectRoutingPolicyRepository,
     ISecretRepository,
 )
 
@@ -17,6 +20,9 @@ __all__ = [
     "ISecretRepository",
     "IProjectAuditRepository",
     "IProjectMemberRepository",
+    "IProjectProviderRepository",
+    "IProjectModelRepository",
+    "IProjectRoutingPolicyRepository",
     "KeyProviderProtocol",
     "EnvironmentPrefixStrategy",
     "DefaultEnvironmentPrefixStrategy",

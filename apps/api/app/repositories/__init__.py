@@ -21,6 +21,18 @@ from app.repositories.secret_repository import (
     get_secret_repository,
 )
 from app.repositories.user_repository import UserRepository, get_user_repository
+from app.repositories.project_provider_repository import (
+    ProjectProviderRepository,
+    get_project_provider_repository,
+)
+from app.repositories.project_model_repository import (
+    ProjectModelRepository,
+    get_project_model_repository,
+)
+from app.repositories.project_routing_policy_repository import (
+    ProjectRoutingPolicyRepository,
+    get_project_routing_policy_repository,
+)
 
 __all__ = [
     "BaseRepository",
@@ -37,4 +49,10 @@ __all__ = [
     "ProjectCredentialRepository",
     "InMemoryProjectCredentialRepository",
     "get_credential_repository",
+    "ProjectProviderRepository",
+    "get_project_provider_repository",
+    "ProjectModelRepository",
+    "get_project_model_repository",
+    "ProjectRoutingPolicyRepository",
+    "get_project_routing_policy_repository",
 ]
