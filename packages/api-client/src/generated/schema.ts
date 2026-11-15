@@ -1272,6 +1272,148 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/projects/{project_id}/integrations/{integration_id}/resources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Resources */
+        get: operations["list_integration_resources"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/integrations/{integration_id}/prompts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Prompts */
+        get: operations["list_integration_prompts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/integrations/{integration_id}/apps": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Apps */
+        get: operations["list_integration_apps"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/integrations/{integration_id}/apps/sync": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Fetch and hash-pin the app resources the integration's tools reference */
+        post: operations["sync_integration_apps"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/app-resources/{resource_id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Approve one exact version of an app, with specific domains and permissions */
+        post: operations["approve_app_resource"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/app-resources/{resource_id}/content": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Approved HTML with its approved domains and permissions
+         * @description Refuses unapproved or changed apps. The host must apply exactly the returned CSP and permissions.
+         */
+        get: operations["get_app_content"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/apps/tool-calls": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * A tool call made by an approved app
+         * @description Same integration only, tools that declare the app as a caller only, and the full gateway pipeline.
+         */
+        post: operations["app_call_tool"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/apps/resource-reads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** A resource read made by an approved app */
+        post: operations["app_read_resource"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1320,6 +1462,60 @@ export interface components {
             success: false;
             /** @description Error details payload */
             error: components["schemas"]["ApiErrorPayload"];
+        };
+        /** ApiResponse[AppContentResponse] */
+        ApiResponse_AppContentResponse_: {
+            /**
+             * Success
+             * @description Always true for successful responses
+             * @default true
+             * @constant
+             */
+            success: true;
+            /** @description Response payload */
+            data: components["schemas"]["AppContentResponse"];
+            /**
+             * Message
+             * @description Status message
+             * @default Operation completed successfully
+             */
+            message: string;
+        };
+        /** ApiResponse[AppResourceResponse] */
+        ApiResponse_AppResourceResponse_: {
+            /**
+             * Success
+             * @description Always true for successful responses
+             * @default true
+             * @constant
+             */
+            success: true;
+            /** @description Response payload */
+            data: components["schemas"]["AppResourceResponse"];
+            /**
+             * Message
+             * @description Status message
+             * @default Operation completed successfully
+             */
+            message: string;
+        };
+        /** ApiResponse[AppSyncResponse] */
+        ApiResponse_AppSyncResponse_: {
+            /**
+             * Success
+             * @description Always true for successful responses
+             * @default true
+             * @constant
+             */
+            success: true;
+            /** @description Response payload */
+            data: components["schemas"]["AppSyncResponse"];
+            /**
+             * Message
+             * @description Status message
+             * @default Operation completed successfully
+             */
+            message: string;
         };
         /** ApiResponse[ApprovalIssueResponse] */
         ApiResponse_ApprovalIssueResponse_: {
@@ -1802,6 +1998,24 @@ export interface components {
              */
             message: string;
         };
+        /** ApiResponse[ResourceReadResponse] */
+        ApiResponse_ResourceReadResponse_: {
+            /**
+             * Success
+             * @description Always true for successful responses
+             * @default true
+             * @constant
+             */
+            success: true;
+            /** @description Response payload */
+            data: components["schemas"]["ResourceReadResponse"];
+            /**
+             * Message
+             * @description Status message
+             * @default Operation completed successfully
+             */
+            message: string;
+        };
         /** ApiResponse[SecretBatchResolveResponse] */
         ApiResponse_SecretBatchResolveResponse_: {
             /**
@@ -1933,6 +2147,27 @@ export interface components {
              */
             message: string;
         };
+        /** ApiResponse[list[AppResourceResponse]] */
+        ApiResponse_list_AppResourceResponse__: {
+            /**
+             * Success
+             * @description Always true for successful responses
+             * @default true
+             * @constant
+             */
+            success: true;
+            /**
+             * Data
+             * @description Response payload
+             */
+            data: components["schemas"]["AppResourceResponse"][];
+            /**
+             * Message
+             * @description Status message
+             * @default Operation completed successfully
+             */
+            message: string;
+        };
         /** ApiResponse[list[BindingResponse]] */
         ApiResponse_list_BindingResponse__: {
             /**
@@ -1974,6 +2209,174 @@ export interface components {
              * @default Operation completed successfully
              */
             message: string;
+        };
+        /** ApiResponse[list[PromptInfoResponse]] */
+        ApiResponse_list_PromptInfoResponse__: {
+            /**
+             * Success
+             * @description Always true for successful responses
+             * @default true
+             * @constant
+             */
+            success: true;
+            /**
+             * Data
+             * @description Response payload
+             */
+            data: components["schemas"]["PromptInfoResponse"][];
+            /**
+             * Message
+             * @description Status message
+             * @default Operation completed successfully
+             */
+            message: string;
+        };
+        /** ApiResponse[list[ResourceInfoResponse]] */
+        ApiResponse_list_ResourceInfoResponse__: {
+            /**
+             * Success
+             * @description Always true for successful responses
+             * @default true
+             * @constant
+             */
+            success: true;
+            /**
+             * Data
+             * @description Response payload
+             */
+            data: components["schemas"]["ResourceInfoResponse"][];
+            /**
+             * Message
+             * @description Status message
+             * @default Operation completed successfully
+             */
+            message: string;
+        };
+        /** AppApproveRequest */
+        AppApproveRequest: {
+            /**
+             * Content Hash
+             * @description The hash the admin reviewed
+             */
+            content_hash: string;
+            /**
+             * Csp
+             * @description Domains to allow, per CSP category; others are denied
+             */
+            csp?: {
+                [key: string]: string[];
+            };
+            /**
+             * Permissions
+             * @description Browser permissions to allow; others are denied
+             */
+            permissions?: string[];
+        };
+        /** AppContentResponse */
+        AppContentResponse: {
+            /** Resource Id */
+            resource_id: string;
+            /** Uri */
+            uri: string;
+            /** Mime Type */
+            mime_type: string | null;
+            /** Html */
+            html: string;
+            /** Content Hash */
+            content_hash: string;
+            /** Csp */
+            csp: {
+                [key: string]: string[];
+            };
+            /** Permissions */
+            permissions: string[];
+        };
+        /** AppResourceReadRequest */
+        AppResourceReadRequest: {
+            /** Resource Id */
+            resource_id: string;
+            /** Uri */
+            uri: string;
+        };
+        /**
+         * AppResourceResponse
+         * @description App metadata for admins. The HTML itself is never included here.
+         */
+        AppResourceResponse: {
+            /** Id */
+            id: string;
+            /** Integration Id */
+            integration_id: string;
+            /** Uri */
+            uri: string;
+            /** Mime Type */
+            mime_type: string | null;
+            /** Size Bytes */
+            size_bytes: number;
+            /** Content Hash */
+            content_hash: string;
+            /** Declared Csp */
+            declared_csp: {
+                [key: string]: string[];
+            };
+            /** Declared Permissions */
+            declared_permissions: string[];
+            /**
+             * Approved
+             * @description True when the current content hash is the approved one
+             */
+            approved: boolean;
+            /** Approved Hash */
+            approved_hash: string | null;
+            /** Approved Csp */
+            approved_csp: {
+                [key: string]: string[];
+            };
+            /** Approved Permissions */
+            approved_permissions: string[];
+            /** Approved By */
+            approved_by: string | null;
+            /** Approved At */
+            approved_at: string | null;
+            sync_state: components["schemas"]["AppSyncState"];
+            /** Status Message */
+            status_message: string | null;
+            /**
+             * Fetched At
+             * Format: date-time
+             */
+            fetched_at: string;
+            /** Revision */
+            revision: number;
+        };
+        /** AppSyncResponse */
+        AppSyncResponse: {
+            /** Synced */
+            synced: string[];
+            /** Changed */
+            changed: string[];
+            /** Unavailable */
+            unavailable: {
+                [key: string]: string;
+            }[];
+        };
+        /**
+         * AppSyncState
+         * @enum {string}
+         */
+        AppSyncState: "in_sync" | "changed" | "unavailable";
+        /** AppToolCallRequest */
+        AppToolCallRequest: {
+            /** Resource Id */
+            resource_id: string;
+            /** Tool Key */
+            tool_key: string;
+            /** Arguments */
+            arguments?: {
+                [key: string]: unknown;
+            };
+            /** Idempotency Key */
+            idempotency_key?: string | null;
         };
         /** ApprovalIssueRequest */
         ApprovalIssueRequest: {
@@ -2071,7 +2474,7 @@ export interface components {
             };
             /**
              * Oauth
-             * @description Non-secret OAuth settings (phase 2)
+             * @description Non-secret OAuth settings (scopes, client_id)
              */
             oauth?: {
                 [key: string]: unknown;
@@ -3813,6 +4216,17 @@ export interface components {
              */
             version: number;
         };
+        /** PromptInfoResponse */
+        PromptInfoResponse: {
+            /** Name */
+            name: string;
+            /** Description */
+            description: string | null;
+            /** Arguments */
+            arguments: {
+                [key: string]: unknown;
+            }[];
+        };
         /** ProviderCreateRequest */
         ProviderCreateRequest: {
             /**
@@ -4034,6 +4448,32 @@ export interface components {
         };
         /** @example 5eb7cf5a86d9755df3a6c593 */
         PydanticObjectId: string;
+        /** ResourceInfoResponse */
+        ResourceInfoResponse: {
+            /** Uri */
+            uri: string;
+            /** Name */
+            name: string;
+            /** Description */
+            description: string | null;
+            /** Mime Type */
+            mime_type: string | null;
+            /** Is Template */
+            is_template: boolean;
+        };
+        /** ResourceReadResponse */
+        ResourceReadResponse: {
+            /** Uri */
+            uri: string;
+            /** Mime Type */
+            mime_type: string | null;
+            /** Text */
+            text?: string | null;
+            /** Blob Base64 */
+            blob_base64?: string | null;
+            /** Size Bytes */
+            size_bytes: number;
+        };
         /** SecretBatchResolveRequest */
         SecretBatchResolveRequest: {
             /**
@@ -10048,6 +10488,584 @@ export interface operations {
             };
             /** @description Not Found */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_integration_resources: {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string | null;
+            };
+            path: {
+                integration_id: string;
+                /** @description Project id or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_list_ResourceInfoResponse__"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_integration_prompts: {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string | null;
+            };
+            path: {
+                integration_id: string;
+                /** @description Project id or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_list_PromptInfoResponse__"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_integration_apps: {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string | null;
+            };
+            path: {
+                integration_id: string;
+                /** @description Project id or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_list_AppResourceResponse__"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    sync_integration_apps: {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string | null;
+            };
+            path: {
+                integration_id: string;
+                /** @description Project id or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_AppSyncResponse_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    approve_app_resource: {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string | null;
+            };
+            path: {
+                resource_id: string;
+                /** @description Project id or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AppApproveRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_AppResourceResponse_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_app_content: {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string | null;
+            };
+            path: {
+                resource_id: string;
+                /** @description Project id or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_AppContentResponse_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    app_call_tool: {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string | null;
+            };
+            path: {
+                /** @description Project id or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AppToolCallRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_InvokeResponse_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    app_read_resource: {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string | null;
+            };
+            path: {
+                /** @description Project id or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AppResourceReadRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_ResourceReadResponse_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
