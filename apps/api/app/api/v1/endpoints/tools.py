@@ -7,6 +7,8 @@ from app.models.tool import BindingSubjectType, ToolSyncState
 from app.models.tool_invocation import InvocationStatus
 from app.schemas.common import ApiErrorResponse, ApiResponse, PaginatedData, PaginatedResponse
 from app.schemas.tools import (
+    ToolBulkRequest,
+    ToolBulkResponse,
     BindingReplaceRequest,
     BindingResponse,
     InvocationRecordResponse,
@@ -48,6 +50,11 @@ async def list_tools(
         ),
         message="Tools retrieved successfully",
     )
+
+
+@router.post("/tools/bulk", response_model=ApiResponse[ToolBulkResponse], operation_id="bulk_update_tools", summary="Enable, disable, or set the approval policy of many tools", description="Reports the outcome per tool. Enabling approves each tool's current definition; drifted tools are skipped, never silently approved.", responses=ERRORS)
+async def bulk_update_tools(body: ToolBulkRequest, project_id: str = PID, caller: AdminCaller = None, tools: ToolsDep = None):  # type: ignore[assignment]
+    return ApiResponse(data=await tools.tool_settings.bulk_update(caller.project.id, body, caller.actor_id), message="Bulk update processed")
 
 
 @router.get("/tools/{tool_key}", response_model=ApiResponse[ToolResponse], operation_id="get_tool", responses=ERRORS)

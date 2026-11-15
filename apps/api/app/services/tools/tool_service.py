@@ -13,7 +13,7 @@ from bson import ObjectId
 from jsonschema import Draft202012Validator
 from jsonschema.exceptions import SchemaError
 
-from app.core.exceptions import BadRequestError, NotFoundError, ToolDriftPendingError
+from app.core.exceptions import BadRequestError, NotFoundError, RevisionConflictError, ToolDriftPendingError
 from app.core.protocols.tool_repositories import IToolDefinitionRepository, IToolSettingRepository
 from app.core.tools.context import is_valid_context_key
 from app.core.tools.events import ToolsetChanged
@@ -21,7 +21,7 @@ from app.core.tools.policy import default_approval_policy
 from app.core.tools.ports import AuditPort, DomainEventPort
 from app.models.project import ProjectAuditAction
 from app.models.tool import ToolDefinition, ToolSetting, ToolSyncState
-from app.schemas.tools import ToolSettingUpdateRequest
+from app.schemas.tools import ToolBulkAction, ToolBulkItemResult, ToolBulkRequest, ToolBulkResponse, ToolSettingUpdateRequest
 from app.services.tools.common import ProjectLifecycle
 
 IdLike = Union[str, PydanticObjectId, ObjectId]
@@ -186,3 +186,77 @@ class ToolSettingService:
         )
         await self._events.publish(ToolsetChanged(str(project.id), "tool_approved"))
         return definition, updated
+
+
+    # ----------------------------------------------------------------------- bulk
+    async def bulk_update(self, project_id: IdLike, request: ToolBulkRequest, actor_id: str) -> ToolBulkResponse:
+        """
+        Apply one action to many tools. There are no transactions on standalone MongoDB (AGENTS invariant 8), so the
+        outcome is reported per tool: a conflict or a drifted tool never aborts the rest and is never silently
+        approved. Enabling a tool still means approving its *current* definition, exactly as a single update does.
+        """
+        project = await self._lifecycle.get_active(project_id)
+        results: List[ToolBulkItemResult] = []
+
+        if request.tool_keys:
+            keys = list(dict.fromkeys(request.tool_keys))
+            found = {d.tool_key: d for d in await self._tools.list_by_keys(project.id, keys)}
+            selection: List[Tuple[str, Optional[ToolDefinition]]] = [(k, found.get(k)) for k in keys]
+        else:
+            definitions = [
+                d for d in await self._tools.list_by_integration(request.integration_id)  # type: ignore[arg-type]
+                if str(d.project_id) == str(project.id)  # never cross a tenant boundary
+            ]
+            if request.read_only_only:
+                definitions = [d for d in definitions if d.annotations.read_only is True and d.annotations.destructive is not True]
+            selection = [(d.tool_key, d) for d in sorted(definitions, key=lambda d: d.tool_key)]
+
+        for key, definition in selection:
+            if definition is None:
+                results.append(ToolBulkItemResult(tool_key=key, outcome="failed", reason="not_found"))
+                continue
+            results.append(await self._bulk_one(project.id, definition, request, actor_id))
+
+        response = ToolBulkResponse(
+            updated=sum(r.outcome == "updated" for r in results),
+            skipped=sum(r.outcome == "skipped" for r in results),
+            failed=sum(r.outcome == "failed" for r in results),
+            results=results,
+        )
+        await self._audit.record(
+            str(project.id),
+            actor_id,
+            ProjectAuditAction.TOOL_BULK_UPDATED.value,
+            {"action": request.action.value, "updated": response.updated, "skipped": response.skipped, "failed": response.failed},
+        )
+        if response.updated:
+            await self._events.publish(ToolsetChanged(str(project.id), "tools_bulk_updated"))
+        return response
+
+    async def _bulk_one(self, project_id: Any, definition: ToolDefinition, request: ToolBulkRequest, actor_id: str) -> ToolBulkItemResult:
+        key = definition.tool_key
+        setting = await self._settings.get_or_create_default(
+            project_id, key, {"approval_policy": default_approval_policy(definition.annotations.model_dump())}
+        )
+        fields: Dict[str, Any] = {"updated_by": actor_id}
+        if request.action == ToolBulkAction.ENABLE:
+            if definition.sync_state == ToolSyncState.CHANGED:
+                return ToolBulkItemResult(tool_key=key, outcome="skipped", reason="drift_pending")
+            if definition.sync_state == ToolSyncState.REMOVED_UPSTREAM:
+                return ToolBulkItemResult(tool_key=key, outcome="skipped", reason="removed_upstream")
+            if setting.is_enabled and setting.approved_hash == definition.definition_hash:
+                return ToolBulkItemResult(tool_key=key, outcome="skipped", reason="already_enabled")
+            fields.update(is_enabled=True, approved_hash=definition.definition_hash)
+        elif request.action == ToolBulkAction.DISABLE:
+            if not setting.is_enabled:
+                return ToolBulkItemResult(tool_key=key, outcome="skipped", reason="already_disabled")
+            fields["is_enabled"] = False
+        else:
+            if setting.approval_policy == request.approval_policy:
+                return ToolBulkItemResult(tool_key=key, outcome="skipped", reason="unchanged")
+            fields["approval_policy"] = request.approval_policy
+        try:
+            await self._settings.update_with_revision(project_id, key, setting.revision, fields)
+        except RevisionConflictError:
+            return ToolBulkItemResult(tool_key=key, outcome="failed", reason="conflict")
+        return ToolBulkItemResult(tool_key=key, outcome="updated")

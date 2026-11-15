@@ -68,6 +68,7 @@ class ProjectAuditAction(str, Enum):
     INTEGRATION_END_USER_ACCESS_CHANGED = "integration.end_user_access_changed"
     TOOL_UPDATED = "tool.updated"
     TOOL_APPROVED = "tool.approved"
+    TOOL_BULK_UPDATED = "tool.bulk_updated"
     TOOL_DRIFT_DETECTED = "tool.drift_detected"
     TOOL_INVOKED = "tool.invoked"
     BINDING_CREATED = "binding.created"

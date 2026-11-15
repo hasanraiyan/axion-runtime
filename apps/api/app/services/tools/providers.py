@@ -58,6 +58,7 @@ from app.services.tools.gateway_stages import build_stages
 from app.services.tools.health_service import IntegrationHealthService
 from app.services.tools.integration_service import IntegrationService
 from app.services.tools.onboarding import IntegrationOnboardingService
+from app.services.tools.policy_reader import PolicyCache, PolicyReader
 from app.services.tools.principal import ApprovalService, PrincipalResolver
 from app.services.tools.purge import ToolCascadePurger
 from app.services.tools.toolset import ToolsetResolver
@@ -75,6 +76,7 @@ class SharedToolState:
     native: NativeProviderRegistry
     locks: KeyedLocks
     mcp_pool: McpSessionPool = field(default_factory=McpSessionPool)
+    policy_cache: PolicyCache = field(default_factory=PolicyCache)
     catalog_sync: Optional[CatalogSyncSubscriber] = None
 
 
@@ -181,24 +183,28 @@ def build_tools_container(
     integrations = IntegrationService(
         lifecycle, integration_repo, secret_repo, adapters, auth_registry, guard, audit, events, connections=connections
     )
-    policy = ToolPolicyService(lifecycle, policy_repo, audit_port)
+    policy = ToolPolicyService(lifecycle, policy_repo, audit_port, cache=shared.policy_cache)
+    policy_reader = PolicyReader(policy_repo, shared.policy_cache)
 
     health = IntegrationHealthService(lifecycle, integration_repo, adapters, credentials, audit, events)
-    discovery = DiscoveryService(lifecycle, integration_repo, tool_repo, setting_repo, adapters, credentials, audit, events)
+    discovery = DiscoveryService(
+        lifecycle, integration_repo, tool_repo, setting_repo, adapters, credentials, audit, events, policy_reader=policy_reader
+    )
     catalog = ToolCatalogService(lifecycle, tool_repo, setting_repo)
     tool_settings = ToolSettingService(lifecycle, tool_repo, setting_repo, audit, events)
     bindings = BindingService(lifecycle, binding_repo, integration_repo, tool_repo, audit, events)
     toolset = ToolsetResolver(
         lifecycle, integration_repo, tool_repo, setting_repo, binding_repo, adapters,
-        auth_registry=auth_registry, connections=connections, policy_repo=policy_repo,
+        auth_registry=auth_registry, connections=connections, policy_reader=policy_reader,
     )
     end_users = EndUserService(lifecycle, end_user_repo, signer, audit, events, invocation_repo, connections=connections)
     principals = PrincipalResolver(end_users)
     approvals = ApprovalService(signer, end_users, audit)
     stages = build_stages(
-        toolset, end_users, signer, shared.limiter, shared.breaker, shared.idempotency, credentials, adapters, health
+        toolset, end_users, signer, shared.limiter, shared.breaker, shared.idempotency, credentials, adapters, health,
+        policy_reader=policy_reader,
     )
-    gateway = ToolExecutionGateway(stages, InvocationRecorder(invocation_repo, audit))
+    gateway = ToolExecutionGateway(stages, InvocationRecorder(invocation_repo, audit, policy_reader))
     apps = McpAppService(
         lifecycle, integration_repo, tool_repo, app_repo, adapters, credentials, gateway, shared.limiter, audit_port
     )

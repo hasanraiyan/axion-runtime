@@ -36,6 +36,7 @@ from app.models.connection import (
     ProjectToolPolicy,
 )
 from app.models.integration import CredentialMode, Integration
+from app.models.tool import ApprovalPolicy
 from app.models.project import ProjectAuditAction
 from app.services.tools.common import ProjectLifecycle
 from app.services.tools.connections import ConnectionService, credentials_from_value, subject_parts
@@ -62,10 +63,13 @@ def normalize_origin(value: str) -> str:
 
 # ================================================================================== policy
 class ToolPolicyService:
-    def __init__(self, lifecycle: ProjectLifecycle, policy_repo: IToolPolicyRepository, audit: AuditPort) -> None:
+    def __init__(
+        self, lifecycle: ProjectLifecycle, policy_repo: IToolPolicyRepository, audit: AuditPort, cache: Optional[Any] = None
+    ) -> None:
         self._lifecycle = lifecycle
         self._policies = policy_repo
         self._audit = audit
+        self._cache = cache
 
     async def get(self, project_id: IdLike) -> ProjectToolPolicy:
         project = await self._lifecycle.get_active(project_id, allow_archived=True)
@@ -79,6 +83,9 @@ class ToolPolicyService:
         allowed_return_origins: Optional[List[str]] = None,
         end_user_connect_enabled: Optional[bool] = None,
         connect_link_ttl_seconds: Optional[int] = None,
+        default_approval_policy: Optional[ApprovalPolicy] = None,
+        invocation_content_retention_days: Optional[int] = None,
+        end_user_default_rate_limit_per_minute: Optional[int] = None,
     ) -> ProjectToolPolicy:
         project = await self._lifecycle.get_active(project_id)
         await self._policies.get_or_create(project.id)
@@ -93,7 +100,21 @@ class ToolPolicyService:
             if not 60 <= connect_link_ttl_seconds <= 3600:
                 raise BadRequestError("connect_link_ttl_seconds must be between 60 and 3600")
             update["connect_link_ttl_seconds"] = connect_link_ttl_seconds
+        if default_approval_policy is not None:
+            if default_approval_policy == ApprovalPolicy.AUTO:
+                raise BadRequestError("The project default can tighten approval (require_approval or deny) but never loosen it")
+            update["default_approval_policy"] = default_approval_policy
+        if invocation_content_retention_days is not None:
+            if not 0 <= invocation_content_retention_days <= 365:
+                raise BadRequestError("invocation_content_retention_days must be between 0 and 365")
+            update["invocation_content_retention_days"] = invocation_content_retention_days
+        if end_user_default_rate_limit_per_minute is not None:
+            if end_user_default_rate_limit_per_minute < 1:
+                raise BadRequestError("end_user_default_rate_limit_per_minute must be at least 1")
+            update["end_user_default_rate_limit_per_minute"] = end_user_default_rate_limit_per_minute
         updated = await self._policies.update_with_revision(project.id, revision, update)
+        if self._cache is not None:
+            self._cache.invalidate(project.id)
         await self._audit.record(
             str(project.id), actor_id, ProjectAuditAction.TOOL_POLICY_UPDATED.value, {"fields": sorted(update)}
         )

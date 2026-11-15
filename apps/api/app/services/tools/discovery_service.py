@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from beanie import PydanticObjectId
 from bson import ObjectId
@@ -23,7 +23,7 @@ from app.core.protocols.tool_repositories import (
 from app.core.tools.errors import UpstreamAuthError, UpstreamError
 from app.core.tools.events import ToolsetChanged
 from app.core.tools.hashing import catalog_hash, definition_hash, make_tool_key
-from app.core.tools.policy import default_approval_policy
+from app.core.tools.policy import default_approval_policy, stricter
 from app.core.tools.ports import AuditPort, DomainEventPort, ToolDiscoverer, supports
 from app.core.tools.registry import AdapterRegistry
 from app.core.tools.types import DiscoveredTool, Subject, SubjectType
@@ -61,7 +61,9 @@ class DiscoveryService:
         credentials: CredentialBuilder,
         audit: AuditPort,
         events: DomainEventPort,
+        policy_reader: Optional[Any] = None,
     ) -> None:
+        self._policy_reader = policy_reader
         self._lifecycle = lifecycle
         self._integrations = integration_repo
         self._tools = tool_repo
@@ -148,6 +150,7 @@ class DiscoveryService:
 
     async def _apply(self, project_id, integration, discovered: List[DiscoveredTool]) -> DiscoverySummary:
         summary = DiscoverySummary()
+        floor = (await self._policy_reader.get(project_id)).default_approval_policy if self._policy_reader else None
         existing = {d.upstream_name: d for d in await self._tools.list_by_integration(integration.id)}
         used_keys = {d.tool_key for d in existing.values()}
         seen_names: set[str] = set()
@@ -189,7 +192,12 @@ class DiscoveryService:
                     project_id,
                     key,
                     {
-                        "approval_policy": default_approval_policy(tool.annotations),
+                        # Provably read-only tools may run unattended; everything else gets at least the project's floor.
+                        "approval_policy": (
+                            default_approval_policy(tool.annotations)
+                            if tool.annotations.get("read_only") is True
+                            else stricter(default_approval_policy(tool.annotations), floor)
+                        ),
                         "is_enabled": tool.default_enabled,
                         "approved_hash": digest if tool.default_enabled else None,
                     },

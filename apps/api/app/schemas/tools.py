@@ -529,6 +529,9 @@ class ToolPolicyResponse(BaseModel):
     allowed_return_origins: List[str]
     end_user_connect_enabled: bool
     connect_link_ttl_seconds: int
+    default_approval_policy: ApprovalPolicy
+    invocation_content_retention_days: int
+    end_user_default_rate_limit_per_minute: Optional[int]
     revision: int
 
     @classmethod
@@ -537,6 +540,9 @@ class ToolPolicyResponse(BaseModel):
             allowed_return_origins=list(doc.allowed_return_origins),
             end_user_connect_enabled=doc.end_user_connect_enabled,
             connect_link_ttl_seconds=doc.connect_link_ttl_seconds,
+            default_approval_policy=doc.default_approval_policy,
+            invocation_content_retention_days=doc.invocation_content_retention_days,
+            end_user_default_rate_limit_per_minute=doc.end_user_default_rate_limit_per_minute,
             revision=doc.revision,
         )
 
@@ -546,6 +552,9 @@ class ToolPolicyUpdateRequest(BaseModel):
     allowed_return_origins: Optional[List[str]] = Field(default=None, max_length=20)
     end_user_connect_enabled: Optional[bool] = None
     connect_link_ttl_seconds: Optional[int] = Field(default=None, ge=60, le=3600)
+    default_approval_policy: Optional[ApprovalPolicy] = None
+    invocation_content_retention_days: Optional[int] = Field(default=None, ge=0, le=365)
+    end_user_default_rate_limit_per_minute: Optional[int] = Field(default=None, ge=1)
 
 
 # ------------------------------------------------------------------------- MCP Apps
@@ -640,3 +649,50 @@ class PromptInfoResponse(BaseModel):
     name: str
     description: Optional[str]
     arguments: List[Dict[str, Any]]
+
+
+# ------------------------------------------------------------------------ bulk operations
+from enum import Enum  # noqa: E402
+
+from pydantic import model_validator  # noqa: E402
+
+
+class ToolBulkAction(str, Enum):
+    ENABLE = "enable"
+    DISABLE = "disable"
+    SET_APPROVAL_POLICY = "set_approval_policy"
+
+
+class ToolBulkRequest(BaseModel):
+    """Apply one action to many tools: an explicit list, or every tool of one integration (optionally read-only only)."""
+
+    action: ToolBulkAction
+    tool_keys: Optional[List[str]] = Field(default=None, max_length=500)
+    integration_id: Optional[str] = Field(default=None, max_length=64)
+    read_only_only: bool = Field(default=False, description="With integration_id: only tools annotated read-only")
+    approval_policy: Optional[ApprovalPolicy] = None
+
+    @model_validator(mode="after")
+    def _consistent(self) -> "ToolBulkRequest":
+        if bool(self.tool_keys) == bool(self.integration_id):
+            raise ValueError("Provide exactly one of tool_keys or integration_id")
+        if self.read_only_only and not self.integration_id:
+            raise ValueError("read_only_only applies only with integration_id")
+        if self.action == ToolBulkAction.SET_APPROVAL_POLICY and self.approval_policy is None:
+            raise ValueError("set_approval_policy requires approval_policy")
+        if self.action != ToolBulkAction.SET_APPROVAL_POLICY and self.approval_policy is not None:
+            raise ValueError("approval_policy applies only to set_approval_policy")
+        return self
+
+
+class ToolBulkItemResult(BaseModel):
+    tool_key: str
+    outcome: str = Field(description="updated | skipped | failed")
+    reason: Optional[str] = None
+
+
+class ToolBulkResponse(BaseModel):
+    updated: int
+    skipped: int
+    failed: int
+    results: List[ToolBulkItemResult]

@@ -11,6 +11,7 @@ from __future__ import annotations
 import logging
 import time
 from dataclasses import dataclass, field
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Protocol
 
 from app.core.tools.redaction import redact_arguments
@@ -22,6 +23,10 @@ from app.models.tool_invocation import InvocationStatus, ToolInvocation
 from app.services.tools.toolset import ToolContext
 
 logger = logging.getLogger(__name__)
+
+DEFAULT_RETENTION_DAYS = 30
+CONTENT_BLOCKS = 10
+CONTENT_BLOCK_CHARS = 2000
 
 
 @dataclass
@@ -45,15 +50,34 @@ class InvocationStage(Protocol):
 class InvocationRecorder:
     """Persists invocation telemetry (always) and audit events (sensitive calls only)."""
 
-    def __init__(self, invocation_repo: IToolInvocationRepository, audit: AuditPort) -> None:
+    def __init__(self, invocation_repo: IToolInvocationRepository, audit: AuditPort, policy_reader: Optional[Any] = None) -> None:
         self._invocations = invocation_repo
         self._audit = audit
+        self._policy_reader = policy_reader
 
     async def record(self, state: InvocationState, result: InvocationResult) -> Optional[str]:
         request = state.request
         context = state.context
         principal = request.principal
         hidden = set(context.tool.context_arguments) | set(context.tool.locked_arguments) if context else set()
+        summary: Dict[str, Any] = {
+            "is_error": result.is_error,
+            "error_code": result.error_code,
+            "blocks": [b.type for b in result.content],
+        }
+        expire_at = datetime.now(timezone.utc) + timedelta(days=DEFAULT_RETENTION_DAYS)
+        try:
+            retention_days = (await self._policy_reader.get(request.project_id)).content_retention_days if self._policy_reader else 0
+            if retention_days > 0:
+                # Opt-in per project: keep (truncated) results so admins can debug. Off by default (metadata only).
+                summary["content"] = [
+                    {"type": b.type, "text": (b.text or "")[:CONTENT_BLOCK_CHARS]} for b in result.content[:CONTENT_BLOCKS]
+                ]
+                if result.structured_content is not None:
+                    summary["structured"] = redact_arguments({"v": result.structured_content}).get("v")
+                expire_at = datetime.now(timezone.utc) + timedelta(days=max(retention_days, DEFAULT_RETENTION_DAYS))
+        except Exception:
+            logger.exception("Could not read the project retention policy; recording metadata only")
         try:
             document = ToolInvocation(
                 project_id=request.project_id,
@@ -70,11 +94,8 @@ class InvocationRecorder:
                 status=result.status,
                 dry_run=request.dry_run,
                 arguments_redacted=redact_arguments(request.arguments, hidden),
-                result_summary={
-                    "is_error": result.is_error,
-                    "error_code": result.error_code,
-                    "blocks": [b.type for b in result.content],
-                },
+                result_summary=summary,
+                expire_at=expire_at,
                 latency_ms=result.latency_ms,
                 trace_id=principal.trace_id,
                 request_id=principal.request_id,

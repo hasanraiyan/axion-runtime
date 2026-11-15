@@ -427,6 +427,8 @@ class FakeToolInvocationRepository:
             if _s(d.project_id) == _s(project_id) and d.subject.get("id") == subject_id:
                 d.subject = {"type": "end_user", "id": None, "erased": True}
                 d.arguments_redacted = {}
+                d.result_summary.pop("content", None)
+                d.result_summary.pop("structured", None)
                 count += 1
         return count
 

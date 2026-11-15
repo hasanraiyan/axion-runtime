@@ -1,5 +1,6 @@
 """Approval-policy derivation and ordering (SRS-07 FR-37)."""
-from typing import Mapping, Optional
+from dataclasses import dataclass, field
+from typing import List, Mapping, Optional
 
 from app.models.tool import ApprovalPolicy
 
@@ -21,3 +22,14 @@ def stricter(a: ApprovalPolicy, b: Optional[ApprovalPolicy]) -> ApprovalPolicy:
     if b is None:
         return a
     return a if _STRICTNESS[a] >= _STRICTNESS[b] else b
+
+
+@dataclass(frozen=True)
+class EffectivePolicy:
+    """The per-project settings the hot paths need, as plain values (no database document)."""
+
+    end_user_connect_enabled: bool = False
+    allowed_return_origins: List[str] = field(default_factory=list)
+    default_approval_policy: ApprovalPolicy = ApprovalPolicy.REQUIRE_APPROVAL
+    content_retention_days: int = 0
+    end_user_default_rate_limit_per_minute: Optional[int] = None

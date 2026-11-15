@@ -257,8 +257,9 @@ class ApprovalStage:
 
 
 class RateLimitStage:
-    def __init__(self, limiter: SlidingWindowRateLimiter) -> None:
+    def __init__(self, limiter: SlidingWindowRateLimiter, policy_reader: Optional[Any] = None) -> None:
         self._limiter = limiter
+        self._policy_reader = policy_reader
 
     async def run(self, state: InvocationState) -> Optional[InvocationResult]:
         context = state.context
@@ -268,8 +269,11 @@ class RateLimitStage:
         subject = request.principal.subject
         if not self._limiter.check_and_hit(f"tool:{request.project_id}:{tool.tool_key}", tool.rate_limit_per_minute):
             return _fail(InvocationStatus.RATE_LIMITED, "rate_limited", "Too many calls to this tool; retry shortly", retryable=True)
+        end_user_limit = tool.per_end_user_rate_limit_per_minute
+        if subject.type == SubjectType.END_USER and end_user_limit is None and self._policy_reader is not None:
+            end_user_limit = (await self._policy_reader.get(request.project_id)).end_user_default_rate_limit_per_minute
         if subject.type == SubjectType.END_USER and not self._limiter.check_and_hit(
-            f"eu:{request.project_id}:{tool.tool_key}:{subject.id}", tool.per_end_user_rate_limit_per_minute
+            f"eu:{request.project_id}:{tool.tool_key}:{subject.id}", end_user_limit
         ):
             return _fail(InvocationStatus.RATE_LIMITED, "rate_limited", "Too many calls; retry shortly", retryable=True)
         return None
@@ -472,6 +476,7 @@ def build_stages(
     credentials: CredentialBuilder,
     adapters: AdapterRegistry,
     health: IntegrationHealthService,
+    policy_reader: Optional[Any] = None,
 ) -> List[Any]:
     """The default ordered pipeline."""
     return [
@@ -481,7 +486,7 @@ def build_stages(
         ContextInjectionStage(),
         ValidationStage(),
         ApprovalStage(signer),
-        RateLimitStage(limiter),
+        RateLimitStage(limiter, policy_reader),
         CircuitStage(breaker),
         IdempotencyStage(idempotency),
         CredentialStage(credentials),

@@ -148,7 +148,7 @@ class ToolInvocationRepository(BaseRepository[ToolInvocation], IToolInvocationRe
         """Right to erasure (FR-79): remove the subject id and arguments from matching records."""
         result = await self.get_collection().update_many(
             {"project_id": self._to_object_id(project_id), "subject.id": subject_id},
-            {"$set": {"subject": {"type": "end_user", "id": None, "erased": True}, "arguments_redacted": {}}},
+            {"$set": {"subject": {"type": "end_user", "id": None, "erased": True}, "arguments_redacted": {}, "result_summary.content": None, "result_summary.structured": None}},
         )
         return result.modified_count
 

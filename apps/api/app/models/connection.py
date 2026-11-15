@@ -14,6 +14,7 @@ from pymongo import ASCENDING, IndexModel
 
 from app.core.crypto.envelope import EncryptedEnvelope
 from app.db.base import BaseDocument
+from app.models.tool import ApprovalPolicy
 
 
 class ConnectionSubjectType(str, Enum):
@@ -133,6 +134,16 @@ class ProjectToolPolicy(BaseDocument):
     allowed_return_origins: List[str] = Field(default_factory=list)
     end_user_connect_enabled: bool = False
     connect_link_ttl_seconds: int = Field(default=900, ge=60, le=3600)
+    default_approval_policy: ApprovalPolicy = Field(
+        default=ApprovalPolicy.REQUIRE_APPROVAL,
+        description="Floor for newly discovered tools that are not provably read-only: require_approval or deny",
+    )
+    invocation_content_retention_days: int = Field(
+        default=0, ge=0, le=365, description="0 stores metadata only; N>0 also keeps (truncated) results for N days"
+    )
+    end_user_default_rate_limit_per_minute: Optional[int] = Field(
+        default=None, ge=1, description="Per-end-user cap for tools that do not set their own"
+    )
     revision: int = 1
 
     class Settings:

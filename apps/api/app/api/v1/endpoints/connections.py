@@ -177,6 +177,9 @@ async def update_tool_policy(body: ToolPolicyUpdateRequest, project_id: str = PI
         allowed_return_origins=body.allowed_return_origins,
         end_user_connect_enabled=body.end_user_connect_enabled,
         connect_link_ttl_seconds=body.connect_link_ttl_seconds,
+        default_approval_policy=body.default_approval_policy,
+        invocation_content_retention_days=body.invocation_content_retention_days,
+        end_user_default_rate_limit_per_minute=body.end_user_default_rate_limit_per_minute,
     )
     return ApiResponse(data=ToolPolicyResponse.from_model(updated), message="Tool policy updated")
 

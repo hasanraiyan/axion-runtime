@@ -1,5 +1,5 @@
 """Tool invocation record (SRS-07 Section 5.6): high-volume, TTL-bound telemetry."""
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import Any, Dict, Optional
 from beanie import PydanticObjectId
@@ -39,6 +39,10 @@ class ToolInvocation(BaseDocument):
     trace_id: Optional[str] = None
     request_id: Optional[str] = None
     started_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    expire_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc) + timedelta(days=30),
+        description="When MongoDB removes the record: 30 days, or the project's content-retention period if longer",
+    )
 
     class Settings:
         name = "tool_invocations"
@@ -51,10 +55,7 @@ class ToolInvocation(BaseDocument):
                 [("project_id", ASCENDING), ("tool_key", ASCENDING), ("started_at", DESCENDING)],
                 name="idx_tool_invocations_tool_time",
             ),
-            # Retention (default 30 days; SRS-07 5.6)
-            IndexModel(
-                [("started_at", ASCENDING)],
-                expireAfterSeconds=60 * 60 * 24 * 30,
-                name="idx_tool_invocations_ttl",
-            ),
+            # Per-record retention (SRS-07 5.6, project policy). NOTE: databases created before this change have a
+            # fixed 30-day TTL index named idx_tool_invocations_ttl on started_at; drop it or content retention is cut short.
+            IndexModel([("expire_at", ASCENDING)], expireAfterSeconds=0, name="idx_tool_invocations_expire"),
         ]

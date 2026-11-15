@@ -20,7 +20,6 @@ from app.core.protocols.tool_repositories import (
     IToolSettingRepository,
 )
 from app.core.tools.policy import default_approval_policy
-from app.core.protocols.tool_repositories import IToolPolicyRepository
 from app.core.tools.ports import ConnectionLookupPort
 from app.core.tools.registry import AdapterRegistry, AuthStrategyRegistry
 from app.core.tools.types import PrincipalContext, ResolvedTool, Subject, SubjectType
@@ -92,7 +91,7 @@ class ToolsetResolver:
         access: Optional[ToolAccessService] = None,
         auth_registry: Optional[AuthStrategyRegistry] = None,
         connections: Optional[ConnectionLookupPort] = None,
-        policy_repo: Optional[IToolPolicyRepository] = None,
+        policy_reader: Optional[Any] = None,
     ) -> None:
         self._lifecycle = lifecycle
         self._integrations = integration_repo
@@ -103,7 +102,7 @@ class ToolsetResolver:
         self._access = access or ToolAccessService()
         self._auth = auth_registry
         self._connections = connections
-        self._policies = policy_repo
+        self._policy_reader = policy_reader
 
     # ------------------------------------------------------------------- helpers
     def _build(
@@ -178,9 +177,8 @@ class ToolsetResolver:
     async def _connect_available(self, project_id: Any, principal: PrincipalContext) -> bool:
         if principal.subject.type == SubjectType.MEMBER:
             return True
-        if principal.subject.type == SubjectType.END_USER and self._policies is not None:
-            policy = await self._policies.get(project_id)
-            return bool(policy and policy.end_user_connect_enabled)
+        if principal.subject.type == SubjectType.END_USER and self._policy_reader is not None:
+            return (await self._policy_reader.get(project_id)).end_user_connect_enabled
         return False
 
     # ------------------------------------------------------------------- toolset
