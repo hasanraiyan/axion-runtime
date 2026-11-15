@@ -82,7 +82,7 @@
         },
         "security": [
           {
-            "HTTPBearer": []
+            "ClerkSession": []
           }
         ]
       }
@@ -97,7 +97,7 @@
         "operationId": "update_user_role",
         "security": [
           {
-            "HTTPBearer": []
+            "ClerkSession": []
           }
         ],
         "parameters": [
@@ -187,7 +187,7 @@
         "operationId": "create_project",
         "security": [
           {
-            "HTTPBearer": []
+            "ClerkSession": []
           }
         ],
         "requestBody": {
@@ -262,7 +262,7 @@
         "operationId": "list_caller_projects",
         "security": [
           {
-            "HTTPBearer": []
+            "ClerkSession": []
           }
         ],
         "parameters": [
@@ -483,7 +483,7 @@
         "operationId": "get_project_by_id_or_slug",
         "security": [
           {
-            "HTTPBearer": []
+            "ClerkSession": []
           }
         ],
         "parameters": [
@@ -551,7 +551,7 @@
         "operationId": "update_project",
         "security": [
           {
-            "HTTPBearer": []
+            "ClerkSession": []
           }
         ],
         "parameters": [
@@ -649,7 +649,7 @@
         "operationId": "soft_delete_project",
         "security": [
           {
-            "HTTPBearer": []
+            "ClerkSession": []
           }
         ],
         "parameters": [
@@ -729,7 +729,7 @@
         "operationId": "archive_project",
         "security": [
           {
-            "HTTPBearer": []
+            "ClerkSession": []
           }
         ],
         "parameters": [
@@ -809,7 +809,7 @@
         "operationId": "unarchive_project",
         "security": [
           {
-            "HTTPBearer": []
+            "ClerkSession": []
           }
         ],
         "parameters": [
@@ -889,7 +889,7 @@
         "operationId": "restore_project",
         "security": [
           {
-            "HTTPBearer": []
+            "ClerkSession": []
           }
         ],
         "parameters": [
@@ -969,7 +969,7 @@
         "operationId": "purge_project",
         "security": [
           {
-            "HTTPBearer": []
+            "ClerkSession": []
           }
         ],
         "parameters": [
@@ -1049,7 +1049,7 @@
         "operationId": "transfer_project_ownership",
         "security": [
           {
-            "HTTPBearer": []
+            "ClerkSession": []
           }
         ],
         "parameters": [
@@ -1149,7 +1149,7 @@
         "operationId": "list_project_members",
         "security": [
           {
-            "HTTPBearer": []
+            "ClerkSession": []
           }
         ],
         "parameters": [
@@ -1283,7 +1283,7 @@
         "operationId": "add_project_member",
         "security": [
           {
-            "HTTPBearer": []
+            "ClerkSession": []
           }
         ],
         "parameters": [
@@ -1383,7 +1383,7 @@
         "operationId": "update_project_member_role",
         "security": [
           {
-            "HTTPBearer": []
+            "ClerkSession": []
           }
         ],
         "parameters": [
@@ -1502,7 +1502,7 @@
         "operationId": "remove_project_member",
         "security": [
           {
-            "HTTPBearer": []
+            "ClerkSession": []
           }
         ],
         "parameters": [
@@ -1603,7 +1603,7 @@
         "operationId": "get_project_audit_logs",
         "security": [
           {
-            "HTTPBearer": []
+            "ClerkSession": []
           }
         ],
         "parameters": [
@@ -1749,7 +1749,7 @@
         "operationId": "list_secrets",
         "security": [
           {
-            "HTTPBearer": []
+            "ClerkSession": []
           }
         ],
         "parameters": [
@@ -1965,7 +1965,7 @@
         "operationId": "create_secret",
         "security": [
           {
-            "HTTPBearer": []
+            "ClerkSession": []
           }
         ],
         "parameters": [
@@ -2065,7 +2065,7 @@
         "operationId": "batch_resolve_secrets",
         "security": [
           {
-            "HTTPBearer": []
+            "ClerkSession": []
           }
         ],
         "parameters": [
@@ -2165,7 +2165,7 @@
         "operationId": "get_secret_metadata",
         "security": [
           {
-            "HTTPBearer": []
+            "ClerkSession": []
           }
         ],
         "parameters": [
@@ -2244,7 +2244,7 @@
         "operationId": "update_secret",
         "security": [
           {
-            "HTTPBearer": []
+            "ClerkSession": []
           }
         ],
         "parameters": [
@@ -2353,7 +2353,7 @@
         "operationId": "delete_secret",
         "security": [
           {
-            "HTTPBearer": []
+            "ClerkSession": []
           }
         ],
         "parameters": [
@@ -2444,7 +2444,7 @@
         "operationId": "reveal_secret_value",
         "security": [
           {
-            "HTTPBearer": []
+            "ClerkSession": []
           }
         ],
         "parameters": [
@@ -2552,7 +2552,7 @@
         "operationId": "rotate_secret",
         "security": [
           {
-            "HTTPBearer": []
+            "ClerkSession": []
           }
         ],
         "parameters": [
@@ -2663,7 +2663,7 @@
         "operationId": "create_credential",
         "security": [
           {
-            "HTTPBearer": []
+            "ClerkSession": []
           }
         ],
         "parameters": [
@@ -2771,7 +2771,7 @@
         "operationId": "list_credentials",
         "security": [
           {
-            "HTTPBearer": []
+            "ClerkSession": []
           }
         ],
         "parameters": [
@@ -2986,7 +2986,7 @@
         "operationId": "get_credential",
         "security": [
           {
-            "HTTPBearer": []
+            "ClerkSession": []
           }
         ],
         "parameters": [
@@ -3065,7 +3065,7 @@
         "operationId": "delete_credential",
         "security": [
           {
-            "HTTPBearer": []
+            "ClerkSession": []
           }
         ],
         "parameters": [
@@ -3168,7 +3168,7 @@
         "operationId": "revoke_credential",
         "security": [
           {
-            "HTTPBearer": []
+            "ClerkSession": []
           }
         ],
         "parameters": [
@@ -3269,7 +3269,7 @@
         "operationId": "list_providers",
         "security": [
           {
-            "HTTPBearer": []
+            "ClerkSession": []
           }
         ],
         "parameters": [
@@ -3482,7 +3482,7 @@
         "operationId": "create_provider",
         "security": [
           {
-            "HTTPBearer": []
+            "ClerkSession": []
           }
         ],
         "parameters": [
@@ -3582,7 +3582,7 @@
         "operationId": "inspect_upstream_models",
         "security": [
           {
-            "HTTPBearer": []
+            "ClerkSession": []
           }
         ],
         "parameters": [
@@ -3672,7 +3672,7 @@
         "operationId": "get_provider",
         "security": [
           {
-            "HTTPBearer": []
+            "ClerkSession": []
           }
         ],
         "parameters": [
@@ -3751,7 +3751,7 @@
         "operationId": "update_provider",
         "security": [
           {
-            "HTTPBearer": []
+            "ClerkSession": []
           }
         ],
         "parameters": [
@@ -3860,7 +3860,7 @@
         "operationId": "delete_provider",
         "security": [
           {
-            "HTTPBearer": []
+            "ClerkSession": []
           }
         ],
         "parameters": [
@@ -3951,7 +3951,7 @@
         "operationId": "test_provider_connection",
         "security": [
           {
-            "HTTPBearer": []
+            "ClerkSession": []
           }
         ],
         "parameters": [
@@ -4032,7 +4032,7 @@
         "operationId": "discover_provider_models",
         "security": [
           {
-            "HTTPBearer": []
+            "ClerkSession": []
           }
         ],
         "parameters": [
@@ -4123,7 +4123,7 @@
         "operationId": "get_provider_live_models",
         "security": [
           {
-            "HTTPBearer": []
+            "ClerkSession": []
           }
         ],
         "parameters": [
@@ -4214,7 +4214,7 @@
         "operationId": "list_models",
         "security": [
           {
-            "HTTPBearer": []
+            "ClerkSession": []
           }
         ],
         "parameters": [
@@ -4499,7 +4499,7 @@
         "operationId": "create_model",
         "security": [
           {
-            "HTTPBearer": []
+            "ClerkSession": []
           }
         ],
         "parameters": [
@@ -4599,7 +4599,7 @@
         "operationId": "get_model",
         "security": [
           {
-            "HTTPBearer": []
+            "ClerkSession": []
           }
         ],
         "parameters": [
@@ -4678,7 +4678,7 @@
         "operationId": "update_model",
         "security": [
           {
-            "HTTPBearer": []
+            "ClerkSession": []
           }
         ],
         "parameters": [
@@ -4787,7 +4787,7 @@
         "operationId": "delete_model",
         "security": [
           {
-            "HTTPBearer": []
+            "ClerkSession": []
           }
         ],
         "parameters": [
@@ -4854,6 +4854,3484 @@
                 }
               }
             }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/integration-types": {
+      "get": {
+        "tags": [
+          "Integrations"
+        ],
+        "summary": "List Integration Types",
+        "operationId": "list_integration_types",
+        "security": [
+          {
+            "AxionApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Project id or slug",
+              "title": "Project Id"
+            },
+            "description": "Project id or slug"
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_IntegrationTypesResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/integrations": {
+      "post": {
+        "tags": [
+          "Integrations"
+        ],
+        "summary": "Create an integration, test it, and discover its tools",
+        "operationId": "create_integration",
+        "security": [
+          {
+            "AxionApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Project id or slug",
+              "title": "Project Id"
+            },
+            "description": "Project id or slug"
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IntegrationCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_IntegrationOnboardingResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Integrations"
+        ],
+        "summary": "List Integrations",
+        "operationId": "list_integrations",
+        "security": [
+          {
+            "AxionApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Project id or slug",
+              "title": "Project Id"
+            },
+            "description": "Project id or slug"
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/IntegrationType"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Type"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/IntegrationStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 100
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Search"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Page Size"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponse_IntegrationResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/integrations/{integration_id}": {
+      "get": {
+        "tags": [
+          "Integrations"
+        ],
+        "summary": "Get Integration",
+        "operationId": "get_integration",
+        "security": [
+          {
+            "AxionApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "integration_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Integration Id"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Project id or slug",
+              "title": "Project Id"
+            },
+            "description": "Project id or slug"
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_IntegrationResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Integrations"
+        ],
+        "summary": "Update Integration",
+        "operationId": "update_integration",
+        "security": [
+          {
+            "AxionApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "integration_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Integration Id"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Project id or slug",
+              "title": "Project Id"
+            },
+            "description": "Project id or slug"
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IntegrationUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_IntegrationResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Integrations"
+        ],
+        "summary": "Delete Integration",
+        "operationId": "delete_integration",
+        "security": [
+          {
+            "AxionApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "integration_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Integration Id"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Project id or slug",
+              "title": "Project Id"
+            },
+            "description": "Project id or slug"
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_IntegrationResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/integrations/{integration_id}/restore": {
+      "post": {
+        "tags": [
+          "Integrations"
+        ],
+        "summary": "Restore Integration",
+        "operationId": "restore_integration",
+        "security": [
+          {
+            "AxionApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "integration_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Integration Id"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Project id or slug",
+              "title": "Project Id"
+            },
+            "description": "Project id or slug"
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_IntegrationResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/integrations/{integration_id}/test": {
+      "post": {
+        "tags": [
+          "Integrations"
+        ],
+        "summary": "Test Integration",
+        "operationId": "test_integration",
+        "security": [
+          {
+            "AxionApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "integration_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Integration Id"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Project id or slug",
+              "title": "Project Id"
+            },
+            "description": "Project id or slug"
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_ProbeResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/integrations/{integration_id}/discover": {
+      "post": {
+        "tags": [
+          "Integrations"
+        ],
+        "summary": "Discover Integration",
+        "operationId": "discover_integration_tools",
+        "security": [
+          {
+            "AxionApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "integration_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Integration Id"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Project id or slug",
+              "title": "Project Id"
+            },
+            "description": "Project id or slug"
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_DiscoverySummaryResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/integrations/{integration_id}/enable": {
+      "post": {
+        "tags": [
+          "Integrations"
+        ],
+        "summary": "Enable Integration",
+        "operationId": "enable_integration",
+        "security": [
+          {
+            "AxionApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "integration_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Integration Id"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Project id or slug",
+              "title": "Project Id"
+            },
+            "description": "Project id or slug"
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_IntegrationResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/integrations/{integration_id}/disable": {
+      "post": {
+        "tags": [
+          "Integrations"
+        ],
+        "summary": "Disable Integration",
+        "operationId": "disable_integration",
+        "security": [
+          {
+            "AxionApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "integration_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Integration Id"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Project id or slug",
+              "title": "Project Id"
+            },
+            "description": "Project id or slug"
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_IntegrationResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/integrations/{integration_id}/end-user-access": {
+      "put": {
+        "tags": [
+          "Integrations"
+        ],
+        "summary": "Set End User Access",
+        "operationId": "set_integration_end_user_access",
+        "security": [
+          {
+            "AxionApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "integration_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Integration Id"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Project id or slug",
+              "title": "Project Id"
+            },
+            "description": "Project id or slug"
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EndUserAccessRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_IntegrationResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/tools": {
+      "get": {
+        "tags": [
+          "Tools"
+        ],
+        "summary": "List Tools",
+        "operationId": "list_tools",
+        "security": [
+          {
+            "AxionApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Project id or slug",
+              "title": "Project Id"
+            },
+            "description": "Project id or slug"
+          },
+          {
+            "name": "integration_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Integration Id"
+            }
+          },
+          {
+            "name": "sync_state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/ToolSyncState"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Sync State"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 100
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Search"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Page Size"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponse_ToolResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/tools/{tool_key}": {
+      "get": {
+        "tags": [
+          "Tools"
+        ],
+        "summary": "Get Tool",
+        "operationId": "get_tool",
+        "security": [
+          {
+            "AxionApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tool_key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Tool Key"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Project id or slug",
+              "title": "Project Id"
+            },
+            "description": "Project id or slug"
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_ToolResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Tools"
+        ],
+        "summary": "Update Tool Setting",
+        "operationId": "update_tool_setting",
+        "security": [
+          {
+            "AxionApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tool_key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Tool Key"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Project id or slug",
+              "title": "Project Id"
+            },
+            "description": "Project id or slug"
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ToolSettingUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_ToolResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/tools/{tool_key}/approve": {
+      "post": {
+        "tags": [
+          "Tools"
+        ],
+        "summary": "Approve Tool",
+        "operationId": "approve_tool",
+        "security": [
+          {
+            "AxionApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tool_key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Tool Key"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Project id or slug",
+              "title": "Project Id"
+            },
+            "description": "Project id or slug"
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_ToolResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/tool-bindings": {
+      "get": {
+        "tags": [
+          "Tools"
+        ],
+        "summary": "List Bindings",
+        "operationId": "list_tool_bindings",
+        "security": [
+          {
+            "AxionApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Project id or slug",
+              "title": "Project Id"
+            },
+            "description": "Project id or slug"
+          },
+          {
+            "name": "subject_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/BindingSubjectType"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Subject Type"
+            }
+          },
+          {
+            "name": "subject_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Subject Id"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_list_BindingResponse__"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Tools"
+        ],
+        "summary": "Replace Bindings",
+        "operationId": "replace_tool_bindings",
+        "security": [
+          {
+            "AxionApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Project id or slug",
+              "title": "Project Id"
+            },
+            "description": "Project id or slug"
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BindingReplaceRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_list_BindingResponse__"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/tool-invocations": {
+      "get": {
+        "tags": [
+          "Tools"
+        ],
+        "summary": "List Invocations",
+        "operationId": "list_tool_invocations",
+        "security": [
+          {
+            "AxionApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Project id or slug",
+              "title": "Project Id"
+            },
+            "description": "Project id or slug"
+          },
+          {
+            "name": "tool_key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 160
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Tool Key"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/InvocationStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Page Size"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponse_InvocationRecordResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/runtime/toolset": {
+      "post": {
+        "tags": [
+          "Tool Runtime"
+        ],
+        "summary": "Resolve the tools available to the caller (and optionally an end user)",
+        "operationId": "resolve_toolset",
+        "security": [
+          {
+            "AxionApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Project id or slug",
+              "title": "Project Id"
+            },
+            "description": "Project id or slug"
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ToolsetRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_ToolsetResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/runtime/invoke": {
+      "post": {
+        "tags": [
+          "Tool Runtime"
+        ],
+        "summary": "Invoke a tool through the execution gateway",
+        "description": "Always returns HTTP 200 with the uniform result envelope; inspect `status` and `is_error`.",
+        "operationId": "invoke_tool",
+        "security": [
+          {
+            "AxionApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Project id or slug",
+              "title": "Project Id"
+            },
+            "description": "Project id or slug"
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InvokeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_InvokeResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/runtime/approvals": {
+      "post": {
+        "tags": [
+          "Tool Runtime"
+        ],
+        "summary": "Approve one exact tool call",
+        "description": "Issues a short-lived token bound to the tool, the exact arguments, and the subject.",
+        "operationId": "issue_tool_call_approval",
+        "security": [
+          {
+            "AxionApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Project id or slug",
+              "title": "Project Id"
+            },
+            "description": "Project id or slug"
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApprovalIssueRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_ApprovalIssueResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/end-users/{external_id}": {
+      "put": {
+        "tags": [
+          "End Users"
+        ],
+        "summary": "Assert End User",
+        "operationId": "assert_end_user",
+        "security": [
+          {
+            "AxionApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "external_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "External Id"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Project id or slug",
+              "title": "Project Id"
+            },
+            "description": "Project id or slug"
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/EndUserAssertRequest"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_EndUserResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "End Users"
+        ],
+        "summary": "Get End User",
+        "operationId": "get_end_user",
+        "security": [
+          {
+            "AxionApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "external_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "External Id"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Project id or slug",
+              "title": "Project Id"
+            },
+            "description": "Project id or slug"
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_EndUserResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "End Users"
+        ],
+        "summary": "Delete End User",
+        "operationId": "delete_end_user",
+        "security": [
+          {
+            "AxionApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "external_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "External Id"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Project id or slug",
+              "title": "Project Id"
+            },
+            "description": "Project id or slug"
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_dict_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/end-users": {
+      "get": {
+        "tags": [
+          "End Users"
+        ],
+        "summary": "List End Users",
+        "operationId": "list_end_users",
+        "security": [
+          {
+            "AxionApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Project id or slug",
+              "title": "Project Id"
+            },
+            "description": "Project id or slug"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/EndUserStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 100
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Search"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Page Size"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponse_EndUserResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/end-users/{external_id}/block": {
+      "post": {
+        "tags": [
+          "End Users"
+        ],
+        "summary": "Block End User",
+        "operationId": "block_end_user",
+        "security": [
+          {
+            "AxionApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "external_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "External Id"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Project id or slug",
+              "title": "Project Id"
+            },
+            "description": "Project id or slug"
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_EndUserResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/end-users/{external_id}/unblock": {
+      "post": {
+        "tags": [
+          "End Users"
+        ],
+        "summary": "Unblock End User",
+        "operationId": "unblock_end_user",
+        "security": [
+          {
+            "AxionApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "external_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "External Id"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Project id or slug",
+              "title": "Project Id"
+            },
+            "description": "Project id or slug"
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_EndUserResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/end-users/{external_id}/sessions": {
+      "post": {
+        "tags": [
+          "End Users"
+        ],
+        "summary": "Mint a short-lived session token for one end user",
+        "operationId": "create_end_user_session",
+        "security": [
+          {
+            "AxionApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "external_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "External Id"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Project id or slug",
+              "title": "Project Id"
+            },
+            "description": "Project id or slug"
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/EndUserSessionRequest"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_EndUserSessionResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/me": {
+      "get": {
+        "tags": [
+          "End Users"
+        ],
+        "summary": "Get Current End User",
+        "description": "Who am I? Authenticated by an end-user session token (no Clerk account needed).",
+        "operationId": "get_current_end_user",
+        "security": [
+          {
+            "EndUserSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Project id or slug",
+              "title": "Project Id"
+            },
+            "description": "Project id or slug"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_EndUserResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
           },
           "422": {
             "description": "Validation Error",
@@ -4943,6 +8421,32 @@
           "error"
         ],
         "title": "ApiErrorResponse"
+      },
+      "ApiResponse_ApprovalIssueResponse_": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "const": true,
+            "title": "Success",
+            "description": "Always true for successful responses",
+            "default": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/ApprovalIssueResponse",
+            "description": "Response payload"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Status message",
+            "default": "Operation completed successfully"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "ApiResponse[ApprovalIssueResponse]"
       },
       "ApiResponse_AuthenticatedUser_": {
         "properties": {
@@ -5080,6 +8584,84 @@
         ],
         "title": "ApiResponse[Dict[str, str]]"
       },
+      "ApiResponse_DiscoverySummaryResponse_": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "const": true,
+            "title": "Success",
+            "description": "Always true for successful responses",
+            "default": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/DiscoverySummaryResponse",
+            "description": "Response payload"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Status message",
+            "default": "Operation completed successfully"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "ApiResponse[DiscoverySummaryResponse]"
+      },
+      "ApiResponse_EndUserResponse_": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "const": true,
+            "title": "Success",
+            "description": "Always true for successful responses",
+            "default": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/EndUserResponse",
+            "description": "Response payload"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Status message",
+            "default": "Operation completed successfully"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "ApiResponse[EndUserResponse]"
+      },
+      "ApiResponse_EndUserSessionResponse_": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "const": true,
+            "title": "Success",
+            "description": "Always true for successful responses",
+            "default": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/EndUserSessionResponse",
+            "description": "Response payload"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Status message",
+            "default": "Operation completed successfully"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "ApiResponse[EndUserSessionResponse]"
+      },
       "ApiResponse_HealthData_": {
         "properties": {
           "success": {
@@ -5105,6 +8687,110 @@
           "data"
         ],
         "title": "ApiResponse[HealthData]"
+      },
+      "ApiResponse_IntegrationOnboardingResponse_": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "const": true,
+            "title": "Success",
+            "description": "Always true for successful responses",
+            "default": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/IntegrationOnboardingResponse",
+            "description": "Response payload"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Status message",
+            "default": "Operation completed successfully"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "ApiResponse[IntegrationOnboardingResponse]"
+      },
+      "ApiResponse_IntegrationResponse_": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "const": true,
+            "title": "Success",
+            "description": "Always true for successful responses",
+            "default": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/IntegrationResponse",
+            "description": "Response payload"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Status message",
+            "default": "Operation completed successfully"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "ApiResponse[IntegrationResponse]"
+      },
+      "ApiResponse_IntegrationTypesResponse_": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "const": true,
+            "title": "Success",
+            "description": "Always true for successful responses",
+            "default": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/IntegrationTypesResponse",
+            "description": "Response payload"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Status message",
+            "default": "Operation completed successfully"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "ApiResponse[IntegrationTypesResponse]"
+      },
+      "ApiResponse_InvokeResponse_": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "const": true,
+            "title": "Success",
+            "description": "Always true for successful responses",
+            "default": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/InvokeResponse",
+            "description": "Response payload"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Status message",
+            "default": "Operation completed successfully"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "ApiResponse[InvokeResponse]"
       },
       "ApiResponse_MemberResponse_": {
         "properties": {
@@ -5184,6 +8870,32 @@
           "data"
         ],
         "title": "ApiResponse[NoneType]"
+      },
+      "ApiResponse_ProbeResponse_": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "const": true,
+            "title": "Success",
+            "description": "Always true for successful responses",
+            "default": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/ProbeResponse",
+            "description": "Response payload"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Status message",
+            "default": "Operation completed successfully"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "ApiResponse[ProbeResponse]"
       },
       "ApiResponse_ProjectResponse_": {
         "properties": {
@@ -5393,6 +9105,204 @@
         ],
         "title": "ApiResponse[SecretValueResponse]"
       },
+      "ApiResponse_ToolResponse_": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "const": true,
+            "title": "Success",
+            "description": "Always true for successful responses",
+            "default": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/ToolResponse",
+            "description": "Response payload"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Status message",
+            "default": "Operation completed successfully"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "ApiResponse[ToolResponse]"
+      },
+      "ApiResponse_ToolsetResponse_": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "const": true,
+            "title": "Success",
+            "description": "Always true for successful responses",
+            "default": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/ToolsetResponse",
+            "description": "Response payload"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Status message",
+            "default": "Operation completed successfully"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "ApiResponse[ToolsetResponse]"
+      },
+      "ApiResponse_dict_": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "const": true,
+            "title": "Success",
+            "description": "Always true for successful responses",
+            "default": true
+          },
+          "data": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Data",
+            "description": "Response payload"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Status message",
+            "default": "Operation completed successfully"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "ApiResponse[dict]"
+      },
+      "ApiResponse_list_BindingResponse__": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "const": true,
+            "title": "Success",
+            "description": "Always true for successful responses",
+            "default": true
+          },
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/BindingResponse"
+            },
+            "type": "array",
+            "title": "Data",
+            "description": "Response payload"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Status message",
+            "default": "Operation completed successfully"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "ApiResponse[list[BindingResponse]]"
+      },
+      "ApprovalIssueRequest": {
+        "properties": {
+          "tool_key": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 3,
+            "title": "Tool Key"
+          },
+          "arguments": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Arguments"
+          },
+          "end_user_external_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End User External Id"
+          },
+          "member_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Member Id",
+            "description": "Clerk id of the member the call is for"
+          },
+          "ttl_seconds": {
+            "type": "integer",
+            "maximum": 900.0,
+            "minimum": 30.0,
+            "title": "Ttl Seconds",
+            "default": 300
+          }
+        },
+        "type": "object",
+        "required": [
+          "tool_key"
+        ],
+        "title": "ApprovalIssueRequest"
+      },
+      "ApprovalIssueResponse": {
+        "properties": {
+          "approval_token": {
+            "type": "string",
+            "title": "Approval Token"
+          },
+          "expires_in": {
+            "type": "integer",
+            "title": "Expires In"
+          }
+        },
+        "type": "object",
+        "required": [
+          "approval_token",
+          "expires_in"
+        ],
+        "title": "ApprovalIssueResponse"
+      },
+      "ApprovalPolicy": {
+        "type": "string",
+        "enum": [
+          "auto",
+          "require_approval",
+          "deny"
+        ],
+        "title": "ApprovalPolicy"
+      },
+      "Audience": {
+        "type": "string",
+        "enum": [
+          "members",
+          "end_users",
+          "machine"
+        ],
+        "title": "Audience"
+      },
       "AuditLogResponse": {
         "properties": {
           "id": {
@@ -5442,6 +9352,227 @@
           "created_at"
         ],
         "title": "AuditLogResponse"
+      },
+      "AuthProfile": {
+        "properties": {
+          "auth_type": {
+            "$ref": "#/components/schemas/AuthType",
+            "default": "none"
+          },
+          "credential_mode": {
+            "$ref": "#/components/schemas/CredentialMode",
+            "default": "project_shared"
+          },
+          "secret_id": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PydanticObjectId"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Primary MOD-02 secret reference"
+          },
+          "secondary_secret_id": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PydanticObjectId"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Second secret (basic-auth password)"
+          },
+          "placement": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(header|query)$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Placement"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name",
+            "description": "Header or query parameter name"
+          },
+          "prefix": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 50
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prefix"
+          },
+          "username": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Username",
+            "description": "Basic-auth username (not secret)"
+          },
+          "headers": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Headers",
+            "description": "custom_headers values; may contain {{secrets.NAME}} placeholders"
+          },
+          "oauth": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Oauth",
+            "description": "Non-secret OAuth settings (phase 2)"
+          }
+        },
+        "type": "object",
+        "title": "AuthProfile",
+        "description": "Declarative description of how an integration authenticates (SRS-07 5.1.2)."
+      },
+      "AuthProfileResponse": {
+        "properties": {
+          "auth_type": {
+            "$ref": "#/components/schemas/AuthType"
+          },
+          "credential_mode": {
+            "$ref": "#/components/schemas/CredentialMode"
+          },
+          "secret_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Secret Id"
+          },
+          "placement": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Placement"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "prefix": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prefix"
+          },
+          "username": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Username"
+          },
+          "header_names": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Header Names",
+            "description": "Header names only; values are never returned"
+          }
+        },
+        "type": "object",
+        "required": [
+          "auth_type",
+          "credential_mode"
+        ],
+        "title": "AuthProfileResponse"
+      },
+      "AuthRequiredEntry": {
+        "properties": {
+          "integration_id": {
+            "type": "string",
+            "title": "Integration Id"
+          },
+          "integration": {
+            "type": "string",
+            "title": "Integration"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "connect_available": {
+            "type": "boolean",
+            "title": "Connect Available",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "integration_id",
+          "integration",
+          "reason"
+        ],
+        "title": "AuthRequiredEntry"
+      },
+      "AuthType": {
+        "type": "string",
+        "enum": [
+          "none",
+          "api_key",
+          "bearer",
+          "basic",
+          "custom_headers",
+          "oauth_authorization_code",
+          "oauth_client_credentials"
+        ],
+        "title": "AuthType"
       },
       "AuthenticatedUser": {
         "properties": {
@@ -5561,6 +9692,197 @@
           "clerk_id"
         ],
         "title": "AuthenticatedUser"
+      },
+      "BindingEffect": {
+        "type": "string",
+        "enum": [
+          "allow",
+          "deny"
+        ],
+        "title": "BindingEffect"
+      },
+      "BindingReplaceRequest": {
+        "properties": {
+          "subject_type": {
+            "$ref": "#/components/schemas/BindingSubjectType"
+          },
+          "subject_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subject Id"
+          },
+          "audience": {
+            "items": {
+              "$ref": "#/components/schemas/Audience"
+            },
+            "type": "array",
+            "title": "Audience"
+          },
+          "bindings": {
+            "items": {
+              "$ref": "#/components/schemas/BindingRule"
+            },
+            "type": "array",
+            "maxItems": 500,
+            "title": "Bindings"
+          }
+        },
+        "type": "object",
+        "required": [
+          "subject_type"
+        ],
+        "title": "BindingReplaceRequest"
+      },
+      "BindingResponse": {
+        "properties": {
+          "subject_type": {
+            "$ref": "#/components/schemas/BindingSubjectType"
+          },
+          "subject_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subject Id"
+          },
+          "audience": {
+            "items": {
+              "$ref": "#/components/schemas/Audience"
+            },
+            "type": "array",
+            "title": "Audience"
+          },
+          "target_type": {
+            "$ref": "#/components/schemas/BindingTargetType"
+          },
+          "target_id": {
+            "type": "string",
+            "title": "Target Id"
+          },
+          "effect": {
+            "$ref": "#/components/schemas/BindingEffect"
+          },
+          "approval_policy_override": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ApprovalPolicy"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "subject_type",
+          "subject_id",
+          "audience",
+          "target_type",
+          "target_id",
+          "effect",
+          "approval_policy_override"
+        ],
+        "title": "BindingResponse"
+      },
+      "BindingRule": {
+        "properties": {
+          "target_type": {
+            "$ref": "#/components/schemas/BindingTargetType"
+          },
+          "target_id": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Target Id"
+          },
+          "effect": {
+            "$ref": "#/components/schemas/BindingEffect",
+            "default": "allow"
+          },
+          "approval_policy_override": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ApprovalPolicy"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "target_type",
+          "target_id"
+        ],
+        "title": "BindingRule"
+      },
+      "BindingSubjectType": {
+        "type": "string",
+        "enum": [
+          "project_default",
+          "agent",
+          "end_user"
+        ],
+        "title": "BindingSubjectType"
+      },
+      "BindingTargetType": {
+        "type": "string",
+        "enum": [
+          "integration",
+          "tool"
+        ],
+        "title": "BindingTargetType"
+      },
+      "ContentBlockResponse": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "title": "Type"
+          },
+          "text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text"
+          },
+          "data": {
+            "title": "Data"
+          },
+          "mime_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mime Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type"
+        ],
+        "title": "ContentBlockResponse"
       },
       "CredentialCreateRequest": {
         "properties": {
@@ -5794,6 +10116,15 @@
         ],
         "title": "CredentialCreateResponse",
         "description": "Returned ONLY upon initial creation.\nraw_key is presented strictly once and cannot be retrieved again."
+      },
+      "CredentialMode": {
+        "type": "string",
+        "enum": [
+          "project_shared",
+          "per_user"
+        ],
+        "title": "CredentialMode",
+        "description": "Who authenticates upstream (SRS-07 Section 4.1)."
       },
       "CredentialResponse": {
         "properties": {
@@ -6159,6 +10490,240 @@
         ],
         "title": "DiscoveredModelInfo"
       },
+      "DiscoverySummaryResponse": {
+        "properties": {
+          "added": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Added"
+          },
+          "changed": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Changed"
+          },
+          "removed": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Removed"
+          },
+          "unchanged": {
+            "type": "integer",
+            "title": "Unchanged"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "catalog_hash": {
+            "type": "string",
+            "title": "Catalog Hash"
+          }
+        },
+        "type": "object",
+        "required": [
+          "added",
+          "changed",
+          "removed",
+          "unchanged",
+          "total",
+          "catalog_hash"
+        ],
+        "title": "DiscoverySummaryResponse"
+      },
+      "EndUserAccess": {
+        "type": "string",
+        "enum": [
+          "closed",
+          "open"
+        ],
+        "title": "EndUserAccess"
+      },
+      "EndUserAccessRequest": {
+        "properties": {
+          "access": {
+            "$ref": "#/components/schemas/EndUserAccess"
+          },
+          "acknowledge_shared_identity": {
+            "type": "boolean",
+            "title": "Acknowledge Shared Identity",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "access"
+        ],
+        "title": "EndUserAccessRequest"
+      },
+      "EndUserAssertRequest": {
+        "properties": {
+          "display_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Name"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 320
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "attributes": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attributes"
+          }
+        },
+        "type": "object",
+        "title": "EndUserAssertRequest"
+      },
+      "EndUserResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "external_id": {
+            "type": "string",
+            "title": "External Id"
+          },
+          "display_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Name"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "attributes": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Attributes"
+          },
+          "status": {
+            "$ref": "#/components/schemas/EndUserStatus"
+          },
+          "first_seen_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "First Seen At"
+          },
+          "last_seen_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Last Seen At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "external_id",
+          "display_name",
+          "email",
+          "attributes",
+          "status",
+          "first_seen_at",
+          "last_seen_at"
+        ],
+        "title": "EndUserResponse"
+      },
+      "EndUserSessionRequest": {
+        "properties": {
+          "ttl_seconds": {
+            "type": "integer",
+            "maximum": 3600.0,
+            "minimum": 60.0,
+            "title": "Ttl Seconds",
+            "default": 600
+          },
+          "capabilities": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Capabilities"
+          }
+        },
+        "type": "object",
+        "title": "EndUserSessionRequest"
+      },
+      "EndUserSessionResponse": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "title": "Token"
+          },
+          "expires_in": {
+            "type": "integer",
+            "title": "Expires In"
+          },
+          "end_user_id": {
+            "type": "string",
+            "title": "End User Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "token",
+          "expires_in",
+          "end_user_id"
+        ],
+        "title": "EndUserSessionResponse"
+      },
+      "EndUserStatus": {
+        "type": "string",
+        "enum": [
+          "active",
+          "blocked",
+          "deleted"
+        ],
+        "title": "EndUserStatus"
+      },
       "ErrorDetail": {
         "properties": {
           "field": {
@@ -6270,6 +10835,636 @@
         ],
         "title": "HealthcheckStatus",
         "description": "Healthcheck connectivity outcome (SRS-06 Section 4.1 & 5 FR-03)."
+      },
+      "IntegrationCreateRequest": {
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/IntegrationType"
+          },
+          "slug": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{1,39}$",
+            "title": "Slug"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "config": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Config"
+          },
+          "auth_profile": {
+            "$ref": "#/components/schemas/AuthProfile"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "slug",
+          "name"
+        ],
+        "title": "IntegrationCreateRequest"
+      },
+      "IntegrationOnboardingResponse": {
+        "properties": {
+          "integration": {
+            "$ref": "#/components/schemas/IntegrationResponse"
+          },
+          "probe": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProbeResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "discovery": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DiscoverySummaryResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "warning": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Warning"
+          }
+        },
+        "type": "object",
+        "required": [
+          "integration"
+        ],
+        "title": "IntegrationOnboardingResponse"
+      },
+      "IntegrationResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "type": {
+            "$ref": "#/components/schemas/IntegrationType"
+          },
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "config": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Config"
+          },
+          "auth_profile": {
+            "$ref": "#/components/schemas/AuthProfileResponse"
+          },
+          "status": {
+            "$ref": "#/components/schemas/IntegrationStatus"
+          },
+          "status_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status Reason"
+          },
+          "is_enabled": {
+            "type": "boolean",
+            "title": "Is Enabled"
+          },
+          "end_user_access": {
+            "$ref": "#/components/schemas/EndUserAccess"
+          },
+          "last_discovery_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Discovery At"
+          },
+          "health": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Health"
+          },
+          "revision": {
+            "type": "integer",
+            "title": "Revision"
+          },
+          "created_by": {
+            "type": "string",
+            "title": "Created By"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "is_deleted": {
+            "type": "boolean",
+            "title": "Is Deleted",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "project_id",
+          "type",
+          "slug",
+          "name",
+          "description",
+          "config",
+          "auth_profile",
+          "status",
+          "status_reason",
+          "is_enabled",
+          "end_user_access",
+          "last_discovery_at",
+          "health",
+          "revision",
+          "created_by",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "IntegrationResponse"
+      },
+      "IntegrationStatus": {
+        "type": "string",
+        "enum": [
+          "draft",
+          "active",
+          "degraded",
+          "needs_auth",
+          "error",
+          "disabled"
+        ],
+        "title": "IntegrationStatus"
+      },
+      "IntegrationType": {
+        "type": "string",
+        "enum": [
+          "native",
+          "mcp",
+          "rest",
+          "custom"
+        ],
+        "title": "IntegrationType"
+      },
+      "IntegrationTypeInfo": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "supported_auth_types": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Supported Auth Types"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "supported_auth_types"
+        ],
+        "title": "IntegrationTypeInfo"
+      },
+      "IntegrationTypesResponse": {
+        "properties": {
+          "types": {
+            "items": {
+              "$ref": "#/components/schemas/IntegrationTypeInfo"
+            },
+            "type": "array",
+            "title": "Types"
+          },
+          "native_providers": {
+            "items": {
+              "$ref": "#/components/schemas/NativeProviderInfo"
+            },
+            "type": "array",
+            "title": "Native Providers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "types",
+          "native_providers"
+        ],
+        "title": "IntegrationTypesResponse"
+      },
+      "IntegrationUpdateRequest": {
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Revision",
+            "description": "Expected revision for optimistic concurrency"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "config": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Config"
+          },
+          "auth_profile": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AuthProfile"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "revision"
+        ],
+        "title": "IntegrationUpdateRequest"
+      },
+      "InvocationRecordResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "tool_key": {
+            "type": "string",
+            "title": "Tool Key"
+          },
+          "status": {
+            "$ref": "#/components/schemas/InvocationStatus"
+          },
+          "origin": {
+            "type": "string",
+            "title": "Origin"
+          },
+          "dry_run": {
+            "type": "boolean",
+            "title": "Dry Run"
+          },
+          "actor": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Actor"
+          },
+          "subject": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Subject"
+          },
+          "arguments_redacted": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Arguments Redacted"
+          },
+          "result_summary": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Result Summary"
+          },
+          "latency_ms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latency Ms"
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Started At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "tool_key",
+          "status",
+          "origin",
+          "dry_run",
+          "actor",
+          "subject",
+          "arguments_redacted",
+          "result_summary",
+          "latency_ms",
+          "started_at"
+        ],
+        "title": "InvocationRecordResponse"
+      },
+      "InvocationStatus": {
+        "type": "string",
+        "enum": [
+          "ok",
+          "tool_error",
+          "validation_error",
+          "denied",
+          "approval_required",
+          "auth_required",
+          "timeout",
+          "upstream_error",
+          "circuit_open",
+          "rate_limited",
+          "dry_run"
+        ],
+        "title": "InvocationStatus"
+      },
+      "InvokeRequest": {
+        "properties": {
+          "tool_key": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 3,
+            "title": "Tool Key"
+          },
+          "arguments": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Arguments"
+          },
+          "agent_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent Id"
+          },
+          "run_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run Id"
+          },
+          "end_user_external_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End User External Id"
+          },
+          "idempotency_key": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Idempotency Key"
+          },
+          "dry_run": {
+            "type": "boolean",
+            "title": "Dry Run",
+            "default": false
+          },
+          "approval_token": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approval Token"
+          },
+          "timeout_seconds": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 300.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timeout Seconds"
+          }
+        },
+        "type": "object",
+        "required": [
+          "tool_key"
+        ],
+        "title": "InvokeRequest"
+      },
+      "InvokeResponse": {
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/InvocationStatus"
+          },
+          "is_error": {
+            "type": "boolean",
+            "title": "Is Error"
+          },
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/ContentBlockResponse"
+            },
+            "type": "array",
+            "title": "Content"
+          },
+          "structured_content": {
+            "title": "Structured Content"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "retryable": {
+            "type": "boolean",
+            "title": "Retryable",
+            "default": false
+          },
+          "model_correctable": {
+            "type": "boolean",
+            "title": "Model Correctable",
+            "default": false
+          },
+          "latency_ms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latency Ms"
+          },
+          "invocation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Invocation Id"
+          },
+          "ui": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ui"
+          },
+          "extra": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Extra"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "is_error",
+          "content"
+        ],
+        "title": "InvokeResponse"
       },
       "MemberResponse": {
         "properties": {
@@ -6928,6 +12123,92 @@
         ],
         "title": "ModelUpdateRequest"
       },
+      "ModelVisibleTool": {
+        "properties": {
+          "tool_key": {
+            "type": "string",
+            "title": "Tool Key"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "input_schema": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Input Schema"
+          },
+          "annotations": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": "object",
+            "title": "Annotations"
+          },
+          "approval_policy": {
+            "$ref": "#/components/schemas/ApprovalPolicy"
+          },
+          "ui": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ui"
+          }
+        },
+        "type": "object",
+        "required": [
+          "tool_key",
+          "description",
+          "input_schema",
+          "annotations",
+          "approval_policy"
+        ],
+        "title": "ModelVisibleTool"
+      },
+      "NativeProviderInfo": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "tools": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tools"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "name",
+          "description",
+          "tools"
+        ],
+        "title": "NativeProviderInfo"
+      },
       "PaginatedData_AuditLogResponse_": {
         "properties": {
           "items": {
@@ -6971,6 +12252,72 @@
           "pagination"
         ],
         "title": "PaginatedData[CredentialResponse]"
+      },
+      "PaginatedData_EndUserResponse_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/EndUserResponse"
+            },
+            "type": "array",
+            "title": "Items",
+            "description": "List of items for current page"
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/PaginationMeta",
+            "description": "Pagination metadata"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "pagination"
+        ],
+        "title": "PaginatedData[EndUserResponse]"
+      },
+      "PaginatedData_IntegrationResponse_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/IntegrationResponse"
+            },
+            "type": "array",
+            "title": "Items",
+            "description": "List of items for current page"
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/PaginationMeta",
+            "description": "Pagination metadata"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "pagination"
+        ],
+        "title": "PaginatedData[IntegrationResponse]"
+      },
+      "PaginatedData_InvocationRecordResponse_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/InvocationRecordResponse"
+            },
+            "type": "array",
+            "title": "Items",
+            "description": "List of items for current page"
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/PaginationMeta",
+            "description": "Pagination metadata"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "pagination"
+        ],
+        "title": "PaginatedData[InvocationRecordResponse]"
       },
       "PaginatedData_MemberResponse_": {
         "properties": {
@@ -7082,6 +12429,28 @@
         ],
         "title": "PaginatedData[SecretSummaryResponse]"
       },
+      "PaginatedData_ToolResponse_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ToolResponse"
+            },
+            "type": "array",
+            "title": "Items",
+            "description": "List of items for current page"
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/PaginationMeta",
+            "description": "Pagination metadata"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "pagination"
+        ],
+        "title": "PaginatedData[ToolResponse]"
+      },
       "PaginatedResponse_AuditLogResponse_": {
         "properties": {
           "success": {
@@ -7133,6 +12502,84 @@
           "data"
         ],
         "title": "PaginatedResponse[CredentialResponse]"
+      },
+      "PaginatedResponse_EndUserResponse_": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "const": true,
+            "title": "Success",
+            "description": "Always true for successful responses",
+            "default": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/PaginatedData_EndUserResponse_",
+            "description": "Response payload"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Status message",
+            "default": "Operation completed successfully"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "PaginatedResponse[EndUserResponse]"
+      },
+      "PaginatedResponse_IntegrationResponse_": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "const": true,
+            "title": "Success",
+            "description": "Always true for successful responses",
+            "default": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/PaginatedData_IntegrationResponse_",
+            "description": "Response payload"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Status message",
+            "default": "Operation completed successfully"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "PaginatedResponse[IntegrationResponse]"
+      },
+      "PaginatedResponse_InvocationRecordResponse_": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "const": true,
+            "title": "Success",
+            "description": "Always true for successful responses",
+            "default": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/PaginatedData_InvocationRecordResponse_",
+            "description": "Response payload"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Status message",
+            "default": "Operation completed successfully"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "PaginatedResponse[InvocationRecordResponse]"
       },
       "PaginatedResponse_MemberResponse_": {
         "properties": {
@@ -7264,6 +12711,32 @@
         ],
         "title": "PaginatedResponse[SecretSummaryResponse]"
       },
+      "PaginatedResponse_ToolResponse_": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "const": true,
+            "title": "Success",
+            "description": "Always true for successful responses",
+            "default": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/PaginatedData_ToolResponse_",
+            "description": "Response payload"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Status message",
+            "default": "Operation completed successfully"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "PaginatedResponse[ToolResponse]"
+      },
       "PaginationMeta": {
         "properties": {
           "page": {
@@ -7307,6 +12780,55 @@
           "hasPreviousPage"
         ],
         "title": "PaginationMeta"
+      },
+      "ProbeResponse": {
+        "properties": {
+          "healthy": {
+            "type": "boolean",
+            "title": "Healthy"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "latency_ms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latency Ms"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "integration_status": {
+            "$ref": "#/components/schemas/IntegrationStatus"
+          },
+          "server_info": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Server Info"
+          }
+        },
+        "type": "object",
+        "required": [
+          "healthy",
+          "status",
+          "integration_status"
+        ],
+        "title": "ProbeResponse"
       },
       "ProjectCreateRequest": {
         "properties": {
@@ -8305,6 +13827,13 @@
         ],
         "title": "ProviderUpdateRequest"
       },
+      "PydanticObjectId": {
+        "type": "string",
+        "maxLength": 24,
+        "minLength": 24,
+        "pattern": "^[0-9a-f]{24}$",
+        "example": "5eb7cf5a86d9755df3a6c593"
+      },
       "SecretBatchResolveRequest": {
         "properties": {
           "names": {
@@ -8799,6 +14328,448 @@
         "title": "SecretValueResponse",
         "description": "Privileged plaintext reveal response."
       },
+      "ToolResponse": {
+        "properties": {
+          "tool_key": {
+            "type": "string",
+            "title": "Tool Key"
+          },
+          "integration_id": {
+            "type": "string",
+            "title": "Integration Id"
+          },
+          "upstream_name": {
+            "type": "string",
+            "title": "Upstream Name"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "input_schema": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Input Schema"
+          },
+          "output_schema": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Output Schema"
+          },
+          "annotations": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": "object",
+            "title": "Annotations"
+          },
+          "ui": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ui"
+          },
+          "sync_state": {
+            "$ref": "#/components/schemas/ToolSyncState"
+          },
+          "definition_hash": {
+            "type": "string",
+            "title": "Definition Hash"
+          },
+          "needs_approval": {
+            "type": "boolean",
+            "title": "Needs Approval",
+            "description": "True when the current definition has not been approved"
+          },
+          "setting": {
+            "$ref": "#/components/schemas/ToolSettingResponse"
+          }
+        },
+        "type": "object",
+        "required": [
+          "tool_key",
+          "integration_id",
+          "upstream_name",
+          "title",
+          "description",
+          "input_schema",
+          "output_schema",
+          "annotations",
+          "ui",
+          "sync_state",
+          "definition_hash",
+          "needs_approval",
+          "setting"
+        ],
+        "title": "ToolResponse"
+      },
+      "ToolSettingResponse": {
+        "properties": {
+          "is_enabled": {
+            "type": "boolean",
+            "title": "Is Enabled"
+          },
+          "approved_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approved Hash"
+          },
+          "approval_policy": {
+            "$ref": "#/components/schemas/ApprovalPolicy"
+          },
+          "description_override": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description Override"
+          },
+          "locked_arguments": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Locked Arguments"
+          },
+          "default_arguments": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Default Arguments"
+          },
+          "context_arguments": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Context Arguments"
+          },
+          "timeout_seconds": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timeout Seconds"
+          },
+          "rate_limit_per_minute": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rate Limit Per Minute"
+          },
+          "per_end_user_rate_limit_per_minute": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Per End User Rate Limit Per Minute"
+          },
+          "revision": {
+            "type": "integer",
+            "title": "Revision"
+          }
+        },
+        "type": "object",
+        "required": [
+          "is_enabled",
+          "approved_hash",
+          "approval_policy",
+          "description_override",
+          "locked_arguments",
+          "default_arguments",
+          "context_arguments",
+          "timeout_seconds",
+          "rate_limit_per_minute",
+          "per_end_user_rate_limit_per_minute",
+          "revision"
+        ],
+        "title": "ToolSettingResponse"
+      },
+      "ToolSettingUpdateRequest": {
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Revision"
+          },
+          "is_enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Enabled"
+          },
+          "approval_policy": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ApprovalPolicy"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description_override": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 8000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description Override"
+          },
+          "locked_arguments": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Locked Arguments"
+          },
+          "default_arguments": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Default Arguments"
+          },
+          "context_arguments": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Context Arguments"
+          },
+          "timeout_seconds": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 300.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timeout Seconds"
+          },
+          "rate_limit_per_minute": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rate Limit Per Minute"
+          },
+          "per_end_user_rate_limit_per_minute": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Per End User Rate Limit Per Minute"
+          }
+        },
+        "type": "object",
+        "required": [
+          "revision"
+        ],
+        "title": "ToolSettingUpdateRequest"
+      },
+      "ToolSyncState": {
+        "type": "string",
+        "enum": [
+          "in_sync",
+          "changed",
+          "removed_upstream",
+          "manual"
+        ],
+        "title": "ToolSyncState"
+      },
+      "ToolsetExclusion": {
+        "properties": {
+          "tool_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tool Key"
+          },
+          "integration": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Integration"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "reason"
+        ],
+        "title": "ToolsetExclusion"
+      },
+      "ToolsetRequest": {
+        "properties": {
+          "agent_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent Id"
+          },
+          "end_user_external_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End User External Id"
+          }
+        },
+        "type": "object",
+        "title": "ToolsetRequest"
+      },
+      "ToolsetResponse": {
+        "properties": {
+          "toolset_version": {
+            "type": "string",
+            "title": "Toolset Version"
+          },
+          "tools": {
+            "items": {
+              "$ref": "#/components/schemas/ModelVisibleTool"
+            },
+            "type": "array",
+            "title": "Tools"
+          },
+          "excluded": {
+            "items": {
+              "$ref": "#/components/schemas/ToolsetExclusion"
+            },
+            "type": "array",
+            "title": "Excluded"
+          },
+          "auth_required": {
+            "items": {
+              "$ref": "#/components/schemas/AuthRequiredEntry"
+            },
+            "type": "array",
+            "title": "Auth Required"
+          }
+        },
+        "type": "object",
+        "required": [
+          "toolset_version",
+          "tools",
+          "excluded",
+          "auth_required"
+        ],
+        "title": "ToolsetResponse"
+      },
       "TransferOwnershipRequest": {
         "properties": {
           "new_owner_user_id": {
@@ -8900,10 +14871,23 @@
       }
     },
     "securitySchemes": {
-      "HTTPBearer": {
+      "ClerkSession": {
         "type": "http",
         "description": "Clerk Bearer JWT session token",
-        "scheme": "bearer"
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "AxionApiKey": {
+        "type": "apiKey",
+        "description": "Axion Project API Key (e.g. axion_live_...)",
+        "in": "header",
+        "name": "X-Axion-Api-Key"
+      },
+      "EndUserSession": {
+        "type": "apiKey",
+        "description": "End-user session token minted by POST /projects/{project_id}/end-users/{external_id}/sessions",
+        "in": "header",
+        "name": "X-Axion-End-User-Token"
       }
     }
   },

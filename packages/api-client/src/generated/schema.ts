@@ -668,6 +668,413 @@ export interface paths {
         patch: operations["update_model"];
         trace?: never;
     };
+    "/api/v1/projects/{project_id}/integration-types": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Integration Types */
+        get: operations["list_integration_types"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/integrations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Integrations */
+        get: operations["list_integrations"];
+        put?: never;
+        /** Create an integration, test it, and discover its tools */
+        post: operations["create_integration"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/integrations/{integration_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Integration */
+        get: operations["get_integration"];
+        put?: never;
+        post?: never;
+        /** Delete Integration */
+        delete: operations["delete_integration"];
+        options?: never;
+        head?: never;
+        /** Update Integration */
+        patch: operations["update_integration"];
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/integrations/{integration_id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Restore Integration */
+        post: operations["restore_integration"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/integrations/{integration_id}/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Test Integration */
+        post: operations["test_integration"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/integrations/{integration_id}/discover": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Discover Integration */
+        post: operations["discover_integration_tools"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/integrations/{integration_id}/enable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Enable Integration */
+        post: operations["enable_integration"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/integrations/{integration_id}/disable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Disable Integration */
+        post: operations["disable_integration"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/integrations/{integration_id}/end-user-access": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Set End User Access */
+        put: operations["set_integration_end_user_access"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/tools": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Tools */
+        get: operations["list_tools"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/tools/{tool_key}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Tool */
+        get: operations["get_tool"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Tool Setting */
+        patch: operations["update_tool_setting"];
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/tools/{tool_key}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Approve Tool */
+        post: operations["approve_tool"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/tool-bindings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Bindings */
+        get: operations["list_tool_bindings"];
+        /** Replace Bindings */
+        put: operations["replace_tool_bindings"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/tool-invocations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Invocations */
+        get: operations["list_tool_invocations"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/runtime/toolset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Resolve the tools available to the caller (and optionally an end user) */
+        post: operations["resolve_toolset"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/runtime/invoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Invoke a tool through the execution gateway
+         * @description Always returns HTTP 200 with the uniform result envelope; inspect `status` and `is_error`.
+         */
+        post: operations["invoke_tool"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/runtime/approvals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Approve one exact tool call
+         * @description Issues a short-lived token bound to the tool, the exact arguments, and the subject.
+         */
+        post: operations["issue_tool_call_approval"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/end-users/{external_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get End User */
+        get: operations["get_end_user"];
+        /** Assert End User */
+        put: operations["assert_end_user"];
+        post?: never;
+        /** Delete End User */
+        delete: operations["delete_end_user"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/end-users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List End Users */
+        get: operations["list_end_users"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/end-users/{external_id}/block": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Block End User */
+        post: operations["block_end_user"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/end-users/{external_id}/unblock": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Unblock End User */
+        post: operations["unblock_end_user"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/end-users/{external_id}/sessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mint a short-lived session token for one end user */
+        post: operations["create_end_user_session"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Current End User
+         * @description Who am I? Authenticated by an end-user session token (no Clerk account needed).
+         */
+        get: operations["get_current_end_user"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -716,6 +1123,24 @@ export interface components {
             success: false;
             /** @description Error details payload */
             error: components["schemas"]["ApiErrorPayload"];
+        };
+        /** ApiResponse[ApprovalIssueResponse] */
+        ApiResponse_ApprovalIssueResponse_: {
+            /**
+             * Success
+             * @description Always true for successful responses
+             * @default true
+             * @constant
+             */
+            success: true;
+            /** @description Response payload */
+            data: components["schemas"]["ApprovalIssueResponse"];
+            /**
+             * Message
+             * @description Status message
+             * @default Operation completed successfully
+             */
+            message: string;
         };
         /** ApiResponse[AuthenticatedUser] */
         ApiResponse_AuthenticatedUser_: {
@@ -817,6 +1242,60 @@ export interface components {
              */
             message: string;
         };
+        /** ApiResponse[DiscoverySummaryResponse] */
+        ApiResponse_DiscoverySummaryResponse_: {
+            /**
+             * Success
+             * @description Always true for successful responses
+             * @default true
+             * @constant
+             */
+            success: true;
+            /** @description Response payload */
+            data: components["schemas"]["DiscoverySummaryResponse"];
+            /**
+             * Message
+             * @description Status message
+             * @default Operation completed successfully
+             */
+            message: string;
+        };
+        /** ApiResponse[EndUserResponse] */
+        ApiResponse_EndUserResponse_: {
+            /**
+             * Success
+             * @description Always true for successful responses
+             * @default true
+             * @constant
+             */
+            success: true;
+            /** @description Response payload */
+            data: components["schemas"]["EndUserResponse"];
+            /**
+             * Message
+             * @description Status message
+             * @default Operation completed successfully
+             */
+            message: string;
+        };
+        /** ApiResponse[EndUserSessionResponse] */
+        ApiResponse_EndUserSessionResponse_: {
+            /**
+             * Success
+             * @description Always true for successful responses
+             * @default true
+             * @constant
+             */
+            success: true;
+            /** @description Response payload */
+            data: components["schemas"]["EndUserSessionResponse"];
+            /**
+             * Message
+             * @description Status message
+             * @default Operation completed successfully
+             */
+            message: string;
+        };
         /** ApiResponse[HealthData] */
         ApiResponse_HealthData_: {
             /**
@@ -828,6 +1307,78 @@ export interface components {
             success: true;
             /** @description Response payload */
             data: components["schemas"]["HealthData"];
+            /**
+             * Message
+             * @description Status message
+             * @default Operation completed successfully
+             */
+            message: string;
+        };
+        /** ApiResponse[IntegrationOnboardingResponse] */
+        ApiResponse_IntegrationOnboardingResponse_: {
+            /**
+             * Success
+             * @description Always true for successful responses
+             * @default true
+             * @constant
+             */
+            success: true;
+            /** @description Response payload */
+            data: components["schemas"]["IntegrationOnboardingResponse"];
+            /**
+             * Message
+             * @description Status message
+             * @default Operation completed successfully
+             */
+            message: string;
+        };
+        /** ApiResponse[IntegrationResponse] */
+        ApiResponse_IntegrationResponse_: {
+            /**
+             * Success
+             * @description Always true for successful responses
+             * @default true
+             * @constant
+             */
+            success: true;
+            /** @description Response payload */
+            data: components["schemas"]["IntegrationResponse"];
+            /**
+             * Message
+             * @description Status message
+             * @default Operation completed successfully
+             */
+            message: string;
+        };
+        /** ApiResponse[IntegrationTypesResponse] */
+        ApiResponse_IntegrationTypesResponse_: {
+            /**
+             * Success
+             * @description Always true for successful responses
+             * @default true
+             * @constant
+             */
+            success: true;
+            /** @description Response payload */
+            data: components["schemas"]["IntegrationTypesResponse"];
+            /**
+             * Message
+             * @description Status message
+             * @default Operation completed successfully
+             */
+            message: string;
+        };
+        /** ApiResponse[InvokeResponse] */
+        ApiResponse_InvokeResponse_: {
+            /**
+             * Success
+             * @description Always true for successful responses
+             * @default true
+             * @constant
+             */
+            success: true;
+            /** @description Response payload */
+            data: components["schemas"]["InvokeResponse"];
             /**
              * Message
              * @description Status message
@@ -885,6 +1436,24 @@ export interface components {
              * @description Response payload
              */
             data: null;
+            /**
+             * Message
+             * @description Status message
+             * @default Operation completed successfully
+             */
+            message: string;
+        };
+        /** ApiResponse[ProbeResponse] */
+        ApiResponse_ProbeResponse_: {
+            /**
+             * Success
+             * @description Always true for successful responses
+             * @default true
+             * @constant
+             */
+            success: true;
+            /** @description Response payload */
+            data: components["schemas"]["ProbeResponse"];
             /**
              * Message
              * @description Status message
@@ -1036,6 +1605,124 @@ export interface components {
              */
             message: string;
         };
+        /** ApiResponse[ToolResponse] */
+        ApiResponse_ToolResponse_: {
+            /**
+             * Success
+             * @description Always true for successful responses
+             * @default true
+             * @constant
+             */
+            success: true;
+            /** @description Response payload */
+            data: components["schemas"]["ToolResponse"];
+            /**
+             * Message
+             * @description Status message
+             * @default Operation completed successfully
+             */
+            message: string;
+        };
+        /** ApiResponse[ToolsetResponse] */
+        ApiResponse_ToolsetResponse_: {
+            /**
+             * Success
+             * @description Always true for successful responses
+             * @default true
+             * @constant
+             */
+            success: true;
+            /** @description Response payload */
+            data: components["schemas"]["ToolsetResponse"];
+            /**
+             * Message
+             * @description Status message
+             * @default Operation completed successfully
+             */
+            message: string;
+        };
+        /** ApiResponse[dict] */
+        ApiResponse_dict_: {
+            /**
+             * Success
+             * @description Always true for successful responses
+             * @default true
+             * @constant
+             */
+            success: true;
+            /**
+             * Data
+             * @description Response payload
+             */
+            data: {
+                [key: string]: unknown;
+            };
+            /**
+             * Message
+             * @description Status message
+             * @default Operation completed successfully
+             */
+            message: string;
+        };
+        /** ApiResponse[list[BindingResponse]] */
+        ApiResponse_list_BindingResponse__: {
+            /**
+             * Success
+             * @description Always true for successful responses
+             * @default true
+             * @constant
+             */
+            success: true;
+            /**
+             * Data
+             * @description Response payload
+             */
+            data: components["schemas"]["BindingResponse"][];
+            /**
+             * Message
+             * @description Status message
+             * @default Operation completed successfully
+             */
+            message: string;
+        };
+        /** ApprovalIssueRequest */
+        ApprovalIssueRequest: {
+            /** Tool Key */
+            tool_key: string;
+            /** Arguments */
+            arguments?: {
+                [key: string]: unknown;
+            };
+            /** End User External Id */
+            end_user_external_id?: string | null;
+            /**
+             * Member Id
+             * @description Clerk id of the member the call is for
+             */
+            member_id?: string | null;
+            /**
+             * Ttl Seconds
+             * @default 300
+             */
+            ttl_seconds: number;
+        };
+        /** ApprovalIssueResponse */
+        ApprovalIssueResponse: {
+            /** Approval Token */
+            approval_token: string;
+            /** Expires In */
+            expires_in: number;
+        };
+        /**
+         * ApprovalPolicy
+         * @enum {string}
+         */
+        ApprovalPolicy: "auto" | "require_approval" | "deny";
+        /**
+         * Audience
+         * @enum {string}
+         */
+        Audience: "members" | "end_users" | "machine";
         /** AuditLogResponse */
         AuditLogResponse: {
             /** Id */
@@ -1058,6 +1745,87 @@ export interface components {
              */
             created_at: string;
         };
+        /**
+         * AuthProfile
+         * @description Declarative description of how an integration authenticates (SRS-07 5.1.2).
+         */
+        AuthProfile: {
+            /** @default none */
+            auth_type: components["schemas"]["AuthType"];
+            /** @default project_shared */
+            credential_mode: components["schemas"]["CredentialMode"];
+            /** @description Primary MOD-02 secret reference */
+            secret_id?: components["schemas"]["PydanticObjectId"] | null;
+            /** @description Second secret (basic-auth password) */
+            secondary_secret_id?: components["schemas"]["PydanticObjectId"] | null;
+            /** Placement */
+            placement?: string | null;
+            /**
+             * Name
+             * @description Header or query parameter name
+             */
+            name?: string | null;
+            /** Prefix */
+            prefix?: string | null;
+            /**
+             * Username
+             * @description Basic-auth username (not secret)
+             */
+            username?: string | null;
+            /**
+             * Headers
+             * @description custom_headers values; may contain {{secrets.NAME}} placeholders
+             */
+            headers?: {
+                [key: string]: string;
+            };
+            /**
+             * Oauth
+             * @description Non-secret OAuth settings (phase 2)
+             */
+            oauth?: {
+                [key: string]: unknown;
+            };
+        };
+        /** AuthProfileResponse */
+        AuthProfileResponse: {
+            auth_type: components["schemas"]["AuthType"];
+            credential_mode: components["schemas"]["CredentialMode"];
+            /** Secret Id */
+            secret_id?: string | null;
+            /** Placement */
+            placement?: string | null;
+            /** Name */
+            name?: string | null;
+            /** Prefix */
+            prefix?: string | null;
+            /** Username */
+            username?: string | null;
+            /**
+             * Header Names
+             * @description Header names only; values are never returned
+             */
+            header_names?: string[];
+        };
+        /** AuthRequiredEntry */
+        AuthRequiredEntry: {
+            /** Integration Id */
+            integration_id: string;
+            /** Integration */
+            integration: string;
+            /** Reason */
+            reason: string;
+            /**
+             * Connect Available
+             * @default false
+             */
+            connect_available: boolean;
+        };
+        /**
+         * AuthType
+         * @enum {string}
+         */
+        AuthType: "none" | "api_key" | "bearer" | "basic" | "custom_headers" | "oauth_authorization_code" | "oauth_client_credentials";
         /** AuthenticatedUser */
         AuthenticatedUser: {
             /**
@@ -1122,6 +1890,64 @@ export interface components {
              * @description Account last update timestamp
              */
             updated_at?: string | null;
+        };
+        /**
+         * BindingEffect
+         * @enum {string}
+         */
+        BindingEffect: "allow" | "deny";
+        /** BindingReplaceRequest */
+        BindingReplaceRequest: {
+            subject_type: components["schemas"]["BindingSubjectType"];
+            /** Subject Id */
+            subject_id?: string | null;
+            /** Audience */
+            audience?: components["schemas"]["Audience"][];
+            /** Bindings */
+            bindings?: components["schemas"]["BindingRule"][];
+        };
+        /** BindingResponse */
+        BindingResponse: {
+            subject_type: components["schemas"]["BindingSubjectType"];
+            /** Subject Id */
+            subject_id: string | null;
+            /** Audience */
+            audience: components["schemas"]["Audience"][];
+            target_type: components["schemas"]["BindingTargetType"];
+            /** Target Id */
+            target_id: string;
+            effect: components["schemas"]["BindingEffect"];
+            approval_policy_override: components["schemas"]["ApprovalPolicy"] | null;
+        };
+        /** BindingRule */
+        BindingRule: {
+            target_type: components["schemas"]["BindingTargetType"];
+            /** Target Id */
+            target_id: string;
+            /** @default allow */
+            effect: components["schemas"]["BindingEffect"];
+            approval_policy_override?: components["schemas"]["ApprovalPolicy"] | null;
+        };
+        /**
+         * BindingSubjectType
+         * @enum {string}
+         */
+        BindingSubjectType: "project_default" | "agent" | "end_user";
+        /**
+         * BindingTargetType
+         * @enum {string}
+         */
+        BindingTargetType: "integration" | "tool";
+        /** ContentBlockResponse */
+        ContentBlockResponse: {
+            /** Type */
+            type: string;
+            /** Text */
+            text?: string | null;
+            /** Data */
+            data?: unknown;
+            /** Mime Type */
+            mime_type?: string | null;
         };
         /** CredentialCreateRequest */
         CredentialCreateRequest: {
@@ -1259,6 +2085,12 @@ export interface components {
              */
             raw_key: string;
         };
+        /**
+         * CredentialMode
+         * @description Who authenticates upstream (SRS-07 Section 4.1).
+         * @enum {string}
+         */
+        CredentialMode: "project_shared" | "per_user";
         /**
          * CredentialResponse
          * @description Metadata response (Never includes raw_key).
@@ -1445,6 +2277,96 @@ export interface components {
              */
             max_temperature?: number | null;
         };
+        /** DiscoverySummaryResponse */
+        DiscoverySummaryResponse: {
+            /** Added */
+            added: string[];
+            /** Changed */
+            changed: string[];
+            /** Removed */
+            removed: string[];
+            /** Unchanged */
+            unchanged: number;
+            /** Total */
+            total: number;
+            /** Catalog Hash */
+            catalog_hash: string;
+        };
+        /**
+         * EndUserAccess
+         * @enum {string}
+         */
+        EndUserAccess: "closed" | "open";
+        /** EndUserAccessRequest */
+        EndUserAccessRequest: {
+            access: components["schemas"]["EndUserAccess"];
+            /**
+             * Acknowledge Shared Identity
+             * @default false
+             */
+            acknowledge_shared_identity: boolean;
+        };
+        /** EndUserAssertRequest */
+        EndUserAssertRequest: {
+            /** Display Name */
+            display_name?: string | null;
+            /** Email */
+            email?: string | null;
+            /** Attributes */
+            attributes?: {
+                [key: string]: string;
+            } | null;
+        };
+        /** EndUserResponse */
+        EndUserResponse: {
+            /** Id */
+            id: string;
+            /** External Id */
+            external_id: string;
+            /** Display Name */
+            display_name: string | null;
+            /** Email */
+            email: string | null;
+            /** Attributes */
+            attributes: {
+                [key: string]: string;
+            };
+            status: components["schemas"]["EndUserStatus"];
+            /**
+             * First Seen At
+             * Format: date-time
+             */
+            first_seen_at: string;
+            /**
+             * Last Seen At
+             * Format: date-time
+             */
+            last_seen_at: string;
+        };
+        /** EndUserSessionRequest */
+        EndUserSessionRequest: {
+            /**
+             * Ttl Seconds
+             * @default 600
+             */
+            ttl_seconds: number;
+            /** Capabilities */
+            capabilities?: string[];
+        };
+        /** EndUserSessionResponse */
+        EndUserSessionResponse: {
+            /** Token */
+            token: string;
+            /** Expires In */
+            expires_in: number;
+            /** End User Id */
+            end_user_id: string;
+        };
+        /**
+         * EndUserStatus
+         * @enum {string}
+         */
+        EndUserStatus: "active" | "blocked" | "deleted";
         /** ErrorDetail */
         ErrorDetail: {
             /**
@@ -1508,6 +2430,222 @@ export interface components {
          * @enum {string}
          */
         HealthcheckStatus: "healthy" | "unreachable" | "auth_failed" | "rate_limited";
+        /** IntegrationCreateRequest */
+        IntegrationCreateRequest: {
+            type: components["schemas"]["IntegrationType"];
+            /** Slug */
+            slug: string;
+            /** Name */
+            name: string;
+            /** Description */
+            description?: string | null;
+            /** Config */
+            config?: {
+                [key: string]: unknown;
+            };
+            auth_profile?: components["schemas"]["AuthProfile"];
+        };
+        /** IntegrationOnboardingResponse */
+        IntegrationOnboardingResponse: {
+            integration: components["schemas"]["IntegrationResponse"];
+            probe?: components["schemas"]["ProbeResponse"] | null;
+            discovery?: components["schemas"]["DiscoverySummaryResponse"] | null;
+            /** Warning */
+            warning?: string | null;
+        };
+        /** IntegrationResponse */
+        IntegrationResponse: {
+            /** Id */
+            id: string;
+            /** Project Id */
+            project_id: string;
+            type: components["schemas"]["IntegrationType"];
+            /** Slug */
+            slug: string;
+            /** Name */
+            name: string;
+            /** Description */
+            description: string | null;
+            /** Config */
+            config: {
+                [key: string]: unknown;
+            };
+            auth_profile: components["schemas"]["AuthProfileResponse"];
+            status: components["schemas"]["IntegrationStatus"];
+            /** Status Reason */
+            status_reason: string | null;
+            /** Is Enabled */
+            is_enabled: boolean;
+            end_user_access: components["schemas"]["EndUserAccess"];
+            /** Last Discovery At */
+            last_discovery_at: string | null;
+            /** Health */
+            health: {
+                [key: string]: unknown;
+            };
+            /** Revision */
+            revision: number;
+            /** Created By */
+            created_by: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /**
+             * Is Deleted
+             * @default false
+             */
+            is_deleted: boolean;
+        };
+        /**
+         * IntegrationStatus
+         * @enum {string}
+         */
+        IntegrationStatus: "draft" | "active" | "degraded" | "needs_auth" | "error" | "disabled";
+        /**
+         * IntegrationType
+         * @enum {string}
+         */
+        IntegrationType: "native" | "mcp" | "rest" | "custom";
+        /** IntegrationTypeInfo */
+        IntegrationTypeInfo: {
+            /** Key */
+            key: string;
+            /** Supported Auth Types */
+            supported_auth_types: string[];
+        };
+        /** IntegrationTypesResponse */
+        IntegrationTypesResponse: {
+            /** Types */
+            types: components["schemas"]["IntegrationTypeInfo"][];
+            /** Native Providers */
+            native_providers: components["schemas"]["NativeProviderInfo"][];
+        };
+        /** IntegrationUpdateRequest */
+        IntegrationUpdateRequest: {
+            /**
+             * Revision
+             * @description Expected revision for optimistic concurrency
+             */
+            revision: number;
+            /** Name */
+            name?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Config */
+            config?: {
+                [key: string]: unknown;
+            } | null;
+            auth_profile?: components["schemas"]["AuthProfile"] | null;
+        };
+        /** InvocationRecordResponse */
+        InvocationRecordResponse: {
+            /** Id */
+            id: string;
+            /** Tool Key */
+            tool_key: string;
+            status: components["schemas"]["InvocationStatus"];
+            /** Origin */
+            origin: string;
+            /** Dry Run */
+            dry_run: boolean;
+            /** Actor */
+            actor: {
+                [key: string]: unknown;
+            };
+            /** Subject */
+            subject: {
+                [key: string]: unknown;
+            };
+            /** Arguments Redacted */
+            arguments_redacted: {
+                [key: string]: unknown;
+            };
+            /** Result Summary */
+            result_summary: {
+                [key: string]: unknown;
+            };
+            /** Latency Ms */
+            latency_ms: number | null;
+            /**
+             * Started At
+             * Format: date-time
+             */
+            started_at: string;
+        };
+        /**
+         * InvocationStatus
+         * @enum {string}
+         */
+        InvocationStatus: "ok" | "tool_error" | "validation_error" | "denied" | "approval_required" | "auth_required" | "timeout" | "upstream_error" | "circuit_open" | "rate_limited" | "dry_run";
+        /** InvokeRequest */
+        InvokeRequest: {
+            /** Tool Key */
+            tool_key: string;
+            /** Arguments */
+            arguments?: {
+                [key: string]: unknown;
+            };
+            /** Agent Id */
+            agent_id?: string | null;
+            /** Run Id */
+            run_id?: string | null;
+            /** End User External Id */
+            end_user_external_id?: string | null;
+            /** Idempotency Key */
+            idempotency_key?: string | null;
+            /**
+             * Dry Run
+             * @default false
+             */
+            dry_run: boolean;
+            /** Approval Token */
+            approval_token?: string | null;
+            /** Timeout Seconds */
+            timeout_seconds?: number | null;
+        };
+        /** InvokeResponse */
+        InvokeResponse: {
+            status: components["schemas"]["InvocationStatus"];
+            /** Is Error */
+            is_error: boolean;
+            /** Content */
+            content: components["schemas"]["ContentBlockResponse"][];
+            /** Structured Content */
+            structured_content?: unknown;
+            /** Error Code */
+            error_code?: string | null;
+            /** Message */
+            message?: string | null;
+            /**
+             * Retryable
+             * @default false
+             */
+            retryable: boolean;
+            /**
+             * Model Correctable
+             * @default false
+             */
+            model_correctable: boolean;
+            /** Latency Ms */
+            latency_ms?: number | null;
+            /** Invocation Id */
+            invocation_id?: string | null;
+            /** Ui */
+            ui?: {
+                [key: string]: unknown;
+            } | null;
+            /** Extra */
+            extra?: {
+                [key: string]: unknown;
+            };
+        };
         /** MemberResponse */
         MemberResponse: {
             /** Id */
@@ -1718,6 +2856,37 @@ export interface components {
              */
             revision: number;
         };
+        /** ModelVisibleTool */
+        ModelVisibleTool: {
+            /** Tool Key */
+            tool_key: string;
+            /** Description */
+            description: string;
+            /** Input Schema */
+            input_schema: {
+                [key: string]: unknown;
+            };
+            /** Annotations */
+            annotations: {
+                [key: string]: boolean | null;
+            };
+            approval_policy: components["schemas"]["ApprovalPolicy"];
+            /** Ui */
+            ui?: {
+                [key: string]: unknown;
+            } | null;
+        };
+        /** NativeProviderInfo */
+        NativeProviderInfo: {
+            /** Key */
+            key: string;
+            /** Name */
+            name: string;
+            /** Description */
+            description: string;
+            /** Tools */
+            tools: string[];
+        };
         /** PaginatedData[AuditLogResponse] */
         PaginatedData_AuditLogResponse_: {
             /**
@@ -1735,6 +2904,36 @@ export interface components {
              * @description List of items for current page
              */
             items: components["schemas"]["CredentialResponse"][];
+            /** @description Pagination metadata */
+            pagination: components["schemas"]["PaginationMeta"];
+        };
+        /** PaginatedData[EndUserResponse] */
+        PaginatedData_EndUserResponse_: {
+            /**
+             * Items
+             * @description List of items for current page
+             */
+            items: components["schemas"]["EndUserResponse"][];
+            /** @description Pagination metadata */
+            pagination: components["schemas"]["PaginationMeta"];
+        };
+        /** PaginatedData[IntegrationResponse] */
+        PaginatedData_IntegrationResponse_: {
+            /**
+             * Items
+             * @description List of items for current page
+             */
+            items: components["schemas"]["IntegrationResponse"][];
+            /** @description Pagination metadata */
+            pagination: components["schemas"]["PaginationMeta"];
+        };
+        /** PaginatedData[InvocationRecordResponse] */
+        PaginatedData_InvocationRecordResponse_: {
+            /**
+             * Items
+             * @description List of items for current page
+             */
+            items: components["schemas"]["InvocationRecordResponse"][];
             /** @description Pagination metadata */
             pagination: components["schemas"]["PaginationMeta"];
         };
@@ -1788,6 +2987,16 @@ export interface components {
             /** @description Pagination metadata */
             pagination: components["schemas"]["PaginationMeta"];
         };
+        /** PaginatedData[ToolResponse] */
+        PaginatedData_ToolResponse_: {
+            /**
+             * Items
+             * @description List of items for current page
+             */
+            items: components["schemas"]["ToolResponse"][];
+            /** @description Pagination metadata */
+            pagination: components["schemas"]["PaginationMeta"];
+        };
         /** PaginatedResponse[AuditLogResponse] */
         PaginatedResponse_AuditLogResponse_: {
             /**
@@ -1817,6 +3026,60 @@ export interface components {
             success: true;
             /** @description Response payload */
             data: components["schemas"]["PaginatedData_CredentialResponse_"];
+            /**
+             * Message
+             * @description Status message
+             * @default Operation completed successfully
+             */
+            message: string;
+        };
+        /** PaginatedResponse[EndUserResponse] */
+        PaginatedResponse_EndUserResponse_: {
+            /**
+             * Success
+             * @description Always true for successful responses
+             * @default true
+             * @constant
+             */
+            success: true;
+            /** @description Response payload */
+            data: components["schemas"]["PaginatedData_EndUserResponse_"];
+            /**
+             * Message
+             * @description Status message
+             * @default Operation completed successfully
+             */
+            message: string;
+        };
+        /** PaginatedResponse[IntegrationResponse] */
+        PaginatedResponse_IntegrationResponse_: {
+            /**
+             * Success
+             * @description Always true for successful responses
+             * @default true
+             * @constant
+             */
+            success: true;
+            /** @description Response payload */
+            data: components["schemas"]["PaginatedData_IntegrationResponse_"];
+            /**
+             * Message
+             * @description Status message
+             * @default Operation completed successfully
+             */
+            message: string;
+        };
+        /** PaginatedResponse[InvocationRecordResponse] */
+        PaginatedResponse_InvocationRecordResponse_: {
+            /**
+             * Success
+             * @description Always true for successful responses
+             * @default true
+             * @constant
+             */
+            success: true;
+            /** @description Response payload */
+            data: components["schemas"]["PaginatedData_InvocationRecordResponse_"];
             /**
              * Message
              * @description Status message
@@ -1914,6 +3177,24 @@ export interface components {
              */
             message: string;
         };
+        /** PaginatedResponse[ToolResponse] */
+        PaginatedResponse_ToolResponse_: {
+            /**
+             * Success
+             * @description Always true for successful responses
+             * @default true
+             * @constant
+             */
+            success: true;
+            /** @description Response payload */
+            data: components["schemas"]["PaginatedData_ToolResponse_"];
+            /**
+             * Message
+             * @description Status message
+             * @default Operation completed successfully
+             */
+            message: string;
+        };
         /** PaginationMeta */
         PaginationMeta: {
             /**
@@ -1946,6 +3227,22 @@ export interface components {
              * @description True if a previous page is available
              */
             hasPreviousPage: boolean;
+        };
+        /** ProbeResponse */
+        ProbeResponse: {
+            /** Healthy */
+            healthy: boolean;
+            /** Status */
+            status: string;
+            /** Latency Ms */
+            latency_ms?: number | null;
+            /** Message */
+            message?: string | null;
+            integration_status: components["schemas"]["IntegrationStatus"];
+            /** Server Info */
+            server_info?: {
+                [key: string]: unknown;
+            };
         };
         /** ProjectCreateRequest */
         ProjectCreateRequest: {
@@ -2329,6 +3626,8 @@ export interface components {
              */
             revision: number;
         };
+        /** @example 5eb7cf5a86d9755df3a6c593 */
+        PydanticObjectId: string;
         /** SecretBatchResolveRequest */
         SecretBatchResolveRequest: {
             /**
@@ -2568,6 +3867,134 @@ export interface components {
              * @default true
              */
             audit_logged: boolean;
+        };
+        /** ToolResponse */
+        ToolResponse: {
+            /** Tool Key */
+            tool_key: string;
+            /** Integration Id */
+            integration_id: string;
+            /** Upstream Name */
+            upstream_name: string;
+            /** Title */
+            title: string | null;
+            /** Description */
+            description: string;
+            /** Input Schema */
+            input_schema: {
+                [key: string]: unknown;
+            };
+            /** Output Schema */
+            output_schema: {
+                [key: string]: unknown;
+            } | null;
+            /** Annotations */
+            annotations: {
+                [key: string]: boolean | null;
+            };
+            /** Ui */
+            ui: {
+                [key: string]: unknown;
+            } | null;
+            sync_state: components["schemas"]["ToolSyncState"];
+            /** Definition Hash */
+            definition_hash: string;
+            /**
+             * Needs Approval
+             * @description True when the current definition has not been approved
+             */
+            needs_approval: boolean;
+            setting: components["schemas"]["ToolSettingResponse"];
+        };
+        /** ToolSettingResponse */
+        ToolSettingResponse: {
+            /** Is Enabled */
+            is_enabled: boolean;
+            /** Approved Hash */
+            approved_hash: string | null;
+            approval_policy: components["schemas"]["ApprovalPolicy"];
+            /** Description Override */
+            description_override: string | null;
+            /** Locked Arguments */
+            locked_arguments: {
+                [key: string]: unknown;
+            };
+            /** Default Arguments */
+            default_arguments: {
+                [key: string]: unknown;
+            };
+            /** Context Arguments */
+            context_arguments: {
+                [key: string]: string;
+            };
+            /** Timeout Seconds */
+            timeout_seconds: number | null;
+            /** Rate Limit Per Minute */
+            rate_limit_per_minute: number | null;
+            /** Per End User Rate Limit Per Minute */
+            per_end_user_rate_limit_per_minute: number | null;
+            /** Revision */
+            revision: number;
+        };
+        /** ToolSettingUpdateRequest */
+        ToolSettingUpdateRequest: {
+            /** Revision */
+            revision: number;
+            /** Is Enabled */
+            is_enabled?: boolean | null;
+            approval_policy?: components["schemas"]["ApprovalPolicy"] | null;
+            /** Description Override */
+            description_override?: string | null;
+            /** Locked Arguments */
+            locked_arguments?: {
+                [key: string]: unknown;
+            } | null;
+            /** Default Arguments */
+            default_arguments?: {
+                [key: string]: unknown;
+            } | null;
+            /** Context Arguments */
+            context_arguments?: {
+                [key: string]: string;
+            } | null;
+            /** Timeout Seconds */
+            timeout_seconds?: number | null;
+            /** Rate Limit Per Minute */
+            rate_limit_per_minute?: number | null;
+            /** Per End User Rate Limit Per Minute */
+            per_end_user_rate_limit_per_minute?: number | null;
+        };
+        /**
+         * ToolSyncState
+         * @enum {string}
+         */
+        ToolSyncState: "in_sync" | "changed" | "removed_upstream" | "manual";
+        /** ToolsetExclusion */
+        ToolsetExclusion: {
+            /** Tool Key */
+            tool_key?: string | null;
+            /** Integration */
+            integration?: string | null;
+            /** Reason */
+            reason: string;
+        };
+        /** ToolsetRequest */
+        ToolsetRequest: {
+            /** Agent Id */
+            agent_id?: string | null;
+            /** End User External Id */
+            end_user_external_id?: string | null;
+        };
+        /** ToolsetResponse */
+        ToolsetResponse: {
+            /** Toolset Version */
+            toolset_version: string;
+            /** Tools */
+            tools: components["schemas"]["ModelVisibleTool"][];
+            /** Excluded */
+            excluded: components["schemas"]["ToolsetExclusion"][];
+            /** Auth Required */
+            auth_required: components["schemas"]["AuthRequiredEntry"][];
         };
         /** TransferOwnershipRequest */
         TransferOwnershipRequest: {
@@ -5470,6 +6897,1998 @@ export interface operations {
             };
             /** @description OCC revision mismatch or project archived */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_integration_types: {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string | null;
+            };
+            path: {
+                /** @description Project id or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_IntegrationTypesResponse_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_integrations: {
+        parameters: {
+            query?: {
+                type?: components["schemas"]["IntegrationType"] | null;
+                status?: components["schemas"]["IntegrationStatus"] | null;
+                search?: string | null;
+                page?: number;
+                page_size?: number;
+            };
+            header?: {
+                Authorization?: string | null;
+            };
+            path: {
+                /** @description Project id or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedResponse_IntegrationResponse_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_integration: {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string | null;
+            };
+            path: {
+                /** @description Project id or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IntegrationCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_IntegrationOnboardingResponse_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_integration: {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string | null;
+            };
+            path: {
+                integration_id: string;
+                /** @description Project id or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_IntegrationResponse_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_integration: {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string | null;
+            };
+            path: {
+                integration_id: string;
+                /** @description Project id or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_IntegrationResponse_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_integration: {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string | null;
+            };
+            path: {
+                integration_id: string;
+                /** @description Project id or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IntegrationUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_IntegrationResponse_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    restore_integration: {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string | null;
+            };
+            path: {
+                integration_id: string;
+                /** @description Project id or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_IntegrationResponse_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    test_integration: {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string | null;
+            };
+            path: {
+                integration_id: string;
+                /** @description Project id or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_ProbeResponse_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    discover_integration_tools: {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string | null;
+            };
+            path: {
+                integration_id: string;
+                /** @description Project id or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_DiscoverySummaryResponse_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    enable_integration: {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string | null;
+            };
+            path: {
+                integration_id: string;
+                /** @description Project id or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_IntegrationResponse_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    disable_integration: {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string | null;
+            };
+            path: {
+                integration_id: string;
+                /** @description Project id or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_IntegrationResponse_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    set_integration_end_user_access: {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string | null;
+            };
+            path: {
+                integration_id: string;
+                /** @description Project id or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EndUserAccessRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_IntegrationResponse_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_tools: {
+        parameters: {
+            query?: {
+                integration_id?: string | null;
+                sync_state?: components["schemas"]["ToolSyncState"] | null;
+                search?: string | null;
+                page?: number;
+                page_size?: number;
+            };
+            header?: {
+                Authorization?: string | null;
+            };
+            path: {
+                /** @description Project id or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedResponse_ToolResponse_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_tool: {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string | null;
+            };
+            path: {
+                tool_key: string;
+                /** @description Project id or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_ToolResponse_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_tool_setting: {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string | null;
+            };
+            path: {
+                tool_key: string;
+                /** @description Project id or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ToolSettingUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_ToolResponse_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    approve_tool: {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string | null;
+            };
+            path: {
+                tool_key: string;
+                /** @description Project id or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_ToolResponse_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_tool_bindings: {
+        parameters: {
+            query?: {
+                subject_type?: components["schemas"]["BindingSubjectType"] | null;
+                subject_id?: string | null;
+            };
+            header?: {
+                Authorization?: string | null;
+            };
+            path: {
+                /** @description Project id or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_list_BindingResponse__"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    replace_tool_bindings: {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string | null;
+            };
+            path: {
+                /** @description Project id or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BindingReplaceRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_list_BindingResponse__"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_tool_invocations: {
+        parameters: {
+            query?: {
+                tool_key?: string | null;
+                status?: components["schemas"]["InvocationStatus"] | null;
+                page?: number;
+                page_size?: number;
+            };
+            header?: {
+                Authorization?: string | null;
+            };
+            path: {
+                /** @description Project id or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedResponse_InvocationRecordResponse_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    resolve_toolset: {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string | null;
+            };
+            path: {
+                /** @description Project id or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ToolsetRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_ToolsetResponse_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    invoke_tool: {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string | null;
+            };
+            path: {
+                /** @description Project id or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InvokeRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_InvokeResponse_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    issue_tool_call_approval: {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string | null;
+            };
+            path: {
+                /** @description Project id or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ApprovalIssueRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_ApprovalIssueResponse_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_end_user: {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string | null;
+            };
+            path: {
+                external_id: string;
+                /** @description Project id or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_EndUserResponse_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    assert_end_user: {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string | null;
+            };
+            path: {
+                external_id: string;
+                /** @description Project id or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["EndUserAssertRequest"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_EndUserResponse_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_end_user: {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string | null;
+            };
+            path: {
+                external_id: string;
+                /** @description Project id or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_dict_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_end_users: {
+        parameters: {
+            query?: {
+                status?: components["schemas"]["EndUserStatus"] | null;
+                search?: string | null;
+                page?: number;
+                page_size?: number;
+            };
+            header?: {
+                Authorization?: string | null;
+            };
+            path: {
+                /** @description Project id or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedResponse_EndUserResponse_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    block_end_user: {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string | null;
+            };
+            path: {
+                external_id: string;
+                /** @description Project id or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_EndUserResponse_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    unblock_end_user: {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string | null;
+            };
+            path: {
+                external_id: string;
+                /** @description Project id or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_EndUserResponse_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_end_user_session: {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string | null;
+            };
+            path: {
+                external_id: string;
+                /** @description Project id or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["EndUserSessionRequest"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_EndUserSessionResponse_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_current_end_user: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Project id or slug */
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_EndUserResponse_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
