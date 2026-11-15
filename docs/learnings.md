@@ -518,6 +518,41 @@ project asked for longer content retention.
 `python scripts/drop_legacy_indexes.py` (dry run) then `--apply`. Nothing is dropped automatically: removing an index is
 a data-lifecycle change and belongs to a person. Verified with a fake collection (`tests/test_db_migrations.py`).
 
+### 33. A killed terminal leaves `dev.py` + uvicorn running, so the next `pnpm dev` fails with `WinError 10048`
+
+**Symptom.** Starting `pnpm dev` logs a full successful startup (`Beanie initialized`, warning lines, even
+`Application startup complete`) and then `[Errno 10048] ... only one usage of each socket address`; `dev.py` reports
+`server exited with code 3`. The API on `:8000` still answers, but with code from an older session.
+
+**Root cause.** `dev.py` only supervises the child it started. Windows has no console job object by default, so when
+the terminal or turbo parent disappears the whole `dev.py` → `uvicorn` tree survives and keeps the listening socket.
+Startup work (Mongo connect, Beanie indexes) runs *before* the bind, which is why the new log looks healthy.
+
+**Recovery.** Find the stale owner with `Get-NetTCPConnection -LocalPort 8000 -State Listen`, then
+`taskkill /T /F /PID <dev.py pid>` (tree-kill; killing only uvicorn leaves the supervisor alive). The surviving new
+`dev.py` restarts on the next edit — touch any file under `apps/api/app`, e.g.
+`(Get-Item app\main.py).LastWriteTime = Get-Date` — otherwise start `pnpm dev` again after the port is free.
+Check `/api/v1/health` before assuming the restart worked.
+
+### 34. Clerk session token verification must use cryptographic verification (`verify_token_async`), not `users.get()` (AUTH-01)
+
+**Symptom.** An attacker sending an unsigned or forged JWT with `{"sub": "<victim_clerk_id>"}` was authenticated
+as that victim, allowing full user impersonation and privilege escalation to admin.
+
+**Root cause.** `app/core/security.py` decoded unverified claims (`verify_signature: False`) and called
+`_clerk_client.users.get(user_id=...)`. `users.get()` queries Clerk's admin REST API using the backend server's
+`CLERK_SECRET_KEY`, confirming only that the user exists in Clerk's directory, not that the caller holds a valid,
+signed, unexpired session token.
+
+**Fix.** Replaced unverified decode and `users.get()` lookup with `clerk_backend_api.security.verify_token_async`
+using `VerifyTokenOptions(secret_key=..., jwt_key=...)`. The SDK fetches JWKS (with caching and key rotation) or
+uses the local PEM key, verifying RS256 signature, expiration, clock leeway, and subject before authenticating.
+
+**File references.** `apps/api/app/core/security.py`, `apps/api/tests/test_auth.py`.
+
+**Verification.** `pytest tests/test_auth.py -v` verifies rejection of forged unsigned tokens, tampered signatures,
+and expired tokens, and confirms valid signed tokens authenticate successfully.
+
 ---
 
 ## Bugs found and fixed (commit `5ea80d9`)

@@ -1,7 +1,11 @@
 import logging
 from typing import Optional
-import jwt
 from clerk_backend_api import Clerk
+from clerk_backend_api.security import (
+    TokenVerificationError,
+    VerifyTokenOptions,
+    verify_token_async,
+)
 from app.core.config import settings
 from app.core.exceptions import UnauthorizedError
 from app.models.user import UserRole
@@ -25,7 +29,7 @@ def get_clerk_client() -> Optional[Clerk]:
 async def verify_clerk_token(token: str) -> AuthenticatedUser:
     """
     Verifies a Clerk session token / JWT and returns the AuthenticatedUser.
-    Supports official Clerk SDK, RS256 JWKS/public key, and dev/test mock tokens.
+    Uses the official Clerk SDK (verify_token_async) for cryptographic verification (JWKS/PEM).
     """
     if not token or not token.strip():
         raise UnauthorizedError("Missing authorization token")
@@ -50,69 +54,67 @@ async def verify_clerk_token(token: str) -> AuthenticatedUser:
             roles=["admin"] if is_admin else ["user"],
         )
 
-    # 2. If Clerk public JWT key is configured, verify signature directly
-    if settings.CLERK_JWT_KEY:
-        try:
-            payload = jwt.decode(
-                token,
-                settings.CLERK_JWT_KEY,
-                algorithms=["RS256"],
-                options={"verify_aud": False},
-            )
-            user_id = payload.get("sub")
-            if not user_id:
-                raise UnauthorizedError("Invalid token payload: missing subject")
-            roles = payload.get("roles", ["user"])
-            is_admin = "admin" in roles
-            return AuthenticatedUser(
-                id=user_id,
-                clerk_id=user_id,
-                email=payload.get("email"),
-                first_name=payload.get("first_name"),
-                last_name=payload.get("last_name"),
-                image_url=payload.get("image_url"),
-                role=UserRole.ADMIN if is_admin else UserRole.USER,
-                roles=roles,
-            )
-        except jwt.PyJWTError as e:
-            logger.warning(f"JWT verification failed: {e}")
-            raise UnauthorizedError(f"Invalid session token: {str(e)}")
+    # 2. Determine verification credentials (offline JWT key or Clerk secret key)
+    has_jwt_key = bool(settings.CLERK_JWT_KEY)
+    has_secret_key = bool(
+        settings.CLERK_SECRET_KEY and not settings.CLERK_SECRET_KEY.startswith("sk_test_placeholder")
+    )
 
-    # 3. If official Clerk client is configured, verify via Clerk SDK
-    if _clerk_client is not None:
-        try:
-            # Decode unverified claims first to inspect subject
-            unverified_claims = jwt.decode(token, options={"verify_signature": False})
-            user_id = unverified_claims.get("sub")
-            if user_id:
-                # Query Clerk API to verify user exists and is active
-                user = _clerk_client.users.get(user_id=user_id)
-                email = None
-                if user and user.email_addresses and len(user.email_addresses) > 0:
-                    email = user.email_addresses[0].email_address
-                image_url = getattr(user, "image_url", None)
-                return AuthenticatedUser(
-                    id=user.id,
-                    clerk_id=user.id,
-                    email=email,
-                    first_name=user.first_name,
-                    last_name=user.last_name,
-                    image_url=image_url,
-                    role=UserRole.USER,
-                    roles=["user"],
-                )
-        except Exception as e:
-            logger.warning(f"Clerk SDK token verification failed: {e}")
-            raise UnauthorizedError("Invalid or expired session token")
-
-    # 4. If credentials are placeholders and in development, provide clear guidance
-    if settings.CLERK_SECRET_KEY.startswith("sk_test_placeholder") or not settings.CLERK_SECRET_KEY:
-        if settings.ENVIRONMENT == "development":
-            # For development convenience with placeholder keys:
-            # Reject raw random strings, but allow dev-token- prefix
+    if not has_jwt_key and not has_secret_key:
+        if settings.ENVIRONMENT in ("development", "test"):
             raise UnauthorizedError(
                 "Clerk credentials are not configured. Set CLERK_SECRET_KEY in apps/api/.env or use 'dev-token-yourname' in development."
             )
         raise UnauthorizedError("Authentication service not configured")
 
-    raise UnauthorizedError("Unable to verify token")
+    options = VerifyTokenOptions(
+        secret_key=settings.CLERK_SECRET_KEY if has_secret_key else None,
+        jwt_key=settings.CLERK_JWT_KEY if has_jwt_key else None,
+    )
+
+    # 3. Cryptographically verify the session token via Clerk SDK
+    try:
+        claims = await verify_token_async(token, options)
+    except TokenVerificationError as exc:
+        logger.warning(f"Clerk token verification failed: {exc}")
+        raise UnauthorizedError("Invalid or expired session token")
+    except Exception as exc:
+        logger.warning(f"Unexpected error during token verification: {exc}")
+        raise UnauthorizedError("Invalid or expired session token")
+
+    user_id = claims.get("sub")
+    if not user_id:
+        raise UnauthorizedError("Invalid token payload: missing subject")
+
+    email = claims.get("email")
+    first_name = claims.get("first_name")
+    last_name = claims.get("last_name")
+    image_url = claims.get("image_url")
+    roles = claims.get("roles", ["user"])
+    is_admin = "admin" in roles
+
+    # Optional profile metadata enrichment from Clerk API if not included in JWT claims
+    if not email and _clerk_client is not None:
+        try:
+            clerk_user_obj = _clerk_client.users.get(user_id=user_id)
+            if clerk_user_obj and clerk_user_obj.email_addresses:
+                email = clerk_user_obj.email_addresses[0].email_address
+            if not first_name:
+                first_name = getattr(clerk_user_obj, "first_name", None)
+            if not last_name:
+                last_name = getattr(clerk_user_obj, "last_name", None)
+            if not image_url:
+                image_url = getattr(clerk_user_obj, "image_url", None)
+        except Exception as exc:
+            logger.debug(f"Could not enrich user profile from Clerk API: {exc}")
+
+    return AuthenticatedUser(
+        id=user_id,
+        clerk_id=user_id,
+        email=email,
+        first_name=first_name,
+        last_name=last_name,
+        image_url=image_url,
+        role=UserRole.ADMIN if is_admin else UserRole.USER,
+        roles=roles,
+    )
