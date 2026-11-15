@@ -439,13 +439,12 @@ async def test_inspect_models_live_preview(active_project, mock_crypto):
     result = await service.inspect_upstream_models(active_project.id, inspect_req)
     assert result.total_models == 3
     gpt4o = next(m for m in result.models if m.model_id == "gpt-4o")
-    assert gpt4o.supports_vision is True
-    assert gpt4o.supports_tools is True
-    assert gpt4o.model_type == ModelType.CHAT_COMPLETION
+    assert gpt4o.display_name == "GPT-4o Multimodal"
+    assert gpt4o.supports_vision is None
+    assert gpt4o.supports_tools is None
 
     embed = next(m for m in result.models if m.model_id == "text-embedding-3-small")
     assert embed.model_type == ModelType.EMBEDDING
-    assert embed.supports_streaming is False
 
 
 # ==============================================================================

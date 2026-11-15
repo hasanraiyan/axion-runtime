@@ -70,58 +70,44 @@ from app.schemas.provider import (
 )
 
 
-def infer_model_capabilities(model_id: str, display_name: Optional[str] = None) -> DiscoveredModelInfo:
-    """Infer model capabilities, modality, and default limits from upstream identifier."""
+def infer_model_capabilities(
+    model_id: str,
+    display_name: Optional[str] = None,
+    description: Optional[str] = None,
+    owned_by: Optional[str] = None,
+    created_at_upstream: Optional[int] = None,
+    max_input_tokens: Optional[int] = None,
+    max_output_tokens: Optional[int] = None,
+    default_temperature: Optional[float] = None,
+) -> DiscoveredModelInfo:
+    """
+    Build discovered model information reflecting only true upstream attributes.
+    Does not fabricate false capability flags or unconfirmed token limits.
+    """
     mid = model_id.lower()
     dname = display_name or model_id
 
-    is_embedding = "embed" in mid
-    is_reranker = "rerank" in mid
-
-    if is_embedding:
+    model_type = None
+    if "embed" in mid:
         model_type = ModelType.EMBEDDING
-    elif is_reranker:
+    elif "rerank" in mid:
         model_type = ModelType.RERANKER
-    else:
-        model_type = ModelType.CHAT_COMPLETION
-
-    is_chat = model_type == ModelType.CHAT_COMPLETION
-
-    supports_vision = is_chat and any(
-        v in mid for v in ["vision", "omni", "gpt-4o", "gemini", "claude-3", "vl", "pixtral"]
-    )
-    supports_tools = is_chat and any(
-        t in mid for t in ["gpt", "claude", "gemini", "mistral", "deepseek", "qwen", "llama", "command"]
-    )
-    supports_json_mode = supports_tools
-    supports_reasoning = is_chat and any(
-        r in mid for r in ["o1", "o3", "r1", "reason", "thinking", "deepseek-r1"]
-    )
-
-    max_input = 128000
-    max_output: Optional[int] = 4096
-    if "gemini" in mid:
-        max_input = 1000000
-        max_output = 8192
-    elif "claude-3" in mid:
-        max_input = 200000
-        max_output = 8192
-    elif is_embedding or is_reranker:
-        max_input = 8192
-        max_output = None
 
     return DiscoveredModelInfo(
         model_id=model_id,
         display_name=dname,
+        description=description,
+        owned_by=owned_by,
+        created_at_upstream=created_at_upstream,
         model_type=model_type,
-        supports_streaming=is_chat,
-        supports_tools=supports_tools,
-        supports_vision=supports_vision,
-        supports_json_mode=supports_json_mode,
-        supports_reasoning=supports_reasoning,
-        max_input_tokens=max_input,
-        max_output_tokens=max_output,
-        default_temperature=0.7 if is_chat else 0.0,
+        supports_streaming=None,
+        supports_tools=None,
+        supports_vision=None,
+        supports_json_mode=None,
+        supports_reasoning=None,
+        max_input_tokens=max_input_tokens,
+        max_output_tokens=max_output_tokens,
+        default_temperature=default_temperature,
     )
 
 
@@ -612,7 +598,31 @@ class ProviderManagementService:
             # Google Gemini format clean: 'models/gemini-1.5-pro' -> 'gemini-1.5-pro'
             clean_id = model_id.removeprefix("models/") if isinstance(model_id, str) else str(model_id)
             display_name = item.get("displayName") or item.get("display_name") or clean_id
-            discovered.append(infer_model_capabilities(clean_id, display_name))
+            description = item.get("description")
+            owned_by = item.get("owned_by") or item.get("ownedBy")
+            created = item.get("created")
+
+            # Extract real limits if upstream actually returned them (e.g. Gemini inputTokenLimit)
+            raw_input = item.get("inputTokenLimit") or item.get("max_input_tokens")
+            raw_output = item.get("outputTokenLimit") or item.get("max_output_tokens")
+            raw_temp = item.get("temperature") or item.get("default_temperature")
+
+            max_input = int(raw_input) if isinstance(raw_input, (int, float)) else None
+            max_output = int(raw_output) if isinstance(raw_output, (int, float)) else None
+            temp = float(raw_temp) if isinstance(raw_temp, (int, float)) else None
+
+            discovered.append(
+                infer_model_capabilities(
+                    model_id=clean_id,
+                    display_name=display_name,
+                    description=description,
+                    owned_by=str(owned_by) if owned_by is not None else None,
+                    created_at_upstream=int(created) if isinstance(created, (int, float)) else None,
+                    max_input_tokens=max_input,
+                    max_output_tokens=max_output,
+                    default_temperature=temp,
+                )
+            )
 
         return discovered
 

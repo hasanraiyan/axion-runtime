@@ -358,25 +358,31 @@ class ModelCatalogService:
             )
 
             if existing:
-                # Update capabilities and limits if changed
-                update_dict: Dict[str, Any] = {
-                    "supports_streaming": d_model.supports_streaming,
-                    "supports_tools": d_model.supports_tools,
-                    "supports_vision": d_model.supports_vision,
-                    "supports_json_mode": d_model.supports_json_mode,
-                    "supports_reasoning": d_model.supports_reasoning,
-                }
-                if d_model.max_input_tokens and not existing.max_input_tokens:
+                update_dict: Dict[str, Any] = {}
+                if d_model.supports_streaming is not None:
+                    update_dict["supports_streaming"] = d_model.supports_streaming
+                if d_model.supports_tools is not None:
+                    update_dict["supports_tools"] = d_model.supports_tools
+                if d_model.supports_vision is not None:
+                    update_dict["supports_vision"] = d_model.supports_vision
+                if d_model.supports_json_mode is not None:
+                    update_dict["supports_json_mode"] = d_model.supports_json_mode
+                if d_model.supports_reasoning is not None:
+                    update_dict["supports_reasoning"] = d_model.supports_reasoning
+                if d_model.max_input_tokens is not None and not existing.max_input_tokens:
                     update_dict["max_input_tokens"] = d_model.max_input_tokens
-                if d_model.max_output_tokens and not existing.max_output_tokens:
+                if d_model.max_output_tokens is not None and not existing.max_output_tokens:
                     update_dict["max_output_tokens"] = d_model.max_output_tokens
+                if d_model.description is not None and not existing.description:
+                    update_dict["description"] = d_model.description
 
-                await self.model_repo.update_with_revision(
-                    model_id=existing.id,
-                    project_id=project.id,
-                    expected_revision=existing.revision,
-                    update_dict=update_dict,
-                )
+                if update_dict:
+                    await self.model_repo.update_with_revision(
+                        model_id=existing.id,
+                        project_id=project.id,
+                        expected_revision=existing.revision,
+                        update_dict=update_dict,
+                    )
                 updated_count += 1
             else:
                 # Register new model
@@ -386,15 +392,15 @@ class ModelCatalogService:
                     model_id=d_model.model_id,
                     display_name=d_model.display_name,
                     description=d_model.description,
-                    model_type=d_model.model_type,
-                    supports_streaming=d_model.supports_streaming,
-                    supports_tools=d_model.supports_tools,
-                    supports_vision=d_model.supports_vision,
-                    supports_json_mode=d_model.supports_json_mode,
-                    supports_reasoning=d_model.supports_reasoning,
+                    model_type=d_model.model_type or ModelType.CHAT_COMPLETION,
+                    supports_streaming=d_model.supports_streaming if d_model.supports_streaming is not None else True,
+                    supports_tools=d_model.supports_tools if d_model.supports_tools is not None else False,
+                    supports_vision=d_model.supports_vision if d_model.supports_vision is not None else False,
+                    supports_json_mode=d_model.supports_json_mode if d_model.supports_json_mode is not None else False,
+                    supports_reasoning=d_model.supports_reasoning if d_model.supports_reasoning is not None else False,
                     max_input_tokens=d_model.max_input_tokens,
                     max_output_tokens=d_model.max_output_tokens,
-                    default_temperature=d_model.default_temperature,
+                    default_temperature=d_model.default_temperature if d_model.default_temperature is not None else 0.7,
                     is_enabled=True,
                     is_default=False,
                     revision=1,

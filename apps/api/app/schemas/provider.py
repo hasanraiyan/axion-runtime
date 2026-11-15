@@ -156,15 +156,17 @@ class DiscoveredModelInfo(BaseModel):
     model_id: str = Field(..., description="Upstream model identifier")
     display_name: str = Field(..., description="Human-friendly model name")
     description: Optional[str] = None
-    model_type: ModelType = Field(default=ModelType.CHAT_COMPLETION)
-    supports_streaming: bool = True
-    supports_tools: bool = False
-    supports_vision: bool = False
-    supports_json_mode: bool = False
-    supports_reasoning: bool = False
-    max_input_tokens: Optional[int] = None
-    max_output_tokens: Optional[int] = None
-    default_temperature: float = 0.7
+    owned_by: Optional[str] = Field(default=None, description="Owner organization or user returned by upstream")
+    created_at_upstream: Optional[int] = Field(default=None, description="Unix timestamp of model creation upstream")
+    model_type: Optional[ModelType] = Field(default=None, description="Model type if reported upstream")
+    supports_streaming: Optional[bool] = Field(default=None, description="SSE streaming support if reported upstream")
+    supports_tools: Optional[bool] = Field(default=None, description="Function/tool calling support if reported upstream")
+    supports_vision: Optional[bool] = Field(default=None, description="Multimodal vision input if reported upstream")
+    supports_json_mode: Optional[bool] = Field(default=None, description="Structured JSON output if reported upstream")
+    supports_reasoning: Optional[bool] = Field(default=None, description="Extended reasoning if reported upstream")
+    max_input_tokens: Optional[int] = Field(default=None, description="Upstream context limit if reported")
+    max_output_tokens: Optional[int] = Field(default=None, description="Upstream output limit if reported")
+    default_temperature: Optional[float] = Field(default=None, description="Recommended generation temperature if reported")
 
 
 class ProviderInspectRequest(BaseModel):
