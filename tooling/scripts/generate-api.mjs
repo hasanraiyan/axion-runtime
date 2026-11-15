@@ -43,6 +43,12 @@ try {
   );
 
   console.log(`✅ [generate:api] Successfully generated schema at: ${generatedSchemaPath}`);
+
+  console.log("⚡ [generate:api] Refreshing docs/api-routes.md...");
+  execSync("node tooling/scripts/generate-routes-md.mjs", {
+    cwd: rootDir,
+    stdio: "inherit",
+  });
 } catch (error) {
   console.error("❌ [generate:api] Failed to generate API types:", error.message);
   process.exit(1);
