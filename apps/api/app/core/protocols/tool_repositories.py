@@ -299,3 +299,26 @@ class IToolPolicyRepository(Protocol):
     ) -> ProjectToolPolicy: ...
 
     async def delete_by_project_id(self, project_id: IdLike) -> int: ...
+
+
+# ---------------------------------------------------------------------------------------------
+# MCP App resources
+# ---------------------------------------------------------------------------------------------
+from app.models.app_resource import AppResource  # noqa: E402
+
+
+@runtime_checkable
+class IAppResourceRepository(Protocol):
+    async def get_by_id_and_project(self, resource_id: IdLike, project_id: IdLike) -> Optional[AppResource]: ...
+
+    async def get_by_uri(self, integration_id: IdLike, uri: str) -> Optional[AppResource]: ...
+
+    async def list_by_integration(self, project_id: IdLike, integration_id: IdLike) -> List[AppResource]: ...
+
+    async def save(self, document: AppResource) -> AppResource: ...
+
+    async def update_with_revision(
+        self, resource_id: IdLike, expected_revision: int, update_dict: Dict[str, Any]
+    ) -> AppResource: ...
+
+    async def delete_by_project_id(self, project_id: IdLike) -> int: ...

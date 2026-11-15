@@ -118,11 +118,20 @@ def test_role_interfaces_are_small_and_adapters_implement_only_what_they_support
         public = [n for n in vars(role) if not n.startswith("_") and callable(getattr(role, n, None))]
         assert len(public) == 1, f"{role.__name__} should expose exactly one operation, found {public}"
 
+    for role, size in ((ports.PromptProvider, 1), (ports.ResourceReader, 3)):
+        public = [n for n in vars(role) if not n.startswith("_") and callable(getattr(role, n, None))]
+        assert len(public) == size, f"{role.__name__} should expose {size} operation(s), found {public}"
+
     from app.integrations.adapters import McpAdapter, NativeAdapter
 
-    # Neither adapter declares resource/prompt/app operations it cannot honour (no stubs).
-    for adapter in (NativeAdapter, McpAdapter):
-        assert not any(n in vars(adapter) for n in ("list_resources", "read_resource", "list_prompts", "close"))
+    # The native adapter has no resources, prompts, or apps, and declares no stub operations for them (ISP/LSP):
+    # capability lookup, not a method that raises or returns fake data, is how absence is expressed.
+    assert not any(n in vars(NativeAdapter) for n in ("list_resources", "read_resource", "list_prompts", "close"))
+    assert not ports.supports(NativeAdapter(None), ports.ResourceReader)  # type: ignore[arg-type]
+    assert not ports.supports(NativeAdapter(None), ports.PromptProvider)  # type: ignore[arg-type]
+    # The MCP adapter genuinely implements both roles.
+    mcp = McpAdapter(None)  # type: ignore[arg-type]
+    assert ports.supports(mcp, ports.ResourceReader) and ports.supports(mcp, ports.PromptProvider)
 
 
 def test_repository_protocols_are_one_per_aggregate():
@@ -130,6 +139,7 @@ def test_repository_protocols_are_one_per_aggregate():
 
     names = [n for n in vars(protocols) if n.startswith("I") and n.endswith("Repository")]
     assert sorted(names) == [
+        "IAppResourceRepository",
         "IConnectSessionRepository",
         "IConnectionRepository",
         "IEndUserRepository",

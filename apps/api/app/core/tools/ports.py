@@ -13,11 +13,14 @@ from typing import Any, Dict, List, Optional, Protocol, Set, runtime_checkable
 
 from app.core.tools.types import (
     DiscoveredTool,
+    FetchedResource,
     InvocationRequest,
     InvocationResult,
     PrincipalContext,
     ProbeResult,
+    PromptInfo,
     RawToolResult,
+    ResourceInfo,
     ResolvedCredentials,
     ResolvedTool,
     Subject,
@@ -70,6 +73,26 @@ class ToolDiscoverer(Protocol):
 @runtime_checkable
 class HealthProber(Protocol):
     async def probe(self, integration: Integration, credentials: ResolvedCredentials) -> ProbeResult: ...
+
+
+@runtime_checkable
+class ResourceReader(Protocol):
+    """MCP resources and templates (also the source of MCP App HTML)."""
+
+    async def list_resources(self, integration: Integration, credentials: ResolvedCredentials) -> List[ResourceInfo]: ...
+
+    async def list_resource_templates(
+        self, integration: Integration, credentials: ResolvedCredentials
+    ) -> List[ResourceInfo]: ...
+
+    async def read_resource(
+        self, integration: Integration, credentials: ResolvedCredentials, uri: str, max_bytes: int
+    ) -> FetchedResource: ...
+
+
+@runtime_checkable
+class PromptProvider(Protocol):
+    async def list_prompts(self, integration: Integration, credentials: ResolvedCredentials) -> List[PromptInfo]: ...
 
 
 def supports(adapter: Any, role: type) -> bool:

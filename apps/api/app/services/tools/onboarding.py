@@ -8,7 +8,7 @@ does not undo creation: the integration is kept in ``error`` with the reason, re
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional, Union
+from typing import Any, Optional, Union
 
 from beanie import PydanticObjectId
 from bson import ObjectId
@@ -38,7 +38,9 @@ class IntegrationOnboardingService:
         integrations: IntegrationService,
         health: IntegrationHealthService,
         discovery: DiscoveryService,
+        apps: Optional[Any] = None,
     ) -> None:
+        self._apps = apps
         self._integrations = integrations
         self._health = health
         self._discovery = discovery
@@ -49,9 +51,19 @@ class IntegrationOnboardingService:
         result = OnboardingResult(integration=integration, probe=probe)
         if probe.healthy:
             result.discovery = await self._discovery.discover(project_id, integration_id, actor_id)
+            await self._sync_apps(project_id, integration_id, actor_id)
         else:
             result.warning = probe.message
         return result
+
+    async def _sync_apps(self, project_id: IdLike, integration_id: IdLike, actor_id: str) -> None:
+        """Pin any MCP App resources the tools reference. Best-effort: apps are optional, onboarding must not fail."""
+        if self._apps is None:
+            return
+        try:
+            await self._apps.sync_integration(project_id, integration_id, actor_id)
+        except Exception:
+            return
 
     async def create_and_verify(
         self, project_id: IdLike, request: IntegrationCreateRequest, actor_id: str
@@ -68,6 +80,7 @@ class IntegrationOnboardingService:
             result.integration, result.probe = integration, probe
             if probe.healthy:
                 result.discovery = await self._discovery.discover(integration.project_id, integration.id, actor_id)
+                await self._sync_apps(integration.project_id, integration.id, actor_id)
                 refreshed, _ = await self._integrations.list(integration.project_id, search=integration.slug, limit=1)
                 if refreshed:
                     result.integration = refreshed[0]

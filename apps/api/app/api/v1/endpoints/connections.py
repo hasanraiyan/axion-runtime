@@ -6,24 +6,15 @@ Two endpoints are deliberately public (``/integrations/connect/{token}`` and
 ``/integrations/oauth/callback``): a browser follows them, so the single-use link secret and the OAuth
 ``state`` are the credentials. Both answer only with redirects or an outcome, never tokens or codes.
 """
-from dataclasses import dataclass
-from typing import Annotated, Optional
+from typing import Optional
 
-from fastapi import APIRouter, Depends, Header, Path, Query, Request, Security, status
+from fastapi import APIRouter, Depends, Path, Query, status
 from fastapi.responses import RedirectResponse
 
-from app.api.deps import (
-    AuthenticatedContextAuth,
-    end_user_token_scheme,
-    get_credential_repository,
-    get_project_member_repository,
-    get_project_repository,
-    security,
-)
-from app.api.v1.endpoints.tools_deps import AdminCaller, ToolsDep, caller_dep
-from app.core.exceptions import ForbiddenError, UnauthorizedError
+from app.api.v1.endpoints.tools_deps import AdminCaller, SelfCaller, ToolsDep, caller_dep, make_subject_caller
+from app.core.exceptions import ForbiddenError
 from app.core.tools.types import Subject, SubjectType
-from app.models.project import Project, ProjectRole
+from app.models.project import ProjectRole
 from app.schemas.common import ApiErrorResponse, ApiResponse, PaginatedData, PaginatedResponse
 from app.schemas.tools import (
     AuthorizeRequest,
@@ -191,44 +182,7 @@ async def update_tool_policy(body: ToolPolicyUpdateRequest, project_id: str = PI
 
 
 # ================================================================ self-service (member or end user)
-@dataclass
-class SelfCaller:
-    project: Project
-    subject: Subject
-    actor_id: str
-
-
-async def self_caller(
-    request: Request,
-    project_id: str = PID,
-    end_user_token: Annotated[Optional[str], Security(end_user_token_scheme)] = None,
-    bearer=Security(security),
-    authorization: Annotated[Optional[str], Header(alias="Authorization")] = None,
-    tools: ToolsDep = None,  # type: ignore[assignment]
-    cred_repo=Depends(get_credential_repository),
-    project_repo=Depends(get_project_repository),
-    member_repo=Depends(get_project_member_repository),
-) -> SelfCaller:
-    """A signed-in project member, or an end user presenting a session token with ``connections:own``."""
-    if end_user_token:
-        claims = await tools.end_users.verify_session(end_user_token, project_id)
-        if "connections:own" not in (claims.get("cap") or []):
-            raise ForbiddenError("This session token cannot manage connections")
-        project = await tools.lifecycle.get_active(project_id, allow_archived=True)
-        subject = Subject(SubjectType.END_USER, id=str(claims["eu"]), external_id=str(claims.get("ext")))
-        return SelfCaller(project, subject, actor_id=f"end_user:{claims['eu']}")
-
-    if not authorization:
-        raise UnauthorizedError("Provide a Clerk session or an end-user session token")
-    actor = await AuthenticatedContextAuth(
-        request, authorization=authorization, cred_repo=cred_repo, project_repo=project_repo, member_repo=member_repo
-    )
-    if actor.actor_type != "user":
-        raise ForbiddenError("API keys cannot manage per-user connections; use a connect link instead")
-    role = getattr(request.state, "project_role", None)
-    if not role_at_least(role, ProjectRole.MEMBER):
-        raise ForbiddenError("Insufficient project permissions")
-    return SelfCaller(request.state.project, Subject(SubjectType.MEMBER, id=actor.identity_id), actor_id=actor.identity_id)
+self_caller = make_subject_caller("connections:own")
 
 
 @router.get(

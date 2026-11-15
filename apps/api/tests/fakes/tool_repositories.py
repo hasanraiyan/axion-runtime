@@ -633,3 +633,49 @@ class FakeToolPolicyRepository:
 
     async def delete_by_project_id(self, project_id):
         return 1 if self.items.pop(_s(project_id), None) else 0
+
+
+from app.models.app_resource import AppResource  # noqa: E402
+
+
+class FakeAppResourceRepository:
+    def __init__(self) -> None:
+        self.items: Dict[str, AppResource] = {}
+
+    async def get_by_id_and_project(self, resource_id, project_id):
+        doc = self.items.get(_s(resource_id))
+        return doc.model_copy(deep=True) if doc and _s(doc.project_id) == _s(project_id) else None
+
+    async def get_by_uri(self, integration_id, uri):
+        doc = next((d for d in self.items.values() if _s(d.integration_id) == _s(integration_id) and d.uri == uri), None)
+        return doc.model_copy(deep=True) if doc else None
+
+    async def list_by_integration(self, project_id, integration_id):
+        return [d.model_copy(deep=True) for d in self.items.values() if _s(d.project_id) == _s(project_id) and _s(d.integration_id) == _s(integration_id)]
+
+    async def save(self, document):
+        existing = next((d for d in self.items.values() if _s(d.integration_id) == _s(document.integration_id) and d.uri == document.uri), None)
+        if existing is None:
+            _new_id(document)
+            self.items[_s(document.id)] = document.model_copy(deep=True)
+            return document
+        document.id, document.revision = existing.id, existing.revision + 1
+        self.items[_s(existing.id)] = document.model_copy(deep=True)
+        return document
+
+    async def update_with_revision(self, resource_id, expected_revision, update_dict):
+        doc = self.items.get(_s(resource_id))
+        if doc is None:
+            raise NotFoundError("App resource not found")
+        if doc.revision != expected_revision:
+            raise RevisionConflictError()
+        for key, value in update_dict.items():
+            setattr(doc, key, value)
+        doc.revision += 1
+        return doc.model_copy(deep=True)
+
+    async def delete_by_project_id(self, project_id):
+        keys = [k for k, d in self.items.items() if _s(d.project_id) == _s(project_id)]
+        for k in keys:
+            del self.items[k]
+        return len(keys)

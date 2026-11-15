@@ -203,3 +203,31 @@ class ResolvedCredentials:
         return f"ResolvedCredentials(headers={sorted(self.headers)}, query={sorted(self.query)})"
 
     __str__ = __repr__
+
+
+@dataclass(frozen=True)
+class ResourceInfo:
+    uri: str
+    name: str = ""
+    description: Optional[str] = None
+    mime_type: Optional[str] = None
+    is_template: bool = False
+
+
+@dataclass(frozen=True)
+class PromptInfo:
+    name: str
+    description: Optional[str] = None
+    arguments: List[Dict[str, Any]] = field(default_factory=list)
+
+
+@dataclass(frozen=True)
+class FetchedResource:
+    """One resource read from a provider. ``text`` is set for text content, ``blob_base64`` for binary."""
+
+    uri: str
+    mime_type: Optional[str] = None
+    text: Optional[str] = None
+    blob_base64: Optional[str] = None
+    meta: Dict[str, Any] = field(default_factory=dict)
+    size_bytes: int = 0

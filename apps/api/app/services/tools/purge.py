@@ -40,6 +40,7 @@ class ToolCascadePurger:
         session_repo: Optional[Any] = None,
         oauth_client_repo: Optional[Any] = None,
         policy_repo: Optional[Any] = None,
+        app_repo: Optional[Any] = None,
     ) -> None:
         extra = tuple(
             (label, repo)
@@ -48,6 +49,7 @@ class ToolCascadePurger:
                 ("connect_sessions", session_repo),
                 ("oauth_clients", oauth_client_repo),
                 ("policies", policy_repo),
+                ("app_resources", app_repo),
             )
             if repo is not None
         )

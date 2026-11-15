@@ -368,3 +368,15 @@ class ToolDriftPendingError(ConflictError):
     def __init__(self, tool_key: str):
         super().__init__(message=f"Tool '{tool_key}' changed upstream and must be approved first")
         self.code = "TOOL_DRIFT_PENDING"
+
+
+class AppNotApprovedError(ConflictError):
+    def __init__(self, message: str = "This app has not been approved, or changed since it was approved"):
+        super().__init__(message=message)
+        self.code = "APP_NOT_APPROVED"
+
+
+class AppOriginViolationError(ForbiddenError):
+    def __init__(self, message: str = "An app may only reach its own integration"):
+        super().__init__(message=message)
+        self.code = "APP_ORIGIN_VIOLATION"

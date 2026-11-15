@@ -10,12 +10,15 @@ import time
 from typing import Any, Dict, List, Optional, Set
 
 from app.core.exceptions import BadRequestError
-from app.core.tools.errors import UpstreamAuthError, UpstreamError, UpstreamRateLimited
+from app.core.tools.errors import UpstreamAuthError, UpstreamError, UpstreamRateLimited, UpstreamResponseTooLarge
 from app.core.tools.types import (
     ContentBlock,
     DiscoveredTool,
+    FetchedResource,
     ProbeResult,
+    PromptInfo,
     RawToolResult,
+    ResourceInfo,
     ResolvedCredentials,
     ResolvedTool,
 )
@@ -194,6 +197,54 @@ class McpAdapter:
     ) -> RawToolResult:
         async with self._connector.connect(integration, credentials) as session:
             return map_mcp_result(await session.call_tool(tool.upstream_name, arguments))
+
+    # ResourceReader
+    async def list_resources(self, integration: Integration, credentials: ResolvedCredentials) -> List[ResourceInfo]:
+        async with self._connector.connect(integration, credentials) as session:
+            return [
+                ResourceInfo(
+                    uri=str(r.get("uri", "")), name=str(r.get("name", "")), description=r.get("description"),
+                    mime_type=r.get("mimeType"),
+                )
+                for r in await session.list_resources()
+                if r.get("uri")
+            ]
+
+    async def list_resource_templates(self, integration: Integration, credentials: ResolvedCredentials) -> List[ResourceInfo]:
+        async with self._connector.connect(integration, credentials) as session:
+            return [
+                ResourceInfo(
+                    uri=str(r.get("uriTemplate", "")), name=str(r.get("name", "")), description=r.get("description"),
+                    mime_type=r.get("mimeType"), is_template=True,
+                )
+                for r in await session.list_resource_templates()
+                if r.get("uriTemplate")
+            ]
+
+    async def read_resource(
+        self, integration: Integration, credentials: ResolvedCredentials, uri: str, max_bytes: int
+    ) -> FetchedResource:
+        async with self._connector.connect(integration, credentials) as session:
+            raw = await session.read_resource(uri)
+        text, blob = raw.get("text"), raw.get("blob")
+        size = len(text.encode("utf-8")) if isinstance(text, str) else (len(blob) * 3 // 4 if isinstance(blob, str) else 0)
+        if size > max_bytes:
+            raise UpstreamResponseTooLarge("The resource exceeds the size limit")
+        meta = raw.get("_meta") if isinstance(raw.get("_meta"), dict) else {}
+        return FetchedResource(
+            uri=str(raw.get("uri", uri)), mime_type=raw.get("mimeType"),
+            text=text if isinstance(text, str) else None, blob_base64=blob if isinstance(blob, str) else None,
+            meta=meta, size_bytes=size,
+        )
+
+    # PromptProvider
+    async def list_prompts(self, integration: Integration, credentials: ResolvedCredentials) -> List[PromptInfo]:
+        async with self._connector.connect(integration, credentials) as session:
+            return [
+                PromptInfo(name=str(p.get("name", "")), description=p.get("description"), arguments=list(p.get("arguments") or []))
+                for p in await session.list_prompts()
+                if p.get("name")
+            ]
 
     # HealthProber
     async def probe(self, integration: Integration, credentials: ResolvedCredentials) -> ProbeResult:

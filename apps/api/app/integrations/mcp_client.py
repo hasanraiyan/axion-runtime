@@ -45,6 +45,14 @@ class McpSessionPort(Protocol):
 
     async def call_tool(self, name: str, arguments: Dict[str, Any]) -> Dict[str, Any]: ...
 
+    async def list_resources(self) -> List[Dict[str, Any]]: ...
+
+    async def list_resource_templates(self) -> List[Dict[str, Any]]: ...
+
+    async def read_resource(self, uri: str) -> Dict[str, Any]: ...
+
+    async def list_prompts(self) -> List[Dict[str, Any]]: ...
+
 
 class McpConnectorPort(Protocol):
     def connect(
@@ -137,6 +145,34 @@ class SdkMcpSession:
             if not cursor:
                 return tools
         raise UpstreamError("Upstream tool listing exceeded the pagination limit")
+
+    async def _paged(self, fetch: Any, attribute: str) -> List[Dict[str, Any]]:
+        items: List[Dict[str, Any]] = []
+        cursor: Optional[str] = None
+        for _ in range(MAX_TOOL_PAGES):
+            params = types.PaginatedRequestParams(cursor=cursor) if cursor else None
+            page = await fetch(params=params)
+            items.extend(i.model_dump(by_alias=True, exclude_none=True) for i in getattr(page, attribute))
+            cursor = page.next_cursor
+            if not cursor:
+                return items
+        raise UpstreamError("Upstream listing exceeded the pagination limit")
+
+    async def list_resources(self) -> List[Dict[str, Any]]:
+        return await self._paged(self._session.list_resources, "resources")
+
+    async def list_resource_templates(self) -> List[Dict[str, Any]]:
+        return await self._paged(self._session.list_resource_templates, "resource_templates")
+
+    async def list_prompts(self) -> List[Dict[str, Any]]:
+        return await self._paged(self._session.list_prompts, "prompts")
+
+    async def read_resource(self, uri: str) -> Dict[str, Any]:
+        result = await self._session.read_resource(uri)
+        contents = getattr(result, "contents", None)
+        if not contents:
+            raise UpstreamError("The resource returned no content")
+        return contents[0].model_dump(by_alias=True, exclude_none=True)
 
     async def call_tool(self, name: str, arguments: Dict[str, Any]) -> Dict[str, Any]:
         result = await self._session.call_tool(name, arguments, read_timeout_seconds=self._timeout)

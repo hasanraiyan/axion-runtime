@@ -80,6 +80,8 @@ class ProjectAuditAction(str, Enum):
     CONNECTION_REVOKED = "connection.revoked"
     CONNECT_LINK_CREATED = "connect_link.created"
     TOOL_POLICY_UPDATED = "tool_policy.updated"
+    APP_RESOURCE_SYNCED = "app_resource.synced"
+    APP_RESOURCE_APPROVED = "app_resource.approved"
 
 
 class ProjectSettings(BaseModel):

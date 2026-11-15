@@ -544,3 +544,97 @@ class ToolPolicyUpdateRequest(BaseModel):
     allowed_return_origins: Optional[List[str]] = Field(default=None, max_length=20)
     end_user_connect_enabled: Optional[bool] = None
     connect_link_ttl_seconds: Optional[int] = Field(default=None, ge=60, le=3600)
+
+
+# ------------------------------------------------------------------------- MCP Apps
+from app.models.app_resource import AppResource, AppSyncState  # noqa: E402
+
+
+class AppResourceResponse(BaseModel):
+    """App metadata for admins. The HTML itself is never included here."""
+
+    id: str
+    integration_id: str
+    uri: str
+    mime_type: Optional[str]
+    size_bytes: int
+    content_hash: str
+    declared_csp: Dict[str, List[str]]
+    declared_permissions: List[str]
+    approved: bool = Field(description="True when the current content hash is the approved one")
+    approved_hash: Optional[str]
+    approved_csp: Dict[str, List[str]]
+    approved_permissions: List[str]
+    approved_by: Optional[str]
+    approved_at: Optional[datetime]
+    sync_state: AppSyncState
+    status_message: Optional[str]
+    fetched_at: datetime
+    revision: int
+
+    @classmethod
+    def from_model(cls, doc: AppResource) -> "AppResourceResponse":
+        return cls(
+            id=str(doc.id), integration_id=str(doc.integration_id), uri=doc.uri, mime_type=doc.mime_type,
+            size_bytes=doc.size_bytes, content_hash=doc.content_hash, declared_csp=doc.declared_csp,
+            declared_permissions=doc.declared_permissions, approved=doc.is_approved, approved_hash=doc.approved_hash,
+            approved_csp=doc.approved_csp, approved_permissions=doc.approved_permissions, approved_by=doc.approved_by,
+            approved_at=doc.approved_at, sync_state=doc.sync_state, status_message=doc.status_message,
+            fetched_at=doc.fetched_at, revision=doc.revision,
+        )
+
+
+class AppSyncResponse(BaseModel):
+    synced: List[str]
+    changed: List[str]
+    unavailable: List[Dict[str, str]]
+
+
+class AppApproveRequest(BaseModel):
+    content_hash: str = Field(..., min_length=64, max_length=64, description="The hash the admin reviewed")
+    csp: Dict[str, List[str]] = Field(default_factory=dict, description="Domains to allow, per CSP category; others are denied")
+    permissions: List[str] = Field(default_factory=list, description="Browser permissions to allow; others are denied")
+
+
+class AppContentResponse(BaseModel):
+    resource_id: str
+    uri: str
+    mime_type: Optional[str]
+    html: str
+    content_hash: str
+    csp: Dict[str, List[str]]
+    permissions: List[str]
+
+
+class AppToolCallRequest(BaseModel):
+    resource_id: str = Field(..., min_length=1, max_length=64)
+    tool_key: str = Field(..., min_length=3, max_length=160)
+    arguments: Dict[str, Any] = Field(default_factory=dict)
+    idempotency_key: Optional[str] = Field(default=None, max_length=200)
+
+
+class AppResourceReadRequest(BaseModel):
+    resource_id: str = Field(..., min_length=1, max_length=64)
+    uri: str = Field(..., min_length=1, max_length=2000)
+
+
+class ResourceReadResponse(BaseModel):
+    uri: str
+    mime_type: Optional[str]
+    text: Optional[str] = None
+    blob_base64: Optional[str] = None
+    size_bytes: int
+
+
+class ResourceInfoResponse(BaseModel):
+    uri: str
+    name: str
+    description: Optional[str]
+    mime_type: Optional[str]
+    is_template: bool
+
+
+class PromptInfoResponse(BaseModel):
+    name: str
+    description: Optional[str]
+    arguments: List[Dict[str, Any]]

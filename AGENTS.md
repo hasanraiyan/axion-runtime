@@ -103,7 +103,8 @@ app/middleware        -> request id, logging, rate limiting, CORS, security head
   `tool_invocations` (30-day TTL). See `docs/specs/srs-07-tool-and-integration-management.md`.
 - MOD-07 connections: `integration_connections` (one per `(integration, subject)`, AES-GCM envelopes bound to
   project/integration/subject), `integration_connect_sessions` (hashed link and state, TTL), `integration_oauth_clients`,
-  `project_tool_policies`. Set `PUBLIC_API_BASE_URL` to the externally reachable API URL: it builds OAuth redirect URIs
+  `project_tool_policies`, `project_app_resources` (MCP App HTML, hash-pinned; never rendered unless an admin approved
+  the current hash). Set `PUBLIC_API_BASE_URL` to the externally reachable API URL: it builds OAuth redirect URIs
   and connect links. Never log request paths or queries raw: connect-link tokens are in the path
   (`app/middleware/logging.py#sanitize_path`).
 - Unique indexes: project `slug`; member `(project_id, user_id)`; secret

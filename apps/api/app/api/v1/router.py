@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 from app.api.v1.endpoints import (
     auth,
+    apps,
     connections,
     credentials,
     end_users,
@@ -28,3 +29,4 @@ api_v1_router.include_router(tools.router, prefix="/projects/{project_id}", tags
 api_v1_router.include_router(tool_runtime.router, prefix="/projects/{project_id}", tags=["Tool Runtime"])
 api_v1_router.include_router(end_users.router, prefix="/projects/{project_id}", tags=["End Users"])
 api_v1_router.include_router(connections.router, tags=["Connections"])
+api_v1_router.include_router(apps.router, prefix="/projects/{project_id}", tags=["MCP Apps"])

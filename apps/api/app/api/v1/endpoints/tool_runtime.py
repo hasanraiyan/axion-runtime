@@ -21,6 +21,23 @@ from app.models.tool import ApprovalPolicy
 
 router = APIRouter()
 
+
+def to_invoke_response(result) -> InvokeResponse:
+    return InvokeResponse(
+        status=result.status,
+        is_error=result.is_error,
+        content=[ContentBlockResponse(type=b.type, text=b.text, data=b.data, mime_type=b.mime_type) for b in result.content],
+        structured_content=result.structured_content,
+        error_code=result.error_code,
+        message=result.message,
+        retryable=result.retryable,
+        model_correctable=result.model_correctable,
+        latency_ms=result.latency_ms,
+        invocation_id=result.invocation_id,
+        ui=result.ui,
+        extra=result.extra,
+    )
+
 PID = Path(..., description="Project id or slug")
 ERRORS = {
     status.HTTP_401_UNAUTHORIZED: {"model": ApiErrorResponse},
@@ -103,23 +120,7 @@ async def invoke_tool(body: InvokeRequest, project_id: str = PID, caller: Invoke
             approval_token=body.approval_token,
         )
     )
-    return ApiResponse(
-        data=InvokeResponse(
-            status=result.status,
-            is_error=result.is_error,
-            content=[ContentBlockResponse(type=b.type, text=b.text, data=b.data, mime_type=b.mime_type) for b in result.content],
-            structured_content=result.structured_content,
-            error_code=result.error_code,
-            message=result.message,
-            retryable=result.retryable,
-            model_correctable=result.model_correctable,
-            latency_ms=result.latency_ms,
-            invocation_id=result.invocation_id,
-            ui=result.ui,
-            extra=result.extra,
-        ),
-        message="Tool invocation processed",
-    )
+    return ApiResponse(data=to_invoke_response(result), message="Tool invocation processed")
 
 
 @router.post(

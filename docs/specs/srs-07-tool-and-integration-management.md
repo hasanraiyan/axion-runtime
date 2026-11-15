@@ -1,7 +1,7 @@
 # Software Requirements Specification (SRS)
 ## Module 07: Tool & Integration Management (Axion Runtime)
 
-- **Document Version**: 1.2.0
+- **Document Version**: 1.3.0
 - **Status**: Draft for Architectural Review
 - **Module ID**: `MOD-07`
 - **Component**: `apps/api` (backend), `apps/web` (connector management UI and MCP App host)
@@ -1388,9 +1388,28 @@ tokens, block and erasure; project-purge cascade; secret-deletion guard.
 | Toolset cache (NFR-P1) | 30 s TTL cache | not implemented | Resolution is DB-bound; measure before caching |
 | Session pool (FR-18, FR-81) | pooled sessions | one session per call | Next slice |
 
+### Phase 2, slice B: MCP Apps and MCP resources (complete)
+- **Resources and prompts** of an MCP server are listed through the adapter (`ResourceReader`, `PromptProvider` roles,
+  implemented only by the MCP adapter; capability lookup, no stubs elsewhere).
+- **App resources**: the HTML an MCP App tool points at (`_meta.ui.resourceUri`, `ui://`) is fetched through the adapter,
+  must be `text/html` and at most 2 MB, and is stored with its SHA-256 and the CSP domains and browser permissions it
+  declares (sanitized: https/wss origins only, no wildcards, at most 20 per category).
+- **Approval** is of one exact hash plus an explicit grant of domains and permissions, each a subset of what the app
+  declared. The approve request carries the hash the admin reviewed (`APP_CONTENT_CHANGED` otherwise). A changed or no
+  longer served app is blocked until re-approved; discovery and sync never approve anything.
+- **Rendering**: `GET /app-resources/{id}/content` returns the approved HTML with only the approved domains and
+  permissions, `Cache-Control: no-store`; unapproved is `409 APP_NOT_APPROVED`; end users see apps only for integrations
+  opened to them (otherwise indistinguishable from "does not exist").
+- **Bridge**: an approved app may call tools of **its own integration** that declare the app as a caller, through the full
+  gateway (audience, validation, approval, rate limits, audit, `origin = app_widget`, forced by the service); read only
+  resources and templates its own integration exposes; and is rate limited per app and user. Tools with no UI metadata
+  are model-facing and not callable by apps.
+- 7 endpoints; a shared dependency (`make_subject_caller`) serves members (Clerk) and end users (session token with
+  `apps:use`); API keys are refused on person-only endpoints.
+
 ### Still to build
-MCP App resources (fetch, hash-pin, admin approval, bridge for app-initiated calls and reads); the MCP session pool
-(per subject) and `list_changed` handling; REST/OpenAPI and webhook adapters; OAuth client credentials; bulk tool
+The MCP session pool (per subject) and `list_changed` handling; REST/OpenAPI and webhook adapters (deferred by decision:
+MCP first); OAuth client credentials; bulk tool
 operations; the web UI and hosted pages. End users cannot register their own MCP servers (out of scope by decision).
 
 ---
@@ -1400,5 +1419,6 @@ operations; the web UI and hosted pages. End users cannot register their own MCP
 | Version | Date | Description |
 |---|---|---|
 | 1.0.0 | 2026-11-15 | Initial draft based on analysis of the Agent Marketplace backend and Axion MOD-01/02/03/06 |
+| 1.3.0 | 2026-11-15 | Phase 2 slice B implemented (MCP resources, prompts, and MCP Apps) |
 | 1.2.0 | 2026-11-15 | Phase 2 slice A implemented (OAuth, per-user connections); implementation status rewritten |
 | 1.1.0 | 2026-11-15 | Added principals, credential modes, per-user authentication for members and end users, end-user governance, context-bound arguments, dry run; split tool definition/setting; added SOLID review and normative SOLID requirements; incorporated reference connectors spec and external-users module |

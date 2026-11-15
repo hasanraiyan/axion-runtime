@@ -30,6 +30,7 @@ from app.models.integration import AuthType, Integration
 from app.models.project import Project
 from app.services.tools.providers import SharedToolState, ToolsContainer, build_tools_container
 from tests.fakes.tool_repositories import (
+    FakeAppResourceRepository,
     FakeAuditRepository,
     FakeConnectionRepository,
     FakeConnectSessionRepository,
@@ -157,6 +158,7 @@ class Harness:
     sessions: FakeConnectSessionRepository
     oauth_clients: FakeOAuthClientRepository
     policies: FakeToolPolicyRepository
+    app_repo: FakeAppResourceRepository
     clock: List[float] = field(default_factory=lambda: [0.0])
 
     @property
@@ -191,6 +193,7 @@ def make_harness(connector: Any = None, project: Optional[Project] = None, oauth
         locks=KeyedLocks(),
     )
     conn_repo, sessions, oauth_clients, policies = FakeConnectionRepository(), FakeConnectSessionRepository(), FakeOAuthClientRepository(), FakeToolPolicyRepository()
+    app_repo = FakeAppResourceRepository()
     container = build_tools_container(
         project_repo=projects,
         secret_repo=secrets,
@@ -210,6 +213,7 @@ def make_harness(connector: Any = None, project: Optional[Project] = None, oauth
         session_repo=sessions,
         oauth_client_repo=oauth_clients,
         policy_repo=policies,
+        app_repo=app_repo,
         oauth=oauth,
         public_base_url="https://api.axion.test",
     )
@@ -217,5 +221,5 @@ def make_harness(connector: Any = None, project: Optional[Project] = None, oauth
     container.adapters.register(scripted)
     return Harness(
         container, proj, scripted, projects, secrets, audit, integrations, tools_repo, settings_repo, bindings, end_users,
-        invocations, shared, conn_repo, sessions, oauth_clients, policies,
+        invocations, shared, conn_repo, sessions, oauth_clients, policies, app_repo,
     )

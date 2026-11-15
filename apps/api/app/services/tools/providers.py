@@ -27,6 +27,7 @@ from app.repositories.end_user_repository import (
     get_end_user_repository,
     get_tool_invocation_repository,
 )
+from app.repositories.app_resource_repository import get_app_resource_repository
 from app.repositories.connection_repository import (
     get_connect_session_repository,
     get_connection_repository,
@@ -42,6 +43,7 @@ from app.repositories.tool_repository import (
     get_tool_definition_repository,
     get_tool_setting_repository,
 )
+from app.services.tools.app_resources import McpAppService
 from app.services.tools.binding_service import BindingService
 from app.services.tools.common import ProjectAuditAdapter, ProjectLifecycle, ProjectSecretReader
 from app.services.tools.connect_flow import ConnectFlowService, ToolPolicyService
@@ -111,6 +113,7 @@ class ToolsContainer:
     connections: ConnectionService
     connect_flow: ConnectFlowService
     policy: ToolPolicyService
+    apps: McpAppService
 
 
 def build_tools_container(
@@ -133,6 +136,7 @@ def build_tools_container(
     session_repo: Any = None,
     oauth_client_repo: Any = None,
     policy_repo: Any = None,
+    app_repo: Any = None,
     oauth: Optional[OAuthFlowPort] = None,
     public_base_url: str = "http://localhost:8000",
 ) -> ToolsContainer:
@@ -159,7 +163,6 @@ def build_tools_container(
 
     health = IntegrationHealthService(lifecycle, integration_repo, adapters, credentials, audit, events)
     discovery = DiscoveryService(lifecycle, integration_repo, tool_repo, setting_repo, adapters, credentials, audit, events)
-    onboarding = IntegrationOnboardingService(integrations, health, discovery)
     catalog = ToolCatalogService(lifecycle, tool_repo, setting_repo)
     tool_settings = ToolSettingService(lifecycle, tool_repo, setting_repo, audit, events)
     bindings = BindingService(lifecycle, binding_repo, integration_repo, tool_repo, audit, events)
@@ -174,6 +177,10 @@ def build_tools_container(
         toolset, end_users, signer, shared.limiter, shared.breaker, shared.idempotency, credentials, adapters, health
     )
     gateway = ToolExecutionGateway(stages, InvocationRecorder(invocation_repo, audit))
+    apps = McpAppService(
+        lifecycle, integration_repo, tool_repo, app_repo, adapters, credentials, gateway, shared.limiter, audit_port
+    )
+    onboarding = IntegrationOnboardingService(integrations, health, discovery, apps=apps)
     connect_flow = ConnectFlowService(
         lifecycle, integration_repo, adapters, auth_registry, oauth_client_repo, session_repo, policy, connections,
         oauth_flow, cipher, secret_reader, audit_port, public_base_url, post_connect=onboarding.verify,
@@ -200,6 +207,7 @@ def build_tools_container(
         connections=connections,
         connect_flow=connect_flow,
         policy=policy,
+        apps=apps,
     )
 
 
@@ -226,6 +234,7 @@ def get_tools_container(
         session_repo=get_connect_session_repository(),
         oauth_client_repo=get_oauth_client_repository(),
         policy_repo=get_tool_policy_repository(),
+        app_repo=get_app_resource_repository(),
         public_base_url=app_settings.PUBLIC_API_BASE_URL,
     )
 
@@ -244,4 +253,5 @@ def get_tool_cascade_purger() -> ToolCascadePurger:
         session_repo=get_connect_session_repository(),
         oauth_client_repo=get_oauth_client_repository(),
         policy_repo=get_tool_policy_repository(),
+        app_repo=get_app_resource_repository(),
     )

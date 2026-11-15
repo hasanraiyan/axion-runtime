@@ -127,11 +127,13 @@ class AuthorizeStage:
                 InvocationStatus.DENIED, "playground_requires_admin", "Only admins can test-run tools that may change data"
             )
         visibility = tool.ui_visibility
-        if visibility is not None:
-            if principal.origin == "app_widget" and "app" not in visibility:
+        if principal.origin == "app_widget":
+            # An app may only call tools that explicitly declare it as a caller. A tool with no UI metadata is
+            # a model-facing tool, not an app endpoint (SRS-07 FR-48).
+            if visibility is None or "app" not in visibility:
                 return _fail(InvocationStatus.DENIED, "tool_unavailable", "The tool is not available")
-            if principal.origin != "app_widget" and "model" not in visibility:
-                return _fail(InvocationStatus.DENIED, "app_only_tool", "This tool can only be called by its app")
+        elif visibility is not None and "model" not in visibility:
+            return _fail(InvocationStatus.DENIED, "app_only_tool", "This tool can only be called by its app")
         return None
 
 

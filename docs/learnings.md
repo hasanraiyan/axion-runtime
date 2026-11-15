@@ -371,6 +371,34 @@ client id, secret, or endpoint changes, and when the integration is deleted (ups
 OAuth client). Gate 2 uses only the caller's own connections for `per_user`, and a test plants a stale project connection
 to prove it is ignored.
 
+### 22. An app origin the caller supplies is an app origin nobody checked
+
+**Symptom.** Mutation testing: replacing the bridge's forced `origin = "app_widget"` with the caller's own principal left
+the suite green, because every caller already passed `app_widget`. A caller that passed `runtime` would have let a widget
+reach model-facing tools (the visibility rules key off the origin).
+
+**Fix.** `McpAppService.call_tool` overrides the origin itself, and `test_the_bridge_forces_app_origin_even_if_the_caller_claims_another`
+passes a hostile principal to prove it. General rule: when a security decision depends on a field, the component that owns
+the decision must set it, not trust the caller to.
+
+### 23. "No UI metadata" must mean "not callable by an app"
+
+**Symptom.** The first gateway rule allowed an app to call any tool whose `ui_visibility` was unset, so a widget could
+call model-facing tools such as a destructive `delete_everything`.
+
+**Fix.** For `app_widget` origin the gateway now requires the tool to declare `visibility` including `app`; tools without
+UI metadata are model-facing only. Covered by `test_apps_cannot_call_tools_that_do_not_declare_the_app_as_a_caller` and a
+mutation that restores the old rule.
+
+### 24. Approve the hash the admin reviewed, not "whatever is current"
+
+**Symptom (design).** If approval simply stamped the current hash, a server could swap the HTML between the admin
+opening the review screen and clicking Approve.
+
+**Fix.** The approve request carries the `content_hash` that was reviewed; a mismatch is a `409 APP_CONTENT_CHANGED`.
+Approval also lists the exact domains and permissions granted, each of which must be a subset of what the app declared;
+anything unlisted is denied, and rendering returns only the approved set.
+
 ---
 
 ## Bugs found and fixed (commit `5ea80d9`)

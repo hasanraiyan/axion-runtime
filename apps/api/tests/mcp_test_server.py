@@ -17,8 +17,18 @@ HOST = "mcp.example.com"
 URL = f"https://{HOST}/mcp"
 
 
-def build_server() -> MCPServer:
+APP_URI = "ui://charts/main"
+APP_HTML_V1 = "<html><body><h1>chart v1</h1></body></html>"
+
+
+def build_server(extras: bool = False) -> MCPServer:
     server = MCPServer("axion-test-server")
+    server.app_state = {
+        "html": APP_HTML_V1,
+        "mime": "text/html;profile=mcp-app",
+        "csp": {"connectDomains": ["https://api.charts.example"], "resourceDomains": ["https://cdn.charts.example"]},
+        "permissions": {"geolocation": {}},
+    }  # type: ignore[attr-defined]
 
     @server.tool(
         name="echo",
@@ -48,6 +58,37 @@ def build_server() -> MCPServer:
     def show_chart(series: str = "a") -> str:
         return f"chart:{series}"
 
+    if extras:
+        state = server.app_state  # type: ignore[attr-defined]
+
+        @server.tool(
+            name="refresh_chart",
+            description="App-only tool: refresh the chart data.",
+            annotations=ToolAnnotations(read_only_hint=True),
+            meta={"ui": {"resourceUri": APP_URI, "visibility": ["app"]}},
+        )
+        def refresh_chart(series: str = "a") -> str:
+            return f"refreshed:{series}"
+
+        @server.resource(
+            APP_URI, name="chart-ui", mime_type="text/html;profile=mcp-app",
+            meta={"ui": {"csp": state["csp"], "permissions": state["permissions"]}},
+        )
+        def chart_ui() -> str:
+            return state["html"]
+
+        @server.resource("notes://readme", name="readme", mime_type="text/plain")
+        def readme() -> str:
+            return "hello from the server"
+
+        @server.resource("docs://{name}", name="doc", mime_type="text/plain")
+        def doc(name: str) -> str:
+            return f"doc:{name}"
+
+        @server.prompt()
+        def summarize(text: str) -> str:
+            return f"Summarize: {text}"
+
     return server
 
 
@@ -71,12 +112,13 @@ class BearerGate:
 
 
 @asynccontextmanager
-async def running_transport(token: Optional[str] = None) -> AsyncIterator[tuple[httpx2.ASGITransport, Any]]:
+async def running_transport(token: Optional[str] = None, extras: bool = False) -> AsyncIterator[tuple[httpx2.ASGITransport, Any]]:
     """Yield ``(transport, gate)`` for an in-process server; the lifespan runs the session manager."""
-    server = build_server()
+    server = build_server(extras=extras)
     app = server.streamable_http_app(
         transport_security=TransportSecuritySettings(enable_dns_rebinding_protection=False),
     )
     async with app.router.lifespan_context(app):
         wrapped: Any = BearerGate(app, token) if token else app
+        wrapped.app_state = server.app_state  # tests mutate this to simulate the server changing its UI
         yield httpx2.ASGITransport(app=wrapped), wrapped

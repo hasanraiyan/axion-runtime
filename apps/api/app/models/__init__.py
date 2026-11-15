@@ -36,6 +36,7 @@ from app.models.integration import Integration, IntegrationStatus, IntegrationTy
 from app.models.tool import ToolBinding, ToolDefinition, ToolSetting  # noqa: E402
 from app.models.end_user import ProjectEndUser  # noqa: E402
 from app.models.tool_invocation import ToolInvocation  # noqa: E402
+from app.models.app_resource import AppResource  # noqa: E402
 from app.models.connection import (  # noqa: E402
     ConnectSession,
     IntegrationConnection,
@@ -64,6 +65,7 @@ DOCUMENT_MODELS: List[Type[Document]] = [
     ConnectSession,
     IntegrationOAuthClient,
     ProjectToolPolicy,
+    AppResource,
 ]
 
 __all__ = [
@@ -99,5 +101,6 @@ __all__ = [
     "ConnectSession",
     "IntegrationOAuthClient",
     "ProjectToolPolicy",
+    "AppResource",
     "DOCUMENT_MODELS",
 ]
